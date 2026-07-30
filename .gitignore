@@ -1,0 +1,29 @@
+# Build outputs
+bin/
+obj/
+Library/
+Temp/
+Build/
+Builds/
+Logs/
+
+# Local/editor state
+.vs/
+.vscode/
+*.user
+*.suo
+*.tmp
+*.log
+
+# Generated media and local references
+artifacts/generated/
+artifacts/reference-private/
+*.mp4
+*.mov
+*.avi
+
+# Secrets
+.env
+*.pem
+*.key
+secrets*
