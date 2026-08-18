@@ -30,6 +30,10 @@ Open decision:
 
 - Confirm whether Shooter keeps the dice after losing during point phase, or only after come-out crap-out.
 
+MVP prototype assumption:
+
+- Shooter remains the active shooter after point-phase loss too. This keeps the first prototype focused on the Shooter/Catcher loop, streak reset, Run Same, and Double Up without adding turn rotation yet.
+
 ## Fade / Catch
 
 Fade/Catch is the iPlay active defensive mechanic.
@@ -148,6 +152,6 @@ Reserved streak color:
 
 - Exact payout multipliers.
 - Whether Shooter keeps dice after losing during point phase.
-- Exact number of fades before momentum starts, currently assumed as after 3 fades.
+- Exact number of fades before momentum starts: MVP prototype uses after 3 fades.
 - Whether Double Up requires one Catcher to cover full amount or can be split.
 - Whether side bets have a timeout before roll lock.

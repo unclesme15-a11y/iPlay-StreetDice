@@ -1,0 +1,11 @@
+@IPlayStreetDice.Server_HostAddress = http://localhost:5121
+
+GET {{IPlayStreetDice.Server_HostAddress}}/health
+Accept: application/json
+
+###
+
+POST {{IPlayStreetDice.Server_HostAddress}}/api/street-dice/create
+Accept: application/json
+
+###

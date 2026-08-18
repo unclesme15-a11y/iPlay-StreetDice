@@ -59,52 +59,51 @@ Voice access should require:
 
 ## MVP Backend Models
 
-Suggested models:
+Implemented prototype models:
 
-- `GameState`
-- `Player`
+- `StreetDiceGameState`
+- `StreetDicePlayer`
 - `DiceRoll`
 - `SideBet`
-- `Shot`
-- `FadeAttempt`
-- `StreakState`
-- `VoiceSeatSession`
+- `RollResolution`
 
-Suggested phases:
+Voice entitlement remains planned for a later pass.
+
+Implemented phases:
 
 - `Lobby`
-- `ChooseShooter`
-- `OpenShot`
 - `ComeOut`
-- `PointEstablished`
-- `FadeWindow`
-- `RollResolving`
-- `Payout`
+- `Point`
 - `ShooterDecision`
 - `GameOver`
 
 ## MVP API Shape
 
-Potential REST endpoints:
+Implemented REST endpoints:
 
 ```text
+GET  /health
 POST /api/street-dice/create
 POST /api/street-dice/{gameId}/join
-POST /api/street-dice/{gameId}/start
+POST /api/street-dice/{gameId}/dice-color
 POST /api/street-dice/{gameId}/shot
-POST /api/street-dice/{gameId}/catch
 POST /api/street-dice/{gameId}/roll
 POST /api/street-dice/{gameId}/fade
 POST /api/street-dice/{gameId}/side-bet
 POST /api/street-dice/{gameId}/decision/run-same
 POST /api/street-dice/{gameId}/decision/double-up
 GET  /api/street-dice/{gameId}
+```
+
+Planned endpoint:
+
+```text
 POST /api/street-dice/{gameId}/voice/access-token
 ```
 
 ## MVP Verification
 
-Automated tests should cover:
+Automated tests currently cover:
 
 - Come-out `7/11` wins.
 - Come-out `2/3/12` loses and keeps dice.
@@ -118,3 +117,9 @@ Automated tests should cover:
 - Double Up doubles next shot only.
 - Full streak activates hot dice color state.
 - Normal dice color cannot be red/orange.
+
+Run:
+
+```powershell
+& 'C:\Users\uncle\.dotnet\dotnet.exe' test IPlayStreetDice.sln
+```

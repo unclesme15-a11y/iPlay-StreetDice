@@ -11,9 +11,9 @@
 
 ## Phase 2 - Backend Prototype
 
-- Create minimal server-authoritative dice backend.
-- Add deterministic test mode for known dice outcomes.
-- Add full rule tests.
+- Create minimal server-authoritative dice backend. **Done for MVP prototype.**
+- Add deterministic test mode for known dice outcomes. **Done via fixed test rolls.**
+- Add full rule tests. **Done for core rule contract.**
 - Add table voice token gate.
 - Add simple local smoke verifier.
 
