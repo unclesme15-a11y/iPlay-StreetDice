@@ -31,8 +31,8 @@ This is not the iPlay card-game repo. It shares the broader iPlay identity, but 
 - `docs/technical-plan.md` - backend, Unity, voice, and fairness architecture.
 - `docs/roadmap.md` - build order.
 - `server/` - ASP.NET Core backend prototype and xUnit rule tests.
-- `unity/` - future Unity project or client source.
-- `tools/` - future verification/build tools.
+- `unity/StreetDiceGreybox/` - Unity greybox client project/source.
+- `tools/` - local verification/build tools.
 - `artifacts/` - generated review material and private references.
 
 ## Current Status
@@ -43,6 +43,15 @@ Run verification:
 
 ```powershell
 & 'C:\Users\uncle\.dotnet\dotnet.exe' test IPlayStreetDice.sln
+.\tools\verify-street-dice-local.ps1 -StartServer
 ```
 
-Current backend supports deterministic Street Dice rule testing, table creation, joining, opening a Shooter/Catcher shot, rolling fixed dice values, Fade/Catch, side bets, Run Same, Double Up, streak, momentum, and hot dice state.
+Current backend supports deterministic Street Dice rule testing, table creation, joining with seat tokens, opening a Shooter/Catcher shot, rolling fixed dice values, Fade/Catch, side bets, Run Same, Double Up, bot fill/advance, streak, momentum, hot dice state, seven-out dice handoff, and a configuration-gated voice-token endpoint.
+
+Unity greybox:
+
+```powershell
+& 'C:\Program Files\Unity\Hub\Editor\6000.4.11f1\Editor\Unity.exe' -batchmode -quit -projectPath .\unity\StreetDiceGreybox -logFile .\unity\compile.log
+```
+
+Kling prompts for first clip tests are in `artifacts/kling/street-dice-prompts.md`.

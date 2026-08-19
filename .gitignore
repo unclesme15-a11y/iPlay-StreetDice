@@ -10,6 +10,7 @@ Logs/
 # Local/editor state
 .vs/
 .vscode/
+UserSettings/
 *.user
 *.suo
 *.tmp

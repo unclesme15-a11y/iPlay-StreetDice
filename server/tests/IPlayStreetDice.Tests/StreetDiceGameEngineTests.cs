@@ -93,8 +93,43 @@ public class StreetDiceGameEngineTests
         var result = engine.Roll(new DiceRoll(3, 4));
 
         Assert.Equal(RollResultType.ShooterSevenOutLoss, result.Result);
-        Assert.Equal(GamePhase.ShooterDecision, engine.State.Phase);
+        Assert.Equal(GamePhase.ComeOut, engine.State.Phase);
+        Assert.Equal("p2", engine.State.ShooterId);
+        Assert.Equal("p1", engine.State.CatcherId);
         Assert.Equal(0, engine.State.Streak);
+    }
+
+    [Fact]
+    public void FillBots_AddsPlayersUpToTableLimit()
+    {
+        var engine = new StreetDiceGameEngine("test-game");
+        engine.AddPlayer("p1", "Shooter");
+
+        var bots = engine.FillBots(5);
+
+        Assert.Equal(4, bots.Count);
+        Assert.Equal(5, engine.State.Players.Count);
+        Assert.Equal("bot-2", engine.State.Players[1].Id);
+    }
+
+    [Fact]
+    public void BotAdvance_CanOpenAndRollATestShot()
+    {
+        var engine = new StreetDiceGameEngine("test-game");
+        engine.AddPlayer("p1", "Shooter");
+        engine.FillBots(2);
+
+        var open = engine.AdvanceBotAction(new Random(4));
+
+        Assert.Equal(GamePhase.ComeOut, engine.State.Phase);
+        Assert.Equal("p1", engine.State.ShooterId);
+        Assert.Equal("bot-2", engine.State.CatcherId);
+        Assert.Equal(RollResultType.None, open.Result);
+
+        var roll = engine.AdvanceBotAction(new Random(7));
+
+        Assert.NotNull(roll);
+        Assert.NotEqual(GamePhase.Lobby, engine.State.Phase);
     }
 
     [Fact]

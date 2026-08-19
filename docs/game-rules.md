@@ -24,15 +24,8 @@ After a point is established:
 
 - Shooter keeps rolling until the point is hit or a `7` is rolled.
 - Point hit: Shooter wins.
-- `7` before point: Shooter loses.
-
-Open decision:
-
-- Confirm whether Shooter keeps the dice after losing during point phase, or only after come-out crap-out.
-
-MVP prototype assumption:
-
-- Shooter remains the active shooter after point-phase loss too. This keeps the first prototype focused on the Shooter/Catcher loop, streak reset, Run Same, and Double Up without adding turn rotation yet.
+- `7` before point: Shooter loses, craps out, and gives up the dice.
+- MVP handoff: the Catcher becomes the next Shooter, and the old Shooter becomes the Catcher on the same shot amount.
 
 ## Fade / Catch
 
@@ -76,6 +69,25 @@ Possible side bets:
 - Seven before point.
 
 Side bets do not resolve on faded rolls.
+
+## Payout / Score Models
+
+MVP model: **Table Chip Wallet**
+
+- Every player starts with 1,000 table chips.
+- Shooter and Catcher settle the shot amount directly.
+- Come-out win, point hit, and seven-out pay the shot amount 1:1.
+- Side bets are tracked separately and resolve 1:1 for the first prototype.
+- Double Up doubles the next shot amount only.
+- This model is best for testing the real street-table feel because balances, risk, and pressure are visible immediately.
+
+Alternate model: **Round Points Race**
+
+- No wallet is required.
+- Players earn score points for shooter wins, point hits, side-bet wins, and streak bonuses.
+- Crapping out resets the Shooter streak and passes dice, but does not create a negative wallet.
+- The table can end at a target score such as 50 or after a fixed number of hands.
+- This model is better for compliance-friendly mobile testing if chip language needs to be avoided.
 
 ## After Shooter Wins
 
@@ -151,7 +163,6 @@ Reserved streak color:
 ## Open Rule Questions
 
 - Exact payout multipliers.
-- Whether Shooter keeps dice after losing during point phase.
 - Exact number of fades before momentum starts: MVP prototype uses after 3 fades.
 - Whether Double Up requires one Catcher to cover full amount or can be split.
 - Whether side bets have a timeout before roll lock.

@@ -21,6 +21,21 @@ public sealed class StreetDiceGameEngine
         return player;
     }
 
+    public IReadOnlyList<StreetDicePlayer> FillBots(int targetPlayers)
+    {
+        if (targetPlayers is < 2 or > 5) throw new ArgumentOutOfRangeException(nameof(targetPlayers));
+
+        var added = new List<StreetDicePlayer>();
+        while (State.Players.Count < targetPlayers)
+        {
+            var number = State.Players.Count + 1;
+            var bot = AddPlayer($"bot-{number}", $"Bot {number}");
+            added.Add(bot);
+        }
+
+        return added;
+    }
+
     public void SelectDiceColor(string playerId, DiceColor color)
     {
         var player = RequirePlayer(playerId);
@@ -140,6 +155,33 @@ public sealed class StreetDiceGameEngine
         State.Log($"Double Up. Next shot is {State.ShotAmount}.");
     }
 
+    public RollResolution AdvanceBotAction(Random random)
+    {
+        if (State.Phase == GamePhase.Lobby)
+        {
+            if (State.Players.Count < 2) throw new InvalidOperationException("At least two players are required.");
+            OpenShot(State.Players[0].Id, State.Players[1].Id, 20);
+            return State.LastResolution;
+        }
+
+        if (State.Phase == GamePhase.ShooterDecision)
+        {
+            var shooter = State.Shooter ?? throw new InvalidOperationException("Shooter is missing.");
+            if (State.LastResolvedShotWasWin && State.ShotAmount <= 80)
+            {
+                DoubleUp(shooter.Id);
+            }
+            else
+            {
+                RunSame(shooter.Id);
+            }
+
+            return State.LastResolution;
+        }
+
+        return Roll(new DiceRoll(random.Next(1, 7), random.Next(1, 7)));
+    }
+
     private RollResolution ResolveComeOut(DiceRoll roll)
     {
         if (roll.Total is 7 or 11)
@@ -224,12 +266,33 @@ public sealed class StreetDiceGameEngine
         State.Point = null;
         State.Streak = 0;
         State.LastShotWasDoubleUp = false;
-        State.Phase = GamePhase.ShooterDecision;
         State.LastResolvedShotWasWin = false;
-        var resolution = new RollResolution(resultType, roll, null, $"{message} Shooter loses {State.ShotAmount}. Streak reset.");
+
+        var next = resultType == RollResultType.ShooterSevenOutLoss
+            ? HandOffDiceToCatcher(shooter, catcher)
+            : KeepDiceAfterLoss();
+
+        var resolution = new RollResolution(resultType, roll, null, $"{message} Shooter loses {State.ShotAmount}. Streak reset.{next}");
         State.LastResolution = resolution;
         State.Log(resolution.Message);
         return resolution;
+    }
+
+    private string KeepDiceAfterLoss()
+    {
+        State.Phase = GamePhase.ShooterDecision;
+        return " Shooter keeps dice.";
+    }
+
+    private string HandOffDiceToCatcher(StreetDicePlayer shooter, StreetDicePlayer catcher)
+    {
+        State.ShooterId = catcher.Id;
+        State.CatcherId = shooter.Id;
+        State.FadeCount = 0;
+        State.ShooterMomentum = 0;
+        State.LastShotWasDoubleUp = false;
+        State.Phase = GamePhase.ComeOut;
+        return $" Dice pass to {catcher.Name}; {shooter.Name} is now Catcher.";
     }
 
     private void ResolveSideBets(SideBetType type, bool winningType)

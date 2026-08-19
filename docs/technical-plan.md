@@ -57,6 +57,8 @@ Voice access should require:
 - Player has valid seat token/session.
 - Player is still in the current table.
 
+The prototype exposes the voice entitlement gate now. If Vivox issuer, key, and domain are missing, the endpoint returns a `501` configuration response instead of pretending voice is ready. If those values are present, it still returns `501` until production token signing is wired, unless `StreetDice:AllowDevVoiceToken` or `STREET_DICE_ALLOW_DEV_VOICE_TOKEN=true` is explicitly enabled for local-only testing.
+
 ## MVP Backend Models
 
 Implemented prototype models:
@@ -67,7 +69,7 @@ Implemented prototype models:
 - `SideBet`
 - `RollResolution`
 
-Voice entitlement remains planned for a later pass.
+Voice entitlement gate is implemented for the prototype; production Vivox signing still depends on the real signer used by the main card-game voice stack.
 
 Implemented phases:
 
@@ -92,13 +94,10 @@ POST /api/street-dice/{gameId}/fade
 POST /api/street-dice/{gameId}/side-bet
 POST /api/street-dice/{gameId}/decision/run-same
 POST /api/street-dice/{gameId}/decision/double-up
-GET  /api/street-dice/{gameId}
-```
-
-Planned endpoint:
-
-```text
+POST /api/street-dice/{gameId}/bots/fill
+POST /api/street-dice/{gameId}/bots/advance
 POST /api/street-dice/{gameId}/voice/access-token
+GET  /api/street-dice/{gameId}
 ```
 
 ## MVP Verification
@@ -110,6 +109,7 @@ Automated tests currently cover:
 - Point establishment.
 - Point hit wins.
 - Seven-out loses.
+- Seven-out after point passes dice to the Catcher.
 - Fade/Catch nullifies roll.
 - Faded roll does not resolve side bets.
 - After 3 fades, additional fades increase shooter momentum.
@@ -122,4 +122,5 @@ Run:
 
 ```powershell
 & 'C:\Users\uncle\.dotnet\dotnet.exe' test IPlayStreetDice.sln
+.\tools\verify-street-dice-local.ps1 -StartServer
 ```
