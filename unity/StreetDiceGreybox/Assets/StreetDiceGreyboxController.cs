@@ -31,6 +31,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private GameObject dieB = null!;
     private GameObject dieC = null!;
     private GameObject rollLane = null!;
+    private GameObject environmentPlate = null!;
     private AudioSource audioSource = null!;
     private AudioClip rollClip = null!;
     private AudioClip lockClip = null!;
@@ -71,8 +72,10 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private bool lastShotWasDoubleUp;
     private bool rolling;
     private bool tutorialMode;
+    private bool showPrototypeSeatMarkers;
+    private bool sceneInitialized;
     private float rollLockFlashUntil;
-    private Color selectedDiceColor = new Color(0.08f, 0.55f, 0.23f);
+    private Color selectedDiceColor = new Color(0.92f, 0.9f, 0.84f);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -85,6 +88,19 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private void Awake()
     {
+        BuildRuntimeScene();
+    }
+
+    public void BuildEnvironmentPreviewForEditor()
+    {
+        showPrototypeSeatMarkers = false;
+        BuildRuntimeScene();
+    }
+
+    private void BuildRuntimeScene()
+    {
+        if (sceneInitialized) return;
+        sceneInitialized = true;
         Camera.main?.gameObject.SetActive(false);
         CreateCamera();
         CreateLighting();
@@ -131,11 +147,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         var cameraObject = new GameObject("First Person Shooter Camera");
         var camera = cameraObject.AddComponent<Camera>();
         camera.tag = "MainCamera";
-        camera.transform.position = new Vector3(0f, 1.36f, -4.35f);
-        camera.transform.rotation = Quaternion.Euler(10f, 0f, 0f);
+        camera.transform.position = new Vector3(0f, 0.34f, -4.85f);
+        camera.transform.rotation = Quaternion.Euler(2.8f, 0f, 0f);
         camera.clearFlags = CameraClearFlags.SolidColor;
-        camera.backgroundColor = new Color(0.035f, 0.038f, 0.036f);
-        camera.fieldOfView = 63f;
+        camera.backgroundColor = new Color(0.018f, 0.02f, 0.02f);
+        camera.fieldOfView = 58f;
     }
 
     private void CreateLighting()
@@ -187,75 +203,104 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private void CreateStreetGroundScene()
     {
+        if (CreateKlingEnvironmentPlate())
+        {
+            rollLane = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            rollLane.name = "Invisible Roll Alignment Plane";
+            rollLane.transform.position = new Vector3(0f, 0.035f, 0.35f);
+            rollLane.transform.localScale = new Vector3(6.9f, 0.08f, 6.35f);
+            rollLane.GetComponent<Renderer>().enabled = false;
+            return;
+        }
+
+        var asphalt = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        asphalt.name = "Wet Asphalt Foreground";
+        asphalt.transform.position = new Vector3(0f, -0.08f, -3.95f);
+        asphalt.transform.localScale = new Vector3(7.2f, 0.08f, 2.2f);
+        asphalt.GetComponent<Renderer>().material.color = new Color(0.01f, 0.012f, 0.012f, 0.08f);
+
+        for (var i = 0; i < 28; i++)
+        {
+            var glint = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            glint.name = "Wet Asphalt Highlight";
+            glint.transform.position = new Vector3(UnityEngine.Random.Range(-3.1f, 3.1f), -0.032f, UnityEngine.Random.Range(-4.82f, -3.15f));
+            glint.transform.localScale = new Vector3(UnityEngine.Random.Range(0.05f, 0.22f), 0.006f, UnityEngine.Random.Range(0.012f, 0.04f));
+            glint.transform.rotation = Quaternion.Euler(0f, UnityEngine.Random.Range(-16f, 16f), 0f);
+            glint.GetComponent<Renderer>().material.color = new Color(0.14f, 0.18f, 0.19f);
+        }
+
+        var curbFace = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        curbFace.name = "Raised Sidewalk Curb Face";
+        curbFace.transform.position = new Vector3(0f, 0.0f, -2.82f);
+        curbFace.transform.localScale = new Vector3(6.9f, 0.18f, 0.16f);
+        curbFace.GetComponent<Renderer>().material.color = new Color(0.08f, 0.085f, 0.08f);
+
         rollLane = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        rollLane.name = "Bodega Ground Roll Lane";
-        rollLane.transform.position = new Vector3(0f, -0.055f, 0.08f);
-        rollLane.transform.localScale = new Vector3(4.3f, 0.08f, 7.15f);
-        rollLane.GetComponent<Renderer>().material.color = new Color(0.115f, 0.125f, 0.12f);
+        rollLane.name = "Raised Bodega Sidewalk Roll Surface";
+        rollLane.transform.position = new Vector3(0f, 0.035f, 0.35f);
+        rollLane.transform.localScale = new Vector3(6.9f, 0.08f, 6.35f);
+        rollLane.GetComponent<Renderer>().material.color = new Color(0.035f, 0.04f, 0.038f);
 
         for (var i = 0; i < 11; i++)
         {
             var seam = GameObject.CreatePrimitive(PrimitiveType.Cube);
             seam.name = "Concrete Slab Joint";
-            seam.transform.position = new Vector3(0f, 0.003f, -3.15f + i * 0.62f);
-            seam.transform.localScale = new Vector3(4.25f, 0.012f, 0.018f);
-            seam.GetComponent<Renderer>().material.color = new Color(0.045f, 0.048f, 0.046f);
+            seam.transform.position = new Vector3(0f, 0.084f, -2.35f + i * 0.55f);
+            seam.transform.localScale = new Vector3(6.85f, 0.012f, 0.018f);
+            seam.GetComponent<Renderer>().material.color = new Color(0.04f, 0.044f, 0.042f);
         }
 
         for (var i = 0; i < 7; i++)
         {
             var patch = GameObject.CreatePrimitive(PrimitiveType.Cube);
             patch.name = "Street Ground Patch";
-            patch.transform.position = new Vector3(UnityEngine.Random.Range(-1.65f, 1.65f), 0.004f, -2.55f + i * 0.82f);
-            patch.transform.localScale = new Vector3(UnityEngine.Random.Range(0.35f, 0.75f), 0.014f, UnityEngine.Random.Range(0.06f, 0.13f));
+            patch.transform.position = new Vector3(UnityEngine.Random.Range(-2.85f, 2.85f), 0.092f, -2.25f + i * 0.72f);
+            patch.transform.localScale = new Vector3(UnityEngine.Random.Range(0.35f, 0.82f), 0.014f, UnityEngine.Random.Range(0.05f, 0.11f));
             patch.transform.rotation = Quaternion.Euler(0f, UnityEngine.Random.Range(-12f, 12f), 0f);
-            patch.GetComponent<Renderer>().material.color = new Color(0.075f, 0.08f, 0.077f);
+            patch.GetComponent<Renderer>().material.color = new Color(0.055f, 0.06f, 0.055f);
         }
 
         var backDoor = GameObject.CreatePrimitive(PrimitiveType.Cube);
         backDoor.name = "Closed Bodega Service Door";
-        backDoor.transform.position = new Vector3(0f, 1.1f, 3.56f);
-        backDoor.transform.localScale = new Vector3(4.65f, 2.35f, 0.12f);
-        backDoor.GetComponent<Renderer>().material.color = new Color(0.23f, 0.265f, 0.255f);
+        backDoor.transform.position = new Vector3(0f, 1.15f, 3.42f);
+        backDoor.transform.localScale = new Vector3(4.7f, 2.28f, 0.12f);
+        backDoor.GetComponent<Renderer>().material.color = new Color(0.022f, 0.026f, 0.028f);
 
-        for (var i = 0; i < 8; i++)
+        for (var i = 0; i < 13; i++)
         {
             var slat = GameObject.CreatePrimitive(PrimitiveType.Cube);
             slat.name = "Service Door Slat";
-            slat.transform.position = new Vector3(0f, 0.11f + i * 0.28f, 3.485f);
-            slat.transform.localScale = new Vector3(4.72f, 0.032f, 0.05f);
-            slat.GetComponent<Renderer>().material.color = new Color(0.12f, 0.14f, 0.14f);
+            slat.transform.position = new Vector3(0f, 0.18f + i * 0.17f, 3.345f);
+            slat.transform.localScale = new Vector3(4.78f, 0.036f, 0.05f);
+            slat.GetComponent<Renderer>().material.color = new Color(0.045f, 0.052f, 0.052f);
+        }
+
+        for (var i = 0; i < 7; i++)
+        {
+            var shadow = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            shadow.name = "Rollup Door Dark Groove";
+            shadow.transform.position = new Vector3(0f, 0.265f + i * 0.34f, 3.31f);
+            shadow.transform.localScale = new Vector3(4.75f, 0.026f, 0.055f);
+            shadow.GetComponent<Renderer>().material.color = new Color(0.008f, 0.01f, 0.011f);
         }
 
         var signBand = GameObject.CreatePrimitive(PrimitiveType.Cube);
         signBand.name = "Bodega Sign Band";
-        signBand.transform.position = new Vector3(0f, 2.72f, 3.51f);
-        signBand.transform.localScale = new Vector3(5.1f, 0.38f, 0.08f);
-        signBand.GetComponent<Renderer>().material.color = new Color(0.62f, 0.18f, 0.12f);
-
-        var curb = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        curb.name = "Street Curb Edge";
-        curb.transform.position = new Vector3(0f, 0.035f, -3.48f);
-        curb.transform.localScale = new Vector3(4.6f, 0.12f, 0.22f);
-        curb.GetComponent<Renderer>().material.color = new Color(0.36f, 0.35f, 0.31f);
-
-        var asphalt = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        asphalt.name = "Street Asphalt Beyond Shooter";
-        asphalt.transform.position = new Vector3(0f, -0.07f, -4.22f);
-        asphalt.transform.localScale = new Vector3(4.8f, 0.07f, 1.1f);
-        asphalt.GetComponent<Renderer>().material.color = new Color(0.055f, 0.06f, 0.058f);
+        signBand.transform.position = new Vector3(0f, 2.62f, 3.48f);
+        signBand.transform.localScale = new Vector3(5.4f, 0.22f, 0.08f);
+        signBand.GetComponent<Renderer>().material.color = new Color(0.035f, 0.02f, 0.018f);
 
         var leftWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
         leftWall.name = "Left Tight Brick Wall";
-        leftWall.transform.position = new Vector3(-2.32f, 0.75f, 0.25f);
-        leftWall.transform.localScale = new Vector3(0.14f, 1.6f, 6.75f);
-        leftWall.GetComponent<Renderer>().material.color = new Color(0.18f, 0.09f, 0.065f);
+        leftWall.transform.position = new Vector3(-3.02f, 1.08f, 0.42f);
+        leftWall.transform.localScale = new Vector3(0.16f, 2.3f, 6.18f);
+        leftWall.GetComponent<Renderer>().material.color = new Color(0.035f, 0.022f, 0.02f);
 
         var rightWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
         rightWall.name = "Right Tight Brick Wall";
-        rightWall.transform.position = new Vector3(2.32f, 0.75f, 0.25f);
-        rightWall.transform.localScale = new Vector3(0.14f, 1.6f, 6.75f);
-        rightWall.GetComponent<Renderer>().material.color = new Color(0.18f, 0.09f, 0.065f);
+        rightWall.transform.position = new Vector3(3.02f, 1.08f, 0.42f);
+        rightWall.transform.localScale = new Vector3(0.16f, 2.3f, 6.18f);
+        rightWall.GetComponent<Renderer>().material.color = new Color(0.035f, 0.022f, 0.02f);
 
         for (var i = 0; i < 9; i++)
         {
@@ -264,13 +309,35 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         }
     }
 
+    private bool CreateKlingEnvironmentPlate()
+    {
+        var texture = Resources.Load<Texture2D>("Environments/bodega-ground-photo1-kling-01");
+        if (texture == null)
+        {
+            Debug.LogWarning("Kling environment plate texture not found in Resources/Environments.");
+            return false;
+        }
+
+        environmentPlate = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        environmentPlate.name = "Kling Bodega Environment Plate";
+        environmentPlate.transform.position = new Vector3(0f, 0.72f, 1.15f);
+        environmentPlate.transform.rotation = Quaternion.identity;
+        environmentPlate.transform.localScale = new Vector3(12.6f, 8.9f, 1f);
+
+        var shader = Shader.Find("Unlit/Texture") ?? Shader.Find("Universal Render Pipeline/Unlit");
+        var material = new Material(shader);
+        material.mainTexture = texture;
+        environmentPlate.GetComponent<Renderer>().material = material;
+        return true;
+    }
+
     private void CreateWallCourse(float x, float z)
     {
         for (var row = 0; row < 4; row++)
         {
             var brick = GameObject.CreatePrimitive(PrimitiveType.Cube);
             brick.name = "Wall Brick Suggestion";
-            brick.transform.position = new Vector3(x, 0.2f + row * 0.27f, z + (row % 2) * 0.17f);
+            brick.transform.position = new Vector3(x, 0.24f + row * 0.27f, z + (row % 2) * 0.17f);
             brick.transform.localScale = new Vector3(0.025f, 0.025f, 0.33f);
             brick.GetComponent<Renderer>().material.color = new Color(0.09f, 0.045f, 0.037f);
         }
@@ -309,18 +376,95 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         pulse.transform.localPosition = new Vector3(0f, 0.52f, 0f);
         pulse.transform.localScale = new Vector3(0.5f, 0.08f, 0.5f);
         pulse.GetComponent<Renderer>().material.color = new Color(accent.r, accent.g, accent.b, 0.35f);
+        root.SetActive(showPrototypeSeatMarkers);
 
         return new SeatMic(label, playerId, root, head, pulse, accent);
     }
 
     private GameObject CreateDie(string dieName, Vector3 position)
     {
-        var die = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        var die = new GameObject(dieName);
+        die.AddComponent<MeshFilter>().mesh = CreateRoundedCubeMesh(0.5f, 0.075f, 8);
+        var renderer = die.AddComponent<MeshRenderer>();
+        renderer.material = new Material(Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit"));
         die.name = dieName;
         die.transform.position = position;
         die.transform.localScale = Vector3.one * 0.34f;
         CreatePips(die);
         return die;
+    }
+
+    private static Mesh CreateRoundedCubeMesh(float halfSize, float radius, int divisions)
+    {
+        var vertices = new List<Vector3>();
+        var normals = new List<Vector3>();
+        var triangles = new List<int>();
+        var inner = halfSize - radius;
+
+        AddRoundedCubeFace(vertices, normals, triangles, Vector3.forward, Vector3.right, Vector3.up, halfSize, inner, radius, divisions);
+        AddRoundedCubeFace(vertices, normals, triangles, Vector3.back, Vector3.left, Vector3.up, halfSize, inner, radius, divisions);
+        AddRoundedCubeFace(vertices, normals, triangles, Vector3.right, Vector3.back, Vector3.up, halfSize, inner, radius, divisions);
+        AddRoundedCubeFace(vertices, normals, triangles, Vector3.left, Vector3.forward, Vector3.up, halfSize, inner, radius, divisions);
+        AddRoundedCubeFace(vertices, normals, triangles, Vector3.up, Vector3.right, Vector3.back, halfSize, inner, radius, divisions);
+        AddRoundedCubeFace(vertices, normals, triangles, Vector3.down, Vector3.right, Vector3.forward, halfSize, inner, radius, divisions);
+
+        var mesh = new Mesh
+        {
+            name = "Rounded Pip Die Mesh"
+        };
+        mesh.SetVertices(vertices);
+        mesh.SetNormals(normals);
+        mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+
+    private static void AddRoundedCubeFace(
+        List<Vector3> vertices,
+        List<Vector3> normals,
+        List<int> triangles,
+        Vector3 normal,
+        Vector3 right,
+        Vector3 up,
+        float halfSize,
+        float inner,
+        float radius,
+        int divisions)
+    {
+        var start = vertices.Count;
+        for (var y = 0; y <= divisions; y++)
+        {
+            var v = Mathf.Lerp(-halfSize, halfSize, y / (float)divisions);
+            for (var x = 0; x <= divisions; x++)
+            {
+                var u = Mathf.Lerp(-halfSize, halfSize, x / (float)divisions);
+                var point = normal * halfSize + right * u + up * v;
+                var core = new Vector3(
+                    Mathf.Clamp(point.x, -inner, inner),
+                    Mathf.Clamp(point.y, -inner, inner),
+                    Mathf.Clamp(point.z, -inner, inner));
+                var outward = (point - core).normalized;
+                vertices.Add(core + outward * radius);
+                normals.Add(outward);
+            }
+        }
+
+        for (var y = 0; y < divisions; y++)
+        {
+            for (var x = 0; x < divisions; x++)
+            {
+                var a = start + y * (divisions + 1) + x;
+                var b = a + 1;
+                var c = a + divisions + 1;
+                var d = c + 1;
+                triangles.Add(a);
+                triangles.Add(c);
+                triangles.Add(b);
+                triangles.Add(b);
+                triangles.Add(c);
+                triangles.Add(d);
+            }
+        }
     }
 
     private void CreatePips(GameObject die)
@@ -338,12 +482,13 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         var offsets = PipOffsets(value);
         for (var i = 0; i < offsets.Length; i++)
         {
-            var pip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var pip = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             pip.name = die.name + " Pip " + value;
             pip.transform.SetParent(die.transform, false);
-            pip.transform.localPosition = normal * 0.515f + right * offsets[i].x + up * offsets[i].y;
-            pip.transform.localScale = Vector3.one * 0.105f;
-            pip.GetComponent<Renderer>().material.color = Color.white;
+            pip.transform.localPosition = normal * 0.506f + right * offsets[i].x + up * offsets[i].y;
+            pip.transform.localRotation = Quaternion.FromToRotation(Vector3.up, normal);
+            pip.transform.localScale = new Vector3(0.062f, 0.006f, 0.062f);
+            pip.GetComponent<Renderer>().material.color = Color.black;
         }
     }
 
@@ -515,6 +660,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private void StartLocalDemo()
     {
         localDemo = true;
+        SetPrototypeSeatMarkersVisible(true);
         gameId = "";
         playerTokens.Clear();
         shooterId = "p1";
@@ -553,6 +699,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private IEnumerator CreateTable()
     {
         localDemo = false;
+        SetPrototypeSeatMarkersVisible(true);
         yield return Post("/api/street-dice/create", "{}", body =>
         {
             var response = JsonUtility.FromJson<CreateResponse>(body);
@@ -1150,9 +1297,29 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private void ApplyDiceColor()
     {
         var color = streak >= HotDiceThreshold ? new Color(1f, 0.23f, 0.02f) : selectedDiceColor;
-        dieA.GetComponent<Renderer>().material.color = color;
-        dieB.GetComponent<Renderer>().material.color = color;
-        dieC.GetComponent<Renderer>().material.color = color;
+        ApplyDieColor(dieA, color);
+        ApplyDieColor(dieB, color);
+        ApplyDieColor(dieC, color);
+    }
+
+    private static void ApplyDieColor(GameObject die, Color color)
+    {
+        foreach (var renderer in die.GetComponentsInChildren<Renderer>(true))
+        {
+            if (renderer.gameObject.name.Contains("Pip", StringComparison.OrdinalIgnoreCase))
+            {
+                renderer.material.color = ShouldUseDarkPips(color) ? Color.black : Color.white;
+                continue;
+            }
+
+            renderer.material.color = color;
+        }
+    }
+
+    private static bool ShouldUseDarkPips(Color dieColor)
+    {
+        var luminance = dieColor.r * 0.2126f + dieColor.g * 0.7152f + dieColor.b * 0.0722f;
+        return luminance > 0.62f;
     }
 
     private void PlaceSideBetFromUi(string playerId, bool missGroup)
@@ -1300,6 +1467,15 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         }
     }
 
+    private void SetPrototypeSeatMarkersVisible(bool visible)
+    {
+        showPrototypeSeatMarkers = visible;
+        for (var i = 0; i < mics.Length; i++)
+        {
+            mics[i]?.SetVisible(visible);
+        }
+    }
+
     private void PlayAudio(AudioClip clip)
     {
         if (audioSource != null && clip != null) audioSource.PlayOneShot(clip);
@@ -1400,6 +1576,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         public void Talk(float seconds)
         {
             talkUntil = Time.time + seconds;
+        }
+
+        public void SetVisible(bool visible)
+        {
+            Root.SetActive(visible);
         }
 
         public void Update(float time)

@@ -1,0 +1,15 @@
+{
+  "name": "bodega-ground-photo1-kling-01",
+  "provider": "Kling",
+  "model": "kling-image-v3_0",
+  "generationId": "Ae_TNnhrab-pvaSFKjNINjCCM7nk5OmaDB8Uy6v61GEcPMRAqw9SJh0e2rh9tUkwzPK0lDck",
+  "creditsConsumed": 1,
+  "sourceReference": "Photo 1 low ground bodega/service-door angle",
+  "prompt": "Photorealistic cinematic low ground-level Brooklyn back-of-bodega street dice environment plate, based on image 1 composition. Camera almost on wet black asphalt in the foreground with realistic rain sheen and small specular highlights, raised concrete curb and sidewalk crossing horizontally through the middle, closed dark corrugated metal roll-up service garage door centered in the background, old red-brown brick walls and dark metal side posts framing the door. Empty rolling area on the ground only, no table, no chairs, no players, no dice, no UI, no text, no signs, no open doorway, no visible interior, no cartoon style, no game art style. Real lens depth, gritty urban night lighting, usable as a background plate for Unity dice overlays.",
+  "unityAsset": "unity/StreetDiceGreybox/Assets/Resources/Environments/bodega-ground-photo1-kling-01.png",
+  "notes": [
+    "Use as the realistic environment plate for the first Street Dice bodega view.",
+    "Unity should overlay dice, UI, mic markers, and game state on top of this plate.",
+    "Do not replace this with a Unity-built blockout unless the plate asset is missing."
+  ]
+}

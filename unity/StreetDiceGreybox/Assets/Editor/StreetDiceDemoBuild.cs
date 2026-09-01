@@ -1,5 +1,4 @@
 using System.IO;
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -53,12 +52,14 @@ public static class StreetDiceDemoBuild
     public static void CaptureSmokeScreenshot()
     {
         EnsureDemoScene();
+        foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
+        {
+            Object.DestroyImmediate(root);
+        }
 
         var controllerObject = new GameObject("Smoke Screenshot Controller");
         var controller = controllerObject.AddComponent<StreetDiceGreyboxController>();
-        typeof(StreetDiceGreyboxController)
-            .GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?.Invoke(controller, null);
+        controller.BuildEnvironmentPreviewForEditor();
 
         var camera = Camera.main;
         if (camera == null)

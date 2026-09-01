@@ -1,18 +1,31 @@
 # Visual And Camera Plan
 
-## Reference Angle
+## Current Environment Reference
 
-The attached Power Slap-style frame is useful as a camera/layout reference, not as production content.
+The closest current target is the low ground-level bodega/service-door frame:
 
-Useful traits:
+- Camera is almost on the wet asphalt.
+- Foreground is dark, wet street texture.
+- A raised curb/sidewalk cuts horizontally across the middle of frame.
+- Closed metal roll-up service door is centered in the background.
+- Brick walls/pillars sit on both sides of the door.
+- The scene should feel like a real Brooklyn back-of-bodega/service-door spot, not a game arena.
+- No table. No chairs. No casino styling.
+- Do not prioritize side players yet.
 
-- Top-down angled view.
-- People around the edges.
+The side-player reference is useful only for later body placement:
+
+- Players crouch on left and right edges.
+- They should frame the lane without blocking the rolling surface.
+- This comes after the environment/camera target is correct.
+
+The older Power Slap-style frame is only a broad layout reminder:
+
+- People around edges.
 - Clear center floor area.
 - First-person-friendly bottom edge.
-- Strong spectacle framing.
 
-For Street Dice, the center floor area becomes the rolling zone.
+It is not the current production look.
 
 ## Table Layout
 
@@ -29,6 +42,13 @@ Target layout for up to 5 players:
 ```
 
 The bottom player is the first-person local seat when that player is shooting.
+
+Current art pass sequence:
+
+1. Lock the low ground bodega/service-door environment.
+2. Add dice readability on the real ground.
+3. Add UI/mic markers only as prototype overlays.
+4. Add side players later, using crouched edge placement.
 
 ## Rolling Area
 

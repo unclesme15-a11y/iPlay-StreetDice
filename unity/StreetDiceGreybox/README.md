@@ -2,7 +2,9 @@
 
 This Unity project is the first test client for the iPlay Cee-lo & Craps prototype.
 
-It creates the greybox scene at runtime:
+It uses a realistic Kling-generated bodega/service-door environment plate at runtime, with Unity reserved for dice, UI, audio placeholders, and server/local game state. The primitive street scene remains only as a fallback if the Kling plate asset is missing.
+
+It creates the playable scene at runtime:
 
 - first-person shooter camera over a physical street-ground rolling lane
 - no avatar bodies for the first playable demo
@@ -20,7 +22,7 @@ It creates the greybox scene at runtime:
 - tutorial-only deterministic test rolls for seven, point hit, grouped number, Cee-lo `4-5-6`, and Cee-lo `1-2-3`
 - explicit roll states for fade window, rolling, locked, resolving, and shooter decision
 - placeholder audio for dice roll, lock, fade, win, and loss events
-- tighter bodega/street greybox with closed service door, curb/asphalt edge, ground markings, and no tables
+- Kling bodega/service-door environment plate with closed service door, wet asphalt, curb/sidewalk edge, and no tables
 - streak meter with red/orange hot dice override at full streak
 - standalone local Demo Table mode for APK testing without a running backend
 - optional server mode for Create, Open Shot, Fade, Roll, Run Same, Double Up, and Voice Gate
@@ -42,6 +44,8 @@ For non-interactive visual smoke testing:
 ```
 
 The screenshot is written to `artifacts/unity-smoke/street-dice-demo-smoke.png`.
+
+The smoke screenshot verifies the current art pipeline: a Kling-generated low ground-level wet asphalt and closed roll-up bodega/service-door plate, with Unity dice overlaid. Side players are added later after the environment framing is right.
 
 For the full no-APK validation gate:
 
