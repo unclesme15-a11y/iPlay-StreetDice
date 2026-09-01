@@ -11,6 +11,16 @@ public enum GameMode
     CeeLo
 }
 
+public enum RollState
+{
+    WaitingForShot,
+    FadeWindow,
+    Rolling,
+    Locked,
+    Resolving,
+    ShooterDecision
+}
+
 public sealed class StreetDiceGreyboxController : MonoBehaviour
 {
     [SerializeField] private string baseUrl = "http://localhost:5108";
@@ -21,11 +31,20 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private GameObject dieB = null!;
     private GameObject dieC = null!;
     private GameObject rollLane = null!;
+    private AudioSource audioSource = null!;
+    private AudioClip rollClip = null!;
+    private AudioClip lockClip = null!;
+    private AudioClip winClip = null!;
+    private AudioClip lossClip = null!;
+    private AudioClip fadeClip = null!;
     private readonly SeatMic[] mics = new SeatMic[4];
     private readonly List<DemoSideBet> demoSideBets = new();
+    private SideBetDto[] serverSideBets = Array.Empty<SideBetDto>();
     private readonly System.Random random = new();
 
     private GameMode gameMode = GameMode.Craps;
+    private RollState rollState = RollState.WaitingForShot;
+    private readonly Dictionary<string, string> playerTokens = new();
     private string gameId = "";
     private string shooterToken = "";
     private string catcherToken = "";
@@ -43,6 +62,10 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private int shooterMomentum;
     private string activePointGroup = "-";
     private string tutorialDetail = "Tutorial mode shows why the latest roll counted.";
+    private string deterministicRoll = "Random";
+    private string bankerCeeLo = "Banker: not rolled";
+    private int bankerCeeLoRank;
+    private bool bankerCeeLoReady;
     private bool localDemo = true;
     private bool lastResolvedShotWasWin;
     private bool lastShotWasDoubleUp;
@@ -65,6 +88,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         Camera.main?.gameObject.SetActive(false);
         CreateCamera();
         CreateLighting();
+        CreateAudio();
         CreateStreetGroundScene();
         CreateMicSeats();
 
@@ -129,6 +153,36 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         fill.range = 8f;
         fill.transform.position = new Vector3(0f, 2.3f, 2.5f);
         fill.color = new Color(0.72f, 0.84f, 0.9f);
+    }
+
+    private void CreateAudio()
+    {
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
+        audioSource.volume = 0.45f;
+        rollClip = CreateToneClip("Dice Roll Placeholder", 115f, 0.13f, 0.08f);
+        lockClip = CreateToneClip("Dice Lock Placeholder", 240f, 0.06f, 0.08f);
+        winClip = CreateToneClip("Win Placeholder", 520f, 0.12f, 0.08f);
+        lossClip = CreateToneClip("Loss Placeholder", 150f, 0.12f, 0.08f);
+        fadeClip = CreateToneClip("Fade Placeholder", 330f, 0.07f, 0.06f);
+    }
+
+    private static AudioClip CreateToneClip(string clipName, float frequency, float duration, float amplitude)
+    {
+        const int sampleRate = 22050;
+        var sampleCount = Mathf.CeilToInt(sampleRate * duration);
+        var samples = new float[sampleCount];
+        for (var i = 0; i < sampleCount; i++)
+        {
+            var t = i / (float)sampleRate;
+            var envelope = 1f - i / (float)sampleCount;
+            samples[i] = Mathf.Sin(2f * Mathf.PI * frequency * t) * amplitude * envelope;
+        }
+
+        var clip = AudioClip.Create(clipName, sampleCount, 1, sampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
     }
 
     private void CreateStreetGroundScene()
@@ -330,7 +384,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             GUI.Label(new Rect(x + 12f, 76f, width - 24f, 22f), rollText);
             GUI.Label(new Rect(x + 12f, 98f, width - 24f, 22f), "Phase: " + phase);
             GUI.Label(new Rect(x + 12f, 120f, width - 24f, 22f), "Group: " + activePointGroup);
-            GUI.Label(new Rect(x + 12f, 142f, width - 24f, 22f), "Side bets: " + OpenSideBetCount());
+            GUI.Label(new Rect(x + 12f, 142f, width - 24f, 22f), "State: " + rollState + " | Side bets: " + OpenSideBetCount());
         }
     }
 
@@ -358,12 +412,12 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             {
                 if (GUI.Button(new Rect(rect.x + 8f, rect.y + 25f, 62f, 22f), "Hit Grp"))
                 {
-                    PlaceDemoSideBet(seat.PlayerId, false);
+                    PlaceSideBetFromUi(seat.PlayerId, false);
                 }
 
                 if (GUI.Button(new Rect(rect.x + 74f, rect.y + 25f, 62f, 22f), "Miss Grp"))
                 {
-                    PlaceDemoSideBet(seat.PlayerId, true);
+                    PlaceSideBetFromUi(seat.PlayerId, true);
                 }
             }
             else
@@ -375,6 +429,14 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             if (playerBets > 0)
             {
                 GUI.Label(new Rect(rect.x + 8f, rect.y + 52f, rect.width - 16f, 18f), playerBets + " open bet");
+            }
+            else
+            {
+                var line = LatestSideBetLine(seat.PlayerId);
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    GUI.Label(new Rect(rect.x + 8f, rect.y + 52f, rect.width - 16f, 18f), line);
+                }
             }
         }
     }
@@ -402,6 +464,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         if (GUI.Button(new Rect(x, y, buttonWidth, 36f), "Voice Gate")) StartCoroutine(VoiceGate());
 
         if (GUI.Button(new Rect(20f, y - 100f, 132f, 32f), tutorialMode ? "Tutorial On" : "Tutorial Off")) tutorialMode = !tutorialMode;
+        DrawDeterministicControls(y - 100f);
 
         GUI.Box(new Rect(20f, y - 58f, Screen.width - 40f, 46f), "");
         GUI.Label(new Rect(32f, y - 48f, Screen.width - 64f, 26f), result);
@@ -412,8 +475,27 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             GUI.Box(new Rect(20f, 18f, tutorialWidth, 88f), "");
             GUI.Label(new Rect(32f, 28f, tutorialWidth - 24f, 22f), tutorialDetail);
             GUI.Label(new Rect(32f, 52f, tutorialWidth - 24f, 22f), "Fade count: " + fadeCount + " | Momentum: " + shooterMomentum);
-            GUI.Label(new Rect(32f, 76f, tutorialWidth - 24f, 22f), gameMode == GameMode.Craps ? "Point group side bets resolve on either grouped number or seven-out." : "Cee-lo: 4-5-6, trips, pair+6 win; 1-2-3 and pair+1 lose.");
+            GUI.Label(new Rect(32f, 76f, tutorialWidth - 24f, 22f), gameMode == GameMode.Craps ? "Test roll: " + deterministicRoll : bankerCeeLo);
         }
+    }
+
+    private void DrawDeterministicControls(float y)
+    {
+        if (!tutorialMode) return;
+
+        var x = 160f;
+        var width = 88f;
+        if (GUI.Button(new Rect(x, y, width, 32f), "Random")) deterministicRoll = "Random";
+        x += width + 6f;
+        if (GUI.Button(new Rect(x, y, width, 32f), "7")) deterministicRoll = "Seven";
+        x += width + 6f;
+        if (GUI.Button(new Rect(x, y, width, 32f), "Point")) deterministicRoll = "Point";
+        x += width + 6f;
+        if (GUI.Button(new Rect(x, y, width, 32f), "Group")) deterministicRoll = "Group";
+        x += width + 6f;
+        if (GUI.Button(new Rect(x, y, width, 32f), "456")) deterministicRoll = "CeeLo456";
+        x += width + 6f;
+        if (GUI.Button(new Rect(x, y, width, 32f), "123")) deterministicRoll = "CeeLo123";
     }
 
     private void DrawStreakMeter()
@@ -434,6 +516,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         localDemo = true;
         gameId = "";
+        playerTokens.Clear();
         shooterId = "p1";
         catcherId = "p2";
         shotAmount = 20;
@@ -448,6 +531,10 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         lastShotWasDoubleUp = false;
         dieC.SetActive(gameMode == GameMode.CeeLo);
         phase = gameMode == GameMode.CeeLo ? "CeeLo" : "ComeOut";
+        rollState = gameMode == GameMode.CeeLo ? RollState.FadeWindow : RollState.WaitingForShot;
+        bankerCeeLo = "Banker: not rolled";
+        bankerCeeLoRank = 0;
+        bankerCeeLoReady = false;
         result = gameMode == GameMode.CeeLo
             ? "Local Cee-lo table open. Roll three dice."
             : "Local demo table open. Shooter is first-person. Catcher mic is live.";
@@ -484,17 +571,20 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(gameId)) yield break;
 
-        yield return Post("/api/street-dice/" + gameId + "/join", "{\"playerName\":\"Shooter\",\"playerId\":\"p1\"}", body =>
-        {
-            var response = JsonUtility.FromJson<JoinResponse>(body);
-            shooterToken = response.playerSessionToken;
-            UpdateState(response.state);
-        });
+        yield return JoinPlayer("Shooter", "p1");
+        yield return JoinPlayer("Catcher", "p2");
+        yield return JoinPlayer("Left 1", "p3");
+        yield return JoinPlayer("Right 1", "p4");
+    }
 
-        yield return Post("/api/street-dice/" + gameId + "/join", "{\"playerName\":\"Catcher\",\"playerId\":\"p2\"}", body =>
+    private IEnumerator JoinPlayer(string playerName, string playerId)
+    {
+        yield return Post("/api/street-dice/" + gameId + "/join", "{\"playerName\":\"" + playerName + "\",\"playerId\":\"" + playerId + "\"}", body =>
         {
             var response = JsonUtility.FromJson<JoinResponse>(body);
-            catcherToken = response.playerSessionToken;
+            playerTokens[playerId] = response.playerSessionToken;
+            if (playerId == "p1") shooterToken = response.playerSessionToken;
+            if (playerId == "p2") catcherToken = response.playerSessionToken;
             UpdateState(response.state);
         });
     }
@@ -509,6 +599,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             fadeCount = 0;
             shooterMomentum = 0;
             demoSideBets.Clear();
+            rollState = RollState.FadeWindow;
             result = gameMode == GameMode.CeeLo
                 ? "Cee-lo shot open. Roll three dice."
                 : "Shot open. Catcher can fade/catch before the roll counts.";
@@ -535,10 +626,12 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
             fadeCount++;
             if (fadeCount > 3) shooterMomentum++;
+            rollState = RollState.FadeWindow;
             result = fadeCount > 3
                 ? "Fade/Catch. Roll stopped. Shooter momentum +" + shooterMomentum + "."
                 : "Fade/Catch. Roll stopped. Shooter shoots again.";
             tutorialDetail = "Fade/Catch nullifies the roll. No payout and no side bet resolves.";
+            PlayAudio(fadeClip);
             PulseMic(catcherId, 1.6f);
             ResetDiceToShooter();
             yield break;
@@ -552,11 +645,59 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         if (gameMode == GameMode.CeeLo)
         {
-            yield return RollCeeLo(random.Next(1, 7), random.Next(1, 7), random.Next(1, 7));
+            var ceeLoRoll = PickCeeLoRoll();
+            yield return RollCeeLo(ceeLoRoll[0], ceeLoRoll[1], ceeLoRoll[2]);
             yield break;
         }
 
-        yield return Roll(random.Next(1, 7), random.Next(1, 7));
+        var roll = PickCrapsRoll();
+        yield return Roll(roll[0], roll[1]);
+    }
+
+    private int[] PickCrapsRoll()
+    {
+        if (!tutorialMode || deterministicRoll == "Random") return new[] { random.Next(1, 7), random.Next(1, 7) };
+        if (deterministicRoll == "Seven") return new[] { 3, 4 };
+
+        if (deterministicRoll == "Point" && phase == "Point" && int.TryParse(point, out var pointTotal))
+        {
+            return TwoDiceForTotal(pointTotal);
+        }
+
+        if (deterministicRoll == "Group" && phase == "Point" && int.TryParse(point, out var groupedPoint))
+        {
+            var groupedTotal = groupedPoint switch
+            {
+                4 => 10,
+                10 => 4,
+                6 => 8,
+                8 => 6,
+                5 => 9,
+                9 => 5,
+                _ => groupedPoint
+            };
+            return TwoDiceForTotal(groupedTotal);
+        }
+
+        return new[] { random.Next(1, 7), random.Next(1, 7) };
+    }
+
+    private int[] PickCeeLoRoll()
+    {
+        if (tutorialMode && deterministicRoll == "CeeLo456") return new[] { 4, 5, 6 };
+        if (tutorialMode && deterministicRoll == "CeeLo123") return new[] { 1, 2, 3 };
+        return new[] { random.Next(1, 7), random.Next(1, 7), random.Next(1, 7) };
+    }
+
+    private static int[] TwoDiceForTotal(int total)
+    {
+        for (var a = 1; a <= 6; a++)
+        {
+            var b = total - a;
+            if (b is >= 1 and <= 6) return new[] { a, b };
+        }
+
+        return new[] { 3, 4 };
     }
 
     private IEnumerator Roll(int a, int b)
@@ -567,9 +708,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             yield break;
         }
 
+        rollState = RollState.Rolling;
         die1 = a;
         die2 = b;
         yield return AnimateDiceRoll(a, b);
+        rollState = RollState.Resolving;
 
         if (localDemo)
         {
@@ -590,10 +733,12 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         dieC.SetActive(true);
         phase = "CeeLo";
+        rollState = RollState.Rolling;
         die1 = a;
         die2 = b;
         die3 = c;
         yield return AnimateDiceRoll(a, b, c);
+        rollState = RollState.Resolving;
 
         if (localDemo)
         {
@@ -608,6 +753,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             var response = JsonUtility.FromJson<CeeLoResponse>(body);
             result = response.result.message;
             tutorialDetail = "Cee-lo server evaluator returned " + response.result.outcome + ".";
+            rollState = RollState.ShooterDecision;
         });
     }
 
@@ -622,6 +768,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             }
 
             phase = "ComeOut";
+            rollState = RollState.FadeWindow;
             point = "-";
             activePointGroup = "-";
             fadeCount = 0;
@@ -649,6 +796,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
             shotAmount *= 2;
             phase = "ComeOut";
+            rollState = RollState.FadeWindow;
             point = "-";
             activePointGroup = "-";
             fadeCount = 0;
@@ -699,6 +847,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             point = total.ToString();
             activePointGroup = PointGroupLabel(total);
             phase = "Point";
+            rollState = RollState.FadeWindow;
             result = "Point established: " + point + ".";
             tutorialDetail = "Point " + point + " is set. Active side-bet group is " + activePointGroup + ". Only 7 loses during point phase.";
             PulseMic(catcherId, 1f);
@@ -741,66 +890,123 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private void ResolveLocalCeeLo(int a, int b, int c)
     {
+        var evaluated = EvaluateLocalCeeLo(a, b, c);
+        activePointGroup = "-";
+
+        if (!bankerCeeLoReady)
+        {
+            if (evaluated.Outcome == "Reroll")
+            {
+                result = "Banker no-count. Banker rolls again.";
+                tutorialDetail = evaluated.Message;
+                rollState = RollState.FadeWindow;
+                return;
+            }
+
+            bankerCeeLo = "Banker: " + evaluated.Message;
+            bankerCeeLoRank = evaluated.Rank;
+
+            if (evaluated.Outcome == "AutomaticWin")
+            {
+                result = "Banker " + evaluated.Message + " Banker wins this Cee-lo round.";
+                tutorialDetail = "Banker automatic win resolves the round. Next roll starts a new banker turn.";
+                rollState = RollState.ShooterDecision;
+                PlayAudio(lossClip);
+                PulseMic(catcherId, 1.3f);
+                return;
+            }
+
+            if (evaluated.Outcome == "AutomaticLoss")
+            {
+                streak += 1;
+                result = "Banker " + evaluated.Message + " Players win this Cee-lo round.";
+                tutorialDetail = "Banker automatic loss resolves the round. Next roll starts a new banker turn.";
+                rollState = RollState.ShooterDecision;
+                PlayAudio(winClip);
+                PulseMic("p3", 1.3f);
+                return;
+            }
+
+            bankerCeeLoReady = true;
+            result = "Banker set " + evaluated.Message + " Player rolls next.";
+            tutorialDetail = "Banker has a live point. Next Cee-lo roll compares against banker rank " + bankerCeeLoRank + ".";
+            rollState = RollState.FadeWindow;
+            PulseMic("p3", 1.1f);
+            return;
+        }
+
+        if (evaluated.Outcome == "Reroll")
+        {
+            result = "Player no-count. Player rolls again.";
+            tutorialDetail = evaluated.Message;
+            rollState = RollState.FadeWindow;
+            return;
+        }
+
+        var comparison = evaluated.Rank.CompareTo(bankerCeeLoRank);
+        if (evaluated.Outcome == "AutomaticWin" || comparison > 0)
+        {
+            streak += 1;
+            result = "Player " + evaluated.Message + " Player beats banker.";
+            PlayAudio(winClip);
+        }
+        else if (evaluated.Outcome == "AutomaticLoss" || comparison < 0)
+        {
+            streak = 0;
+            result = "Player " + evaluated.Message + " Banker wins.";
+            PlayAudio(lossClip);
+        }
+        else
+        {
+            result = "Player " + evaluated.Message + " Push with banker.";
+            PlayAudio(lockClip);
+        }
+
+        tutorialDetail = bankerCeeLo + " | Player: " + evaluated.Message + " Next Cee-lo roll starts a new banker turn.";
+        bankerCeeLoReady = false;
+        bankerCeeLoRank = 0;
+        bankerCeeLo = "Banker: not rolled";
+        rollState = RollState.ShooterDecision;
+        PulseMic(random.NextDouble() > 0.5 ? "p3" : "p4", 0.9f);
+    }
+
+    private static CeeLoLocalResult EvaluateLocalCeeLo(int a, int b, int c)
+    {
         var values = new[] { a, b, c };
         Array.Sort(values);
-        activePointGroup = "-";
 
         if (values[0] == 4 && values[1] == 5 && values[2] == 6)
         {
-            streak += 2;
-            result = "Cee-lo 4-5-6. Automatic win.";
-            tutorialDetail = "4-5-6 is the strongest street Cee-lo automatic win.";
-            PulseMic(catcherId, 1.3f);
-            return;
+            return new CeeLoLocalResult("AutomaticWin", null, 10000, "4-5-6. Automatic win.");
         }
 
         if (values[0] == 1 && values[1] == 2 && values[2] == 3)
         {
-            streak = 0;
-            result = "1-2-3. Automatic loss.";
-            tutorialDetail = "1-2-3 is an automatic Cee-lo loss.";
-            PulseMic(catcherId, 1.3f);
-            return;
+            return new CeeLoLocalResult("AutomaticLoss", null, -10000, "1-2-3. Automatic loss.");
         }
 
         if (values[0] == values[1] && values[1] == values[2])
         {
-            streak += 2;
-            result = "Trips " + values[0] + ". Automatic win.";
-            tutorialDetail = "Any triples are an automatic Cee-lo win.";
-            PulseMic(catcherId, 1.3f);
-            return;
+            return new CeeLoLocalResult("AutomaticWin", null, 9000 + values[0], "trips " + values[0] + ". Automatic win.");
         }
 
         var ceeLoPoint = PairAndPoint(values);
         if (ceeLoPoint == null)
         {
-            result = "No count. Roll again.";
-            tutorialDetail = "No pair, no 4-5-6, no 1-2-3. This Cee-lo roll does not count.";
-            return;
+            return new CeeLoLocalResult("Reroll", null, 0, "No count. Roll again.");
         }
 
         if (ceeLoPoint.Value == 6)
         {
-            streak += 2;
-            result = "Pair plus 6. Automatic win.";
-            tutorialDetail = "Pair plus 6 is an automatic Cee-lo win.";
-            PulseMic(catcherId, 1.3f);
-            return;
+            return new CeeLoLocalResult("AutomaticWin", 6, 8006, "pair plus 6. Automatic win.");
         }
 
         if (ceeLoPoint.Value == 1)
         {
-            streak = 0;
-            result = "Pair plus 1. Automatic loss.";
-            tutorialDetail = "Pair plus 1 is an automatic Cee-lo loss.";
-            PulseMic(catcherId, 1.3f);
-            return;
+            return new CeeLoLocalResult("AutomaticLoss", 1, -8001, "pair plus 1. Automatic loss.");
         }
 
-        result = "Cee-lo point " + ceeLoPoint.Value + ".";
-        tutorialDetail = "Pair plus " + ceeLoPoint.Value + " sets the Cee-lo point to compare against the banker/player.";
-        PulseMic(random.NextDouble() > 0.5 ? "p3" : "p4", 0.9f);
+        return new CeeLoLocalResult("Point", ceeLoPoint.Value, ceeLoPoint.Value, "point " + ceeLoPoint.Value + ".");
     }
 
     private static int? PairAndPoint(int[] values)
@@ -817,6 +1023,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         if (lastShotWasDoubleUp) gain += 1;
         streak += gain;
         phase = "ShooterDecision";
+        rollState = RollState.ShooterDecision;
         point = "-";
         activePointGroup = "-";
         fadeCount = 0;
@@ -824,6 +1031,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         lastResolvedShotWasWin = true;
         result = message + " Shooter wins " + shotAmount + ".";
         if (streak >= HotDiceThreshold) result += " Hot dice active.";
+        PlayAudio(winClip);
         PulseMic(catcherId, 1.2f);
     }
 
@@ -840,21 +1048,25 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         if (keepDice)
         {
             phase = "ShooterDecision";
+            rollState = RollState.ShooterDecision;
             result = message;
         }
         else
         {
             phase = "ComeOut";
+            rollState = RollState.FadeWindow;
             (shooterId, catcherId) = (catcherId, shooterId);
             result = message;
         }
 
         PulseMic(catcherId, 1.5f);
+        PlayAudio(lossClip);
     }
 
     private IEnumerator AnimateDiceRoll(int finalA, int finalB, int? finalC = null)
     {
         rolling = true;
+        PlayAudio(rollClip);
         var startA = new Vector3(-0.28f, 0.22f, -2.25f);
         var startB = new Vector3(0.28f, 0.22f, -2.25f);
         var startC = new Vector3(0f, 0.22f, -2.58f);
@@ -885,10 +1097,12 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         dieB.transform.position = endB;
         if (finalC != null) dieC.transform.position = endC;
         rolling = false;
+        rollState = RollState.Locked;
         LockDieToValue(dieA, finalA);
         LockDieToValue(dieB, finalB);
         if (finalC != null) LockDieToValue(dieC, finalC.Value);
         rollLockFlashUntil = Time.time + 0.7f;
+        PlayAudio(lockClip);
         yield return new WaitForSeconds(0.48f);
     }
 
@@ -941,6 +1155,17 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         dieC.GetComponent<Renderer>().material.color = color;
     }
 
+    private void PlaceSideBetFromUi(string playerId, bool missGroup)
+    {
+        if (localDemo)
+        {
+            PlaceDemoSideBet(playerId, missGroup);
+            return;
+        }
+
+        StartCoroutine(PlaceServerSideBet(playerId, missGroup));
+    }
+
     private void PlaceDemoSideBet(string playerId, bool missGroup)
     {
         if (gameMode != GameMode.Craps || phase != "Point" || point == "-")
@@ -954,6 +1179,32 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         result = (missGroup ? "Miss" : "Hit") + " group side bet placed on " + activePointGroup + ".";
         tutorialDetail = "Side bet sits beside " + playerId + ". It resolves when " + activePointGroup + " hits or a 7 comes first.";
         PulseMic(playerId, 1.1f);
+    }
+
+    private IEnumerator PlaceServerSideBet(string playerId, bool missGroup)
+    {
+        if (gameMode != GameMode.Craps || phase != "Point" || point == "-")
+        {
+            result = "Grouped side bets need an active point.";
+            yield break;
+        }
+
+        if (!playerTokens.TryGetValue(playerId, out var token))
+        {
+            result = "No server token for " + playerId + ". Recreate the server table.";
+            yield break;
+        }
+
+        var type = missGroup ? "MissPointGroup" : "HitPointGroup";
+        var json = "{\"playerId\":\"" + playerId + "\",\"playerSessionToken\":\"" + token + "\",\"type\":\"" + type + "\",\"amount\":10,\"targetPointNumber\":" + point + "}";
+        yield return Post("/api/street-dice/" + gameId + "/side-bet", json, body =>
+        {
+            var response = JsonUtility.FromJson<ActionResponse>(body);
+            UpdateState(response.state);
+            result = (missGroup ? "Miss" : "Hit") + " group side bet sent for " + playerId + " on " + activePointGroup + ".";
+            tutorialDetail = "Server-backed side bet created beside " + playerId + ". It resolves from the authoritative roll result.";
+            PulseMic(playerId, 1.1f);
+        });
     }
 
     private int ResolveDemoGroupedBets(bool hitGroup)
@@ -985,7 +1236,34 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             if (string.IsNullOrWhiteSpace(playerId) || sideBet.PlayerId == playerId) count++;
         }
 
+        foreach (var sideBet in serverSideBets)
+        {
+            if (!string.Equals(sideBet.status, "Open", StringComparison.OrdinalIgnoreCase)) continue;
+            if (string.IsNullOrWhiteSpace(playerId) || sideBet.playerId == playerId) count++;
+        }
+
         return count;
+    }
+
+    private string LatestSideBetLine(string playerId)
+    {
+        for (var i = demoSideBets.Count - 1; i >= 0; i--)
+        {
+            var sideBet = demoSideBets[i];
+            if (sideBet.PlayerId != playerId) continue;
+            if (!sideBet.Resolved) return sideBet.MissGroup ? "miss grp open" : "hit grp open";
+            return sideBet.Won ? "bet won" : "bet lost";
+        }
+
+        for (var i = serverSideBets.Length - 1; i >= 0; i--)
+        {
+            var sideBet = serverSideBets[i];
+            if (sideBet.playerId != playerId) continue;
+            if (string.Equals(sideBet.status, "Open", StringComparison.OrdinalIgnoreCase)) return sideBet.type + " open";
+            return string.Equals(sideBet.status, "Won", StringComparison.OrdinalIgnoreCase) ? "bet won" : "bet lost";
+        }
+
+        return "";
     }
 
     private static bool IsInPointGroup(int rollTotal, int pointTotal)
@@ -1020,6 +1298,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
                 mics[i].Talk(seconds);
             }
         }
+    }
+
+    private void PlayAudio(AudioClip clip)
+    {
+        if (audioSource != null && clip != null) audioSource.PlayOneShot(clip);
     }
 
     private IEnumerator Post(string path, string json, Action<string> onSuccess = null)
@@ -1082,6 +1365,12 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         activePointGroup = point == "-" ? "-" : PointGroupLabel(state.point);
         streak = state.streak;
         shotAmount = state.shotAmount == 0 ? shotAmount : state.shotAmount;
+        serverSideBets = state.sideBets ?? Array.Empty<SideBetDto>();
+        rollState = phase == "ShooterDecision"
+            ? RollState.ShooterDecision
+            : phase == "ComeOut" || phase == "Point"
+                ? RollState.FadeWindow
+                : rollState;
         result = state.lastResolution.message;
         ApplyDiceColor();
         PulseMic(catcherId, 1f);
@@ -1142,9 +1431,34 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         public int point;
         public int streak;
         public int shotAmount;
+        public SideBetDto[] sideBets = Array.Empty<SideBetDto>();
         public ResolutionDto lastResolution = new ResolutionDto();
     }
     [Serializable] private sealed class ResolutionDto { public string message = ""; }
+    [Serializable] private sealed class SideBetDto
+    {
+        public string playerId = "";
+        public string type = "";
+        public string status = "";
+        public int amount;
+        public string pointGroup = "";
+    }
+
+    private readonly struct CeeLoLocalResult
+    {
+        public CeeLoLocalResult(string outcome, int? point, int rank, string message)
+        {
+            Outcome = outcome;
+            Point = point;
+            Rank = rank;
+            Message = message;
+        }
+
+        public string Outcome { get; }
+        public int? Point { get; }
+        public int Rank { get; }
+        public string Message { get; }
+    }
 
     private sealed class DemoSideBet
     {

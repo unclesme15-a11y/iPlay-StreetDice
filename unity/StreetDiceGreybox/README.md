@@ -16,7 +16,10 @@ It creates the greybox scene at runtime:
 - optional tutorial mode for dice math, phase, active point group, side-bet count, and rule explanations
 - player-adjacent Fade/Catch and point-group Side Bet buttons
 - mode switch between Craps and Cee-lo
-- Cee-lo local evaluator plus server evaluator call at `/api/cee-lo/evaluate`
+- Cee-lo banker/player local table flow plus server evaluator call at `/api/cee-lo/evaluate`
+- tutorial-only deterministic test rolls for seven, point hit, grouped number, Cee-lo `4-5-6`, and Cee-lo `1-2-3`
+- explicit roll states for fade window, rolling, locked, resolving, and shooter decision
+- placeholder audio for dice roll, lock, fade, win, and loss events
 - tighter bodega/street greybox with closed service door, curb/asphalt edge, ground markings, and no tables
 - streak meter with red/orange hot dice override at full streak
 - standalone local Demo Table mode for APK testing without a running backend
@@ -39,3 +42,11 @@ For non-interactive visual smoke testing:
 ```
 
 The screenshot is written to `artifacts/unity-smoke/street-dice-demo-smoke.png`.
+
+For the full no-APK validation gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\verify-street-dice-full.ps1
+```
+
+That command runs backend tests, starts/stops the local backend, probes `/health`, probes Cee-lo evaluation, compiles Unity, and refreshes the smoke screenshot.
