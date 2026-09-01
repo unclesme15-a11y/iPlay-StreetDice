@@ -1,8 +1,15 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+
+public enum GameMode
+{
+    Craps,
+    CeeLo
+}
 
 public sealed class StreetDiceGreyboxController : MonoBehaviour
 {
@@ -12,10 +19,13 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private GameObject dieA = null!;
     private GameObject dieB = null!;
+    private GameObject dieC = null!;
     private GameObject rollLane = null!;
     private readonly SeatMic[] mics = new SeatMic[4];
+    private readonly List<DemoSideBet> demoSideBets = new();
     private readonly System.Random random = new();
 
+    private GameMode gameMode = GameMode.Craps;
     private string gameId = "";
     private string shooterToken = "";
     private string catcherToken = "";
@@ -28,8 +38,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private int shotAmount = 20;
     private int die1 = 1;
     private int die2 = 1;
+    private int die3 = 1;
     private int fadeCount;
     private int shooterMomentum;
+    private string activePointGroup = "-";
+    private string tutorialDetail = "Tutorial mode shows why the latest roll counted.";
     private bool localDemo = true;
     private bool lastResolvedShotWasWin;
     private bool lastShotWasDoubleUp;
@@ -57,6 +70,8 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
         dieA = CreateDie("Die A", new Vector3(-0.28f, 0.22f, -2.25f));
         dieB = CreateDie("Die B", new Vector3(0.28f, 0.22f, -2.25f));
+        dieC = CreateDie("Die C", new Vector3(0f, 0.22f, -2.58f));
+        dieC.SetActive(false);
         ApplyDiceColor();
     }
 
@@ -70,6 +85,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         {
             dieA.transform.Rotate(new Vector3(480, 650, 370) * Time.deltaTime, Space.World);
             dieB.transform.Rotate(new Vector3(610, 420, 540) * Time.deltaTime, Space.World);
+            dieC.transform.Rotate(new Vector3(530, 360, 720) * Time.deltaTime, Space.World);
         }
 
         for (var i = 0; i < mics.Length; i++)
@@ -91,11 +107,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         var cameraObject = new GameObject("First Person Shooter Camera");
         var camera = cameraObject.AddComponent<Camera>();
         camera.tag = "MainCamera";
-        camera.transform.position = new Vector3(0f, 1.72f, -4.55f);
-        camera.transform.rotation = Quaternion.Euler(13f, 0f, 0f);
+        camera.transform.position = new Vector3(0f, 1.36f, -4.35f);
+        camera.transform.rotation = Quaternion.Euler(10f, 0f, 0f);
         camera.clearFlags = CameraClearFlags.SolidColor;
-        camera.backgroundColor = new Color(0.055f, 0.06f, 0.058f);
-        camera.fieldOfView = 58f;
+        camera.backgroundColor = new Color(0.035f, 0.038f, 0.036f);
+        camera.fieldOfView = 63f;
     }
 
     private void CreateLighting()
@@ -118,45 +134,100 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private void CreateStreetGroundScene()
     {
         rollLane = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        rollLane.name = "Physical Roll Lane";
-        rollLane.transform.position = new Vector3(0f, -0.055f, 0.12f);
-        rollLane.transform.localScale = new Vector3(4.9f, 0.08f, 6.9f);
-        rollLane.GetComponent<Renderer>().material.color = new Color(0.19f, 0.205f, 0.19f);
+        rollLane.name = "Bodega Ground Roll Lane";
+        rollLane.transform.position = new Vector3(0f, -0.055f, 0.08f);
+        rollLane.transform.localScale = new Vector3(4.3f, 0.08f, 7.15f);
+        rollLane.GetComponent<Renderer>().material.color = new Color(0.115f, 0.125f, 0.12f);
+
+        for (var i = 0; i < 11; i++)
+        {
+            var seam = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            seam.name = "Concrete Slab Joint";
+            seam.transform.position = new Vector3(0f, 0.003f, -3.15f + i * 0.62f);
+            seam.transform.localScale = new Vector3(4.25f, 0.012f, 0.018f);
+            seam.GetComponent<Renderer>().material.color = new Color(0.045f, 0.048f, 0.046f);
+        }
+
+        for (var i = 0; i < 7; i++)
+        {
+            var patch = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            patch.name = "Street Ground Patch";
+            patch.transform.position = new Vector3(UnityEngine.Random.Range(-1.65f, 1.65f), 0.004f, -2.55f + i * 0.82f);
+            patch.transform.localScale = new Vector3(UnityEngine.Random.Range(0.35f, 0.75f), 0.014f, UnityEngine.Random.Range(0.06f, 0.13f));
+            patch.transform.rotation = Quaternion.Euler(0f, UnityEngine.Random.Range(-12f, 12f), 0f);
+            patch.GetComponent<Renderer>().material.color = new Color(0.075f, 0.08f, 0.077f);
+        }
 
         var backDoor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        backDoor.name = "Closed Service Door Backdrop";
-        backDoor.transform.position = new Vector3(0f, 1.22f, 3.82f);
-        backDoor.transform.localScale = new Vector3(5.9f, 2.55f, 0.12f);
-        backDoor.GetComponent<Renderer>().material.color = new Color(0.23f, 0.26f, 0.255f);
+        backDoor.name = "Closed Bodega Service Door";
+        backDoor.transform.position = new Vector3(0f, 1.1f, 3.56f);
+        backDoor.transform.localScale = new Vector3(4.65f, 2.35f, 0.12f);
+        backDoor.GetComponent<Renderer>().material.color = new Color(0.23f, 0.265f, 0.255f);
 
         for (var i = 0; i < 8; i++)
         {
             var slat = GameObject.CreatePrimitive(PrimitiveType.Cube);
             slat.name = "Service Door Slat";
-            slat.transform.position = new Vector3(0f, 0.2f + i * 0.31f, 3.745f);
-            slat.transform.localScale = new Vector3(5.95f, 0.035f, 0.05f);
+            slat.transform.position = new Vector3(0f, 0.11f + i * 0.28f, 3.485f);
+            slat.transform.localScale = new Vector3(4.72f, 0.032f, 0.05f);
             slat.GetComponent<Renderer>().material.color = new Color(0.12f, 0.14f, 0.14f);
         }
 
+        var signBand = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        signBand.name = "Bodega Sign Band";
+        signBand.transform.position = new Vector3(0f, 2.72f, 3.51f);
+        signBand.transform.localScale = new Vector3(5.1f, 0.38f, 0.08f);
+        signBand.GetComponent<Renderer>().material.color = new Color(0.62f, 0.18f, 0.12f);
+
+        var curb = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        curb.name = "Street Curb Edge";
+        curb.transform.position = new Vector3(0f, 0.035f, -3.48f);
+        curb.transform.localScale = new Vector3(4.6f, 0.12f, 0.22f);
+        curb.GetComponent<Renderer>().material.color = new Color(0.36f, 0.35f, 0.31f);
+
+        var asphalt = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        asphalt.name = "Street Asphalt Beyond Shooter";
+        asphalt.transform.position = new Vector3(0f, -0.07f, -4.22f);
+        asphalt.transform.localScale = new Vector3(4.8f, 0.07f, 1.1f);
+        asphalt.GetComponent<Renderer>().material.color = new Color(0.055f, 0.06f, 0.058f);
+
         var leftWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        leftWall.name = "Left Tight Wall";
-        leftWall.transform.position = new Vector3(-2.82f, 0.75f, 0.3f);
-        leftWall.transform.localScale = new Vector3(0.14f, 1.6f, 6.9f);
-        leftWall.GetComponent<Renderer>().material.color = new Color(0.13f, 0.12f, 0.11f);
+        leftWall.name = "Left Tight Brick Wall";
+        leftWall.transform.position = new Vector3(-2.32f, 0.75f, 0.25f);
+        leftWall.transform.localScale = new Vector3(0.14f, 1.6f, 6.75f);
+        leftWall.GetComponent<Renderer>().material.color = new Color(0.18f, 0.09f, 0.065f);
 
         var rightWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        rightWall.name = "Right Tight Wall";
-        rightWall.transform.position = new Vector3(2.82f, 0.75f, 0.3f);
-        rightWall.transform.localScale = new Vector3(0.14f, 1.6f, 6.9f);
-        rightWall.GetComponent<Renderer>().material.color = new Color(0.13f, 0.12f, 0.11f);
+        rightWall.name = "Right Tight Brick Wall";
+        rightWall.transform.position = new Vector3(2.32f, 0.75f, 0.25f);
+        rightWall.transform.localScale = new Vector3(0.14f, 1.6f, 6.75f);
+        rightWall.GetComponent<Renderer>().material.color = new Color(0.18f, 0.09f, 0.065f);
+
+        for (var i = 0; i < 9; i++)
+        {
+            CreateWallCourse(-2.395f, -2.85f + i * 0.7f);
+            CreateWallCourse(2.395f, -2.85f + i * 0.7f);
+        }
+    }
+
+    private void CreateWallCourse(float x, float z)
+    {
+        for (var row = 0; row < 4; row++)
+        {
+            var brick = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            brick.name = "Wall Brick Suggestion";
+            brick.transform.position = new Vector3(x, 0.2f + row * 0.27f, z + (row % 2) * 0.17f);
+            brick.transform.localScale = new Vector3(0.025f, 0.025f, 0.33f);
+            brick.GetComponent<Renderer>().material.color = new Color(0.09f, 0.045f, 0.037f);
+        }
     }
 
     private void CreateMicSeats()
     {
-        mics[0] = CreateMic("Catcher", "p2", new Vector3(0f, 0.28f, 3.05f), new Color(0.95f, 0.72f, 0.18f));
-        mics[1] = CreateMic("Left Side", "p3", new Vector3(-2.15f, 0.28f, 0.25f), new Color(0.42f, 0.78f, 1f));
-        mics[2] = CreateMic("Right Side", "p4", new Vector3(2.15f, 0.28f, 0.25f), new Color(0.42f, 0.78f, 1f));
-        mics[3] = CreateMic("Back Side", "bot-5", new Vector3(1.35f, 0.28f, 2.45f), new Color(0.42f, 0.78f, 1f));
+        mics[0] = CreateMic("Catcher", "p2", new Vector3(0f, 0.28f, 2.82f), new Color(0.95f, 0.72f, 0.18f));
+        mics[1] = CreateMic("Left 1", "p3", new Vector3(-1.72f, 0.28f, -0.55f), new Color(0.42f, 0.78f, 1f));
+        mics[2] = CreateMic("Right 1", "p4", new Vector3(1.72f, 0.28f, -0.55f), new Color(0.42f, 0.78f, 1f));
+        mics[3] = CreateMic("Right 2", "bot-5", new Vector3(1.68f, 0.28f, 1.35f), new Color(0.42f, 0.78f, 1f));
     }
 
     private SeatMic CreateMic(string label, string playerId, Vector3 position, Color accent)
@@ -244,17 +315,22 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private void DrawTopRightStatus()
     {
-        var width = tutorialMode ? 270f : 210f;
-        var height = tutorialMode ? 112f : 76f;
+        var width = tutorialMode ? 330f : 210f;
+        var height = tutorialMode ? 172f : 76f;
         var x = Screen.width - width - 18f;
         GUI.Box(new Rect(x, 18f, width, height), "");
-        GUI.Label(new Rect(x + 12f, 28f, width - 24f, 22f), point == "-" ? "COME OUT" : "POINT " + point);
+        GUI.Label(new Rect(x + 12f, 28f, width - 24f, 22f), gameMode == GameMode.CeeLo ? "CEE-LO" : point == "-" ? "COME OUT" : "POINT " + point);
         GUI.Label(new Rect(x + 12f, 52f, width - 24f, 22f), Time.time < rollLockFlashUntil ? "ROLL LOCKED" : "SHOT " + shotAmount);
 
         if (tutorialMode)
         {
-            GUI.Label(new Rect(x + 12f, 76f, width - 24f, 22f), die1 + " + " + die2 + " = " + (die1 + die2));
-            GUI.Label(new Rect(x + 12f, 96f, width - 24f, 22f), phase);
+            var rollText = gameMode == GameMode.CeeLo
+                ? die1 + " / " + die2 + " / " + die3
+                : die1 + " + " + die2 + " = " + (die1 + die2);
+            GUI.Label(new Rect(x + 12f, 76f, width - 24f, 22f), rollText);
+            GUI.Label(new Rect(x + 12f, 98f, width - 24f, 22f), "Phase: " + phase);
+            GUI.Label(new Rect(x + 12f, 120f, width - 24f, 22f), "Group: " + activePointGroup);
+            GUI.Label(new Rect(x + 12f, 142f, width - 24f, 22f), "Side bets: " + OpenSideBetCount());
         }
     }
 
@@ -267,28 +343,55 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             var screen = Camera.main.WorldToScreenPoint(seat.Root.transform.position + new Vector3(0f, 0.82f, 0f));
             if (screen.z <= 0f) continue;
 
-            var rect = new Rect(screen.x - 62f, Screen.height - screen.y - 30f, 124f, 46f);
+            var rect = new Rect(screen.x - 72f, Screen.height - screen.y - 34f, 144f, 74f);
             GUI.Box(rect, "");
             GUI.Label(new Rect(rect.x + 8f, rect.y + 5f, rect.width - 16f, 18f), seat.Label);
 
-            var action = seat.PlayerId == catcherId ? "Fade/Catch" : "Side Bet";
-            GUI.Label(new Rect(rect.x + 8f, rect.y + 24f, rect.width - 16f, 18f), action);
+            if (gameMode == GameMode.Craps && seat.PlayerId == catcherId)
+            {
+                if (GUI.Button(new Rect(rect.x + 8f, rect.y + 28f, rect.width - 16f, 22f), "Fade/Catch"))
+                {
+                    StartCoroutine(Fade());
+                }
+            }
+            else if (gameMode == GameMode.Craps && phase == "Point")
+            {
+                if (GUI.Button(new Rect(rect.x + 8f, rect.y + 25f, 62f, 22f), "Hit Grp"))
+                {
+                    PlaceDemoSideBet(seat.PlayerId, false);
+                }
+
+                if (GUI.Button(new Rect(rect.x + 74f, rect.y + 25f, 62f, 22f), "Miss Grp"))
+                {
+                    PlaceDemoSideBet(seat.PlayerId, true);
+                }
+            }
+            else
+            {
+                GUI.Label(new Rect(rect.x + 8f, rect.y + 28f, rect.width - 16f, 18f), gameMode == GameMode.CeeLo ? "Cee-lo seat" : "Side Bet");
+            }
+
+            var playerBets = OpenSideBetCount(seat.PlayerId);
+            if (playerBets > 0)
+            {
+                GUI.Label(new Rect(rect.x + 8f, rect.y + 52f, rect.width - 16f, 18f), playerBets + " open bet");
+            }
         }
     }
 
     private void DrawBottomControls()
     {
         var y = Screen.height - 118f;
-        var buttonWidth = Mathf.Min(118f, (Screen.width - 40f) / 8f);
+        var buttonWidth = Mathf.Min(112f, (Screen.width - 40f) / 9f);
         var x = 20f;
 
         if (GUI.Button(new Rect(x, y, buttonWidth, 36f), "Demo Table")) StartLocalDemo();
         x += buttonWidth + 6f;
         if (GUI.Button(new Rect(x, y, buttonWidth, 36f), "Open Shot")) StartCoroutine(OpenShot());
         x += buttonWidth + 6f;
-        if (GUI.Button(new Rect(x, y, buttonWidth, 36f), "Fade")) StartCoroutine(Fade());
+        if (GUI.Button(new Rect(x, y, buttonWidth, 36f), gameMode == GameMode.Craps ? "Mode: Craps" : "Mode: Cee-lo")) SwitchGameMode();
         x += buttonWidth + 6f;
-        if (GUI.Button(new Rect(x, y, buttonWidth, 36f), "Roll")) StartCoroutine(Roll(random.Next(1, 7), random.Next(1, 7)));
+        if (GUI.Button(new Rect(x, y, buttonWidth, 36f), "Roll")) StartCoroutine(RollCurrentMode());
         x += buttonWidth + 6f;
         if (GUI.Button(new Rect(x, y, buttonWidth, 36f), "Run Same")) StartCoroutine(RunSame());
         x += buttonWidth + 6f;
@@ -302,6 +405,15 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
         GUI.Box(new Rect(20f, y - 58f, Screen.width - 40f, 46f), "");
         GUI.Label(new Rect(32f, y - 48f, Screen.width - 64f, 26f), result);
+
+        if (tutorialMode)
+        {
+            var tutorialWidth = Mathf.Max(240f, Mathf.Min(520f, Screen.width - 380f));
+            GUI.Box(new Rect(20f, 18f, tutorialWidth, 88f), "");
+            GUI.Label(new Rect(32f, 28f, tutorialWidth - 24f, 22f), tutorialDetail);
+            GUI.Label(new Rect(32f, 52f, tutorialWidth - 24f, 22f), "Fade count: " + fadeCount + " | Momentum: " + shooterMomentum);
+            GUI.Label(new Rect(32f, 76f, tutorialWidth - 24f, 22f), gameMode == GameMode.Craps ? "Point group side bets resolve on either grouped number or seven-out." : "Cee-lo: 4-5-6, trips, pair+6 win; 1-2-3 and pair+1 lose.");
+        }
     }
 
     private void DrawStreakMeter()
@@ -330,12 +442,25 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         streak = 0;
         fadeCount = 0;
         shooterMomentum = 0;
+        activePointGroup = "-";
+        demoSideBets.Clear();
         lastResolvedShotWasWin = false;
         lastShotWasDoubleUp = false;
-        result = "Local demo table open. Shooter is first-person. Catcher mic is live.";
+        dieC.SetActive(gameMode == GameMode.CeeLo);
+        phase = gameMode == GameMode.CeeLo ? "CeeLo" : "ComeOut";
+        result = gameMode == GameMode.CeeLo
+            ? "Local Cee-lo table open. Roll three dice."
+            : "Local demo table open. Shooter is first-person. Catcher mic is live.";
+        tutorialDetail = "Table reset. Use Roll to count a live throw.";
         PulseMic(catcherId, 1.5f);
         ResetDiceToShooter();
         ApplyDiceColor();
+    }
+
+    private void SwitchGameMode()
+    {
+        gameMode = gameMode == GameMode.Craps ? GameMode.CeeLo : GameMode.Craps;
+        StartLocalDemo();
     }
 
     private IEnumerator CreateTable()
@@ -378,11 +503,18 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         if (localDemo)
         {
-            phase = "ComeOut";
+            phase = gameMode == GameMode.CeeLo ? "CeeLo" : "ComeOut";
             point = "-";
+            activePointGroup = "-";
             fadeCount = 0;
             shooterMomentum = 0;
-            result = "Shot open. Catcher can fade/catch before the roll counts.";
+            demoSideBets.Clear();
+            result = gameMode == GameMode.CeeLo
+                ? "Cee-lo shot open. Roll three dice."
+                : "Shot open. Catcher can fade/catch before the roll counts.";
+            tutorialDetail = gameMode == GameMode.CeeLo
+                ? "Cee-lo uses three dice and does not use the craps point phase."
+                : "Come-out roll: 7/11 wins, 2/3/12 loses but shooter keeps dice, other totals set point.";
             PulseMic(catcherId, 1.4f);
             yield break;
         }
@@ -406,6 +538,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             result = fadeCount > 3
                 ? "Fade/Catch. Roll stopped. Shooter momentum +" + shooterMomentum + "."
                 : "Fade/Catch. Roll stopped. Shooter shoots again.";
+            tutorialDetail = "Fade/Catch nullifies the roll. No payout and no side bet resolves.";
             PulseMic(catcherId, 1.6f);
             ResetDiceToShooter();
             yield break;
@@ -413,6 +546,17 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
         var json = $"{{\"catcherId\":\"{catcherId}\",\"playerSessionToken\":\"{catcherToken}\"}}";
         yield return Post("/api/street-dice/" + gameId + "/fade", json);
+    }
+
+    private IEnumerator RollCurrentMode()
+    {
+        if (gameMode == GameMode.CeeLo)
+        {
+            yield return RollCeeLo(random.Next(1, 7), random.Next(1, 7), random.Next(1, 7));
+            yield break;
+        }
+
+        yield return Roll(random.Next(1, 7), random.Next(1, 7));
     }
 
     private IEnumerator Roll(int a, int b)
@@ -442,6 +586,31 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         });
     }
 
+    private IEnumerator RollCeeLo(int a, int b, int c)
+    {
+        dieC.SetActive(true);
+        phase = "CeeLo";
+        die1 = a;
+        die2 = b;
+        die3 = c;
+        yield return AnimateDiceRoll(a, b, c);
+
+        if (localDemo)
+        {
+            ResolveLocalCeeLo(a, b, c);
+            ApplyDiceColor();
+            yield break;
+        }
+
+        var json = $"{{\"die1\":{a},\"die2\":{b},\"die3\":{c}}}";
+        yield return PostOpen("/api/cee-lo/evaluate", json, body =>
+        {
+            var response = JsonUtility.FromJson<CeeLoResponse>(body);
+            result = response.result.message;
+            tutorialDetail = "Cee-lo server evaluator returned " + response.result.outcome + ".";
+        });
+    }
+
     private IEnumerator RunSame()
     {
         if (localDemo)
@@ -454,6 +623,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
             phase = "ComeOut";
             point = "-";
+            activePointGroup = "-";
             fadeCount = 0;
             shooterMomentum = 0;
             lastResolvedShotWasWin = false;
@@ -480,6 +650,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             shotAmount *= 2;
             phase = "ComeOut";
             point = "-";
+            activePointGroup = "-";
             fadeCount = 0;
             shooterMomentum = 0;
             lastShotWasDoubleUp = true;
@@ -510,21 +681,26 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         if (phase == "ComeOut")
         {
+            activePointGroup = "-";
             if (total is 7 or 11)
             {
+                tutorialDetail = die1 + " + " + die2 + " = " + total + ". Come-out 7/11 wins immediately.";
                 ShooterWin("Come-out win.");
                 return;
             }
 
             if (total is 2 or 3 or 12)
             {
+                tutorialDetail = die1 + " + " + die2 + " = " + total + ". Come-out 2/3/12 loses, but shooter keeps dice.";
                 ShooterLoss("Come-out loss. Shooter pays but keeps dice.", true);
                 return;
             }
 
             point = total.ToString();
+            activePointGroup = PointGroupLabel(total);
             phase = "Point";
             result = "Point established: " + point + ".";
+            tutorialDetail = "Point " + point + " is set. Active side-bet group is " + activePointGroup + ". Only 7 loses during point phase.";
             PulseMic(catcherId, 1f);
             return;
         }
@@ -532,18 +708,106 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         var currentPoint = int.Parse(point);
         if (total == currentPoint)
         {
+            var resolved = ResolveDemoGroupedBets(hitGroup: true);
+            tutorialDetail = "Shooter hit point " + point + ". The main shot wins and " + activePointGroup + " group hit bets resolve.";
             ShooterWin("Point hit.");
+            AppendResolvedSideBetMessage(resolved);
             return;
         }
 
         if (total == 7)
         {
+            var resolved = ResolveDemoGroupedBets(hitGroup: false);
+            tutorialDetail = "Seven out during point phase. Shooter loses and grouped miss bets win.";
             ShooterLoss("Seven out. Dice pass to Catcher.", false);
+            AppendResolvedSideBetMessage(resolved);
+            return;
+        }
+
+        if (IsInPointGroup(total, currentPoint))
+        {
+            var resolved = ResolveDemoGroupedBets(hitGroup: true);
+            result = "Rolled grouped " + total + ". Group side bets resolve; shooter still needs " + point + ".";
+            AppendResolvedSideBetMessage(resolved);
+            tutorialDetail = "Rolled " + total + " inside " + activePointGroup + ". Side bets resolve, but the point remains " + point + ".";
+            PulseMic(random.NextDouble() > 0.5 ? "p3" : "p4", 0.9f);
             return;
         }
 
         result = "Rolled " + total + ". Shooter keeps shooting for " + point + ".";
+        tutorialDetail = "Rolled " + total + ". No point, no seven, no active group hit. Shooter rolls again.";
         PulseMic(random.NextDouble() > 0.5 ? "p3" : "p4", 0.9f);
+    }
+
+    private void ResolveLocalCeeLo(int a, int b, int c)
+    {
+        var values = new[] { a, b, c };
+        Array.Sort(values);
+        activePointGroup = "-";
+
+        if (values[0] == 4 && values[1] == 5 && values[2] == 6)
+        {
+            streak += 2;
+            result = "Cee-lo 4-5-6. Automatic win.";
+            tutorialDetail = "4-5-6 is the strongest street Cee-lo automatic win.";
+            PulseMic(catcherId, 1.3f);
+            return;
+        }
+
+        if (values[0] == 1 && values[1] == 2 && values[2] == 3)
+        {
+            streak = 0;
+            result = "1-2-3. Automatic loss.";
+            tutorialDetail = "1-2-3 is an automatic Cee-lo loss.";
+            PulseMic(catcherId, 1.3f);
+            return;
+        }
+
+        if (values[0] == values[1] && values[1] == values[2])
+        {
+            streak += 2;
+            result = "Trips " + values[0] + ". Automatic win.";
+            tutorialDetail = "Any triples are an automatic Cee-lo win.";
+            PulseMic(catcherId, 1.3f);
+            return;
+        }
+
+        var ceeLoPoint = PairAndPoint(values);
+        if (ceeLoPoint == null)
+        {
+            result = "No count. Roll again.";
+            tutorialDetail = "No pair, no 4-5-6, no 1-2-3. This Cee-lo roll does not count.";
+            return;
+        }
+
+        if (ceeLoPoint.Value == 6)
+        {
+            streak += 2;
+            result = "Pair plus 6. Automatic win.";
+            tutorialDetail = "Pair plus 6 is an automatic Cee-lo win.";
+            PulseMic(catcherId, 1.3f);
+            return;
+        }
+
+        if (ceeLoPoint.Value == 1)
+        {
+            streak = 0;
+            result = "Pair plus 1. Automatic loss.";
+            tutorialDetail = "Pair plus 1 is an automatic Cee-lo loss.";
+            PulseMic(catcherId, 1.3f);
+            return;
+        }
+
+        result = "Cee-lo point " + ceeLoPoint.Value + ".";
+        tutorialDetail = "Pair plus " + ceeLoPoint.Value + " sets the Cee-lo point to compare against the banker/player.";
+        PulseMic(random.NextDouble() > 0.5 ? "p3" : "p4", 0.9f);
+    }
+
+    private static int? PairAndPoint(int[] values)
+    {
+        if (values[0] == values[1]) return values[2];
+        if (values[1] == values[2]) return values[0];
+        return null;
     }
 
     private void ShooterWin(string message)
@@ -554,6 +818,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         streak += gain;
         phase = "ShooterDecision";
         point = "-";
+        activePointGroup = "-";
         fadeCount = 0;
         shooterMomentum = 0;
         lastResolvedShotWasWin = true;
@@ -566,6 +831,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         streak = 0;
         point = "-";
+        activePointGroup = "-";
         fadeCount = 0;
         shooterMomentum = 0;
         lastResolvedShotWasWin = false;
@@ -586,33 +852,51 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         PulseMic(catcherId, 1.5f);
     }
 
-    private IEnumerator AnimateDiceRoll(int finalA, int finalB)
+    private IEnumerator AnimateDiceRoll(int finalA, int finalB, int? finalC = null)
     {
         rolling = true;
         var startA = new Vector3(-0.28f, 0.22f, -2.25f);
         var startB = new Vector3(0.28f, 0.22f, -2.25f);
-        var endA = new Vector3(-0.22f, 0.22f, 1.25f + UnityEngine.Random.Range(-0.45f, 0.45f));
-        var endB = new Vector3(0.32f, 0.22f, 1.15f + UnityEngine.Random.Range(-0.45f, 0.45f));
+        var startC = new Vector3(0f, 0.22f, -2.58f);
+        var endA = new Vector3(-0.36f, 0.22f, 1.35f + UnityEngine.Random.Range(-0.35f, 0.35f));
+        var endB = new Vector3(0.38f, 0.22f, 1.12f + UnityEngine.Random.Range(-0.35f, 0.35f));
+        var endC = new Vector3(0.02f, 0.22f, 1.7f + UnityEngine.Random.Range(-0.28f, 0.28f));
+        var midA = new Vector3(-0.62f, 0.22f, -0.35f);
+        var midB = new Vector3(0.66f, 0.22f, -0.1f);
+        var midC = new Vector3(0.05f, 0.22f, -0.48f);
 
-        const float duration = 1.08f;
+        const float duration = 1.32f;
         var elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             var t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
-            var hop = Mathf.Sin(t * Mathf.PI) * 0.38f;
-            dieA.transform.position = Vector3.Lerp(startA, endA, t) + Vector3.up * hop;
-            dieB.transform.position = Vector3.Lerp(startB, endB, t) + Vector3.up * (hop * 0.9f);
+            var hop = Mathf.Abs(Mathf.Sin(t * Mathf.PI * 3.2f)) * Mathf.Lerp(0.34f, 0.04f, t);
+            dieA.transform.position = Bezier(startA, midA, endA, t) + Vector3.up * hop;
+            dieB.transform.position = Bezier(startB, midB, endB, t) + Vector3.up * (hop * 0.9f);
+            if (finalC != null)
+            {
+                dieC.transform.position = Bezier(startC, midC, endC, t) + Vector3.up * (hop * 0.82f);
+            }
             yield return null;
         }
 
         dieA.transform.position = endA;
         dieB.transform.position = endB;
+        if (finalC != null) dieC.transform.position = endC;
         rolling = false;
         LockDieToValue(dieA, finalA);
         LockDieToValue(dieB, finalB);
-        rollLockFlashUntil = Time.time + 0.55f;
-        yield return new WaitForSeconds(0.35f);
+        if (finalC != null) LockDieToValue(dieC, finalC.Value);
+        rollLockFlashUntil = Time.time + 0.7f;
+        yield return new WaitForSeconds(0.48f);
+    }
+
+    private static Vector3 Bezier(Vector3 start, Vector3 mid, Vector3 end, float t)
+    {
+        var a = Vector3.Lerp(start, mid, t);
+        var b = Vector3.Lerp(mid, end, t);
+        return Vector3.Lerp(a, b, t);
     }
 
     private void LockDieToValue(GameObject die, int value)
@@ -645,6 +929,8 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         dieA.transform.position = new Vector3(-0.28f, 0.22f, -2.25f);
         dieB.transform.position = new Vector3(0.28f, 0.22f, -2.25f);
+        dieC.transform.position = new Vector3(0f, 0.22f, -2.58f);
+        dieC.SetActive(gameMode == GameMode.CeeLo);
     }
 
     private void ApplyDiceColor()
@@ -652,6 +938,77 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         var color = streak >= HotDiceThreshold ? new Color(1f, 0.23f, 0.02f) : selectedDiceColor;
         dieA.GetComponent<Renderer>().material.color = color;
         dieB.GetComponent<Renderer>().material.color = color;
+        dieC.GetComponent<Renderer>().material.color = color;
+    }
+
+    private void PlaceDemoSideBet(string playerId, bool missGroup)
+    {
+        if (gameMode != GameMode.Craps || phase != "Point" || point == "-")
+        {
+            result = "Grouped side bets need an active point.";
+            return;
+        }
+
+        var bet = new DemoSideBet(playerId, missGroup, activePointGroup, 10);
+        demoSideBets.Add(bet);
+        result = (missGroup ? "Miss" : "Hit") + " group side bet placed on " + activePointGroup + ".";
+        tutorialDetail = "Side bet sits beside " + playerId + ". It resolves when " + activePointGroup + " hits or a 7 comes first.";
+        PulseMic(playerId, 1.1f);
+    }
+
+    private int ResolveDemoGroupedBets(bool hitGroup)
+    {
+        var resolved = 0;
+        foreach (var sideBet in demoSideBets)
+        {
+            if (sideBet.Resolved || sideBet.PointGroup != activePointGroup) continue;
+            sideBet.Resolved = true;
+            sideBet.Won = sideBet.MissGroup ? !hitGroup : hitGroup;
+            resolved++;
+            PulseMic(sideBet.PlayerId, 1.2f);
+        }
+
+        return resolved;
+    }
+
+    private void AppendResolvedSideBetMessage(int resolved)
+    {
+        if (resolved > 0) result += " " + resolved + " grouped side bet resolved.";
+    }
+
+    private int OpenSideBetCount(string playerId = "")
+    {
+        var count = 0;
+        foreach (var sideBet in demoSideBets)
+        {
+            if (sideBet.Resolved) continue;
+            if (string.IsNullOrWhiteSpace(playerId) || sideBet.PlayerId == playerId) count++;
+        }
+
+        return count;
+    }
+
+    private static bool IsInPointGroup(int rollTotal, int pointTotal)
+    {
+        return PointGroupLabel(rollTotal) == PointGroupLabel(pointTotal);
+    }
+
+    private static string PointGroupLabel(int total)
+    {
+        switch (total)
+        {
+            case 4:
+            case 10:
+                return "4/10";
+            case 6:
+            case 8:
+                return "6/8";
+            case 5:
+            case 9:
+                return "5/9";
+            default:
+                return "-";
+        }
     }
 
     private void PulseMic(string playerId, float seconds)
@@ -696,6 +1053,25 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         }
     }
 
+    private IEnumerator PostOpen(string path, string json, Action<string> onSuccess)
+    {
+        using var request = new UnityWebRequest(baseUrl + path, "POST");
+        var body = Encoding.UTF8.GetBytes(json);
+        request.uploadHandler = new UploadHandlerRaw(body);
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+
+        yield return request.SendWebRequest();
+
+        if (request.result != UnityWebRequest.Result.Success)
+        {
+            result = request.error;
+            yield break;
+        }
+
+        onSuccess(request.downloadHandler.text);
+    }
+
     private void UpdateState(StateDto state)
     {
         if (state == null) return;
@@ -703,6 +1079,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         shooterId = state.shooterId;
         catcherId = state.catcherId;
         point = state.point == 0 ? "-" : state.point.ToString();
+        activePointGroup = point == "-" ? "-" : PointGroupLabel(state.point);
         streak = state.streak;
         shotAmount = state.shotAmount == 0 ? shotAmount : state.shotAmount;
         result = state.lastResolution.message;
@@ -749,6 +1126,14 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     [Serializable] private sealed class CreateResponse { public string gameId = ""; public StateDto state = null!; }
     [Serializable] private sealed class JoinResponse { public string playerId = ""; public string playerSessionToken = ""; public StateDto state = null!; }
     [Serializable] private sealed class ActionResponse { public StateDto state = null!; }
+    [Serializable] private sealed class CeeLoResponse { public CeeLoResultDto result = new CeeLoResultDto(); }
+    [Serializable] private sealed class CeeLoResultDto
+    {
+        public string outcome = "";
+        public int point;
+        public int rank;
+        public string message = "";
+    }
     [Serializable] private sealed class StateDto
     {
         public string phase = "";
@@ -760,4 +1145,22 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         public ResolutionDto lastResolution = new ResolutionDto();
     }
     [Serializable] private sealed class ResolutionDto { public string message = ""; }
+
+    private sealed class DemoSideBet
+    {
+        public DemoSideBet(string playerId, bool missGroup, string pointGroup, int amount)
+        {
+            PlayerId = playerId;
+            MissGroup = missGroup;
+            PointGroup = pointGroup;
+            Amount = amount;
+        }
+
+        public string PlayerId { get; }
+        public bool MissGroup { get; }
+        public string PointGroup { get; }
+        public int Amount { get; }
+        public bool Resolved { get; set; }
+        public bool Won { get; set; }
+    }
 }
