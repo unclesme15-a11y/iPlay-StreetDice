@@ -206,6 +206,73 @@ public class StreetDiceGameEngineTests
     }
 
     [Fact]
+    public void GroupedPointSideBet_LosesWhenShooterHitsGroupedNumberButPointStaysLive()
+    {
+        var engine = NewLiveShot(20);
+        engine.Roll(new DiceRoll(6, 4));
+        var groupMissBet = engine.PlaceSideBet("p3", SideBetType.MissPointGroup, 10, targetPointNumber: 4);
+
+        var result = engine.Roll(new DiceRoll(2, 2));
+
+        Assert.Equal(RollResultType.None, result.Result);
+        Assert.Equal(GamePhase.Point, engine.State.Phase);
+        Assert.Equal(10, engine.State.Point);
+        Assert.Equal(SideBetStatus.Lost, groupMissBet.Status);
+    }
+
+    [Fact]
+    public void GroupedPointSideBet_LosesWhenShooterHitsOriginalPointInSameGroup()
+    {
+        var engine = NewLiveShot(20);
+        engine.Roll(new DiceRoll(6, 4));
+        var groupMissBet = engine.PlaceSideBet("p3", SideBetType.MissPointGroup, 10, targetPointNumber: 4);
+
+        var result = engine.Roll(new DiceRoll(5, 5));
+
+        Assert.Equal(RollResultType.ShooterPointWin, result.Result);
+        Assert.Equal(SideBetStatus.Lost, groupMissBet.Status);
+    }
+
+    [Fact]
+    public void GroupedPointSideBet_WinsWhenShooterSevensOutBeforeGroupHit()
+    {
+        var engine = NewLiveShot(20);
+        engine.Roll(new DiceRoll(6, 4));
+        var groupMissBet = engine.PlaceSideBet("p3", SideBetType.MissPointGroup, 10, targetPointNumber: 4);
+
+        var result = engine.Roll(new DiceRoll(3, 4));
+
+        Assert.Equal(RollResultType.ShooterSevenOutLoss, result.Result);
+        Assert.Equal(SideBetStatus.Won, groupMissBet.Status);
+    }
+
+    [Fact]
+    public void GroupedPointSideBet_TargetMustMatchActivePointGroup()
+    {
+        var engine = NewLiveShot(20);
+        engine.Roll(new DiceRoll(6, 4));
+
+        Assert.Throws<InvalidOperationException>(() =>
+            engine.PlaceSideBet("p3", SideBetType.MissPointGroup, 10, targetPointNumber: 6));
+    }
+
+    [Theory]
+    [InlineData(4, 5, 6, CeeLoOutcomeType.AutomaticWin, null)]
+    [InlineData(3, 3, 3, CeeLoOutcomeType.AutomaticWin, null)]
+    [InlineData(2, 2, 6, CeeLoOutcomeType.AutomaticWin, 6)]
+    [InlineData(1, 2, 3, CeeLoOutcomeType.AutomaticLoss, null)]
+    [InlineData(2, 2, 1, CeeLoOutcomeType.AutomaticLoss, 1)]
+    [InlineData(4, 4, 2, CeeLoOutcomeType.Point, 2)]
+    [InlineData(1, 3, 5, CeeLoOutcomeType.Reroll, null)]
+    public void CeeLoRules_EvaluateStreetBankerRolls(int die1, int die2, int die3, CeeLoOutcomeType outcome, int? point)
+    {
+        var result = CeeLoRules.Evaluate(new CeeLoRoll(die1, die2, die3));
+
+        Assert.Equal(outcome, result.Outcome);
+        Assert.Equal(point, result.Point);
+    }
+
+    [Fact]
     public void DoubleUp_DoublesNextShotOnlyAfterWin()
     {
         var engine = NewLiveShot(20);

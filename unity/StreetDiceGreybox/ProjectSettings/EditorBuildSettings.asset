@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/StreetDiceDemo.unity
+    guid: f348a0bc87e4a2944a0f6ae2df2b1633
   m_configObjects: {}

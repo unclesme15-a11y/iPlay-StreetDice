@@ -65,10 +65,43 @@ Possible side bets:
 - Come-out win/loss.
 - Shooter hits point.
 - Shooter misses point.
-- Exact point number.
-- Seven before point.
+- Point group hit/miss.
 
 Side bets do not resolve on faded rolls.
+
+Point group side bets use these street dice groups:
+
+- `4/10`
+- `6/8`
+- `5/9`
+
+Example:
+
+- Shooter establishes point `10`.
+- Another player side bets against the `4/10` group by targeting `4`.
+- If Shooter rolls `4`, that grouped side bet loses, but Shooter still keeps shooting for `10`.
+- If Shooter rolls `10`, that grouped side bet also loses, and the main shot resolves as a point hit.
+- If Shooter rolls `7` before either grouped number, the grouped miss bet wins.
+
+## Cee-lo Street / Banker Rules
+
+Cee-lo uses three dice and is evaluated separately from the two-dice craps flow.
+
+- `4-5-6`: automatic win.
+- Trips: automatic win.
+- Pair plus `6`: automatic win.
+- `1-2-3`: automatic loss.
+- Pair plus `1`: automatic loss.
+- Pair plus `2`, `3`, `4`, or `5`: point.
+- Anything else: no count, roll again.
+
+MVP comparison model:
+
+- Banker rolls first until automatic win, automatic loss, or point.
+- If Banker sets a point, each player rolls until automatic win, automatic loss, or point.
+- Player point higher than Banker point wins.
+- Player point lower than Banker point loses.
+- Same point pushes.
 
 ## Payout / Score Models
 

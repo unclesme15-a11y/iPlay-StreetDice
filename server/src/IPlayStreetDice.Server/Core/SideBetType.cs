@@ -5,5 +5,7 @@ public enum SideBetType
     ComeOutWin,
     ComeOutLoss,
     HitPoint,
-    MissPoint
+    MissPoint,
+    HitPointGroup,
+    MissPointGroup
 }

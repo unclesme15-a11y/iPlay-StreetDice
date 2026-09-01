@@ -66,8 +66,14 @@ app.MapPost("/api/street-dice/{gameId}/side-bet", (string gameId, SideBetRequest
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.PlayerId, request.PlayerSessionToken)) return Results.Unauthorized();
-    var bet = engine.PlaceSideBet(request.PlayerId, request.Type, request.Amount);
+    var bet = engine.PlaceSideBet(request.PlayerId, request.Type, request.Amount, request.TargetPointNumber);
     return Results.Ok(new { sideBetId = bet.Id, state = engine.State });
+});
+
+app.MapPost("/api/cee-lo/evaluate", (CeeLoRollRequest request) =>
+{
+    var result = CeeLoRules.Evaluate(new CeeLoRoll(request.Die1, request.Die2, request.Die3));
+    return Results.Ok(new { result });
 });
 
 app.MapPost("/api/street-dice/{gameId}/fade", (string gameId, FadeRequest request, StreetDiceTableStore store) =>
@@ -224,9 +230,10 @@ public sealed class StreetDiceTableStore
 public sealed record JoinRequest(string PlayerName, string? PlayerId = null);
 public sealed record DiceColorRequest(string PlayerId, string PlayerSessionToken, DiceColor Color);
 public sealed record OpenShotRequest(string ShooterId, string ShooterSessionToken, string CatcherId, int Amount);
-public sealed record SideBetRequest(string PlayerId, string PlayerSessionToken, SideBetType Type, int Amount);
+public sealed record SideBetRequest(string PlayerId, string PlayerSessionToken, SideBetType Type, int Amount, int? TargetPointNumber = null);
 public sealed record FadeRequest(string CatcherId, string PlayerSessionToken);
 public sealed record RollRequest(string ShooterId, string PlayerSessionToken, int Die1, int Die2);
+public sealed record CeeLoRollRequest(int Die1, int Die2, int Die3);
 public sealed record ShooterDecisionRequest(string ShooterId, string PlayerSessionToken);
 public sealed record BotFillRequest(int TargetPlayers = 5);
 public sealed record VoiceAccessRequest(string PlayerId, string PlayerSessionToken);

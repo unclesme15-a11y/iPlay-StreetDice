@@ -63,7 +63,7 @@ public sealed class StreetDiceGameEngine
         State.Log($"{shooter.Name} is shooting {amount} against {catcher.Name}.");
     }
 
-    public SideBet PlaceSideBet(string playerId, SideBetType type, int amount)
+    public SideBet PlaceSideBet(string playerId, SideBetType type, int amount, int? targetPointNumber = null)
     {
         if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
         RequirePlayer(playerId);
@@ -72,7 +72,7 @@ public sealed class StreetDiceGameEngine
             throw new InvalidOperationException("Side bets are only available while a shot is live.");
         }
 
-        if (State.Phase == GamePhase.ComeOut && type is SideBetType.HitPoint or SideBetType.MissPoint)
+        if (State.Phase == GamePhase.ComeOut && type is SideBetType.HitPoint or SideBetType.MissPoint or SideBetType.HitPointGroup or SideBetType.MissPointGroup)
         {
             throw new InvalidOperationException("Hit/miss point side bets require an established point.");
         }
@@ -82,9 +82,11 @@ public sealed class StreetDiceGameEngine
             throw new InvalidOperationException("Come-out side bets are closed after point is established.");
         }
 
-        var sideBet = new SideBet(Guid.NewGuid().ToString("N"), playerId, type, amount);
+        var pointGroup = ResolvePointGroupForBet(type, targetPointNumber);
+        var sideBet = new SideBet(Guid.NewGuid().ToString("N"), playerId, type, amount, pointGroup);
         State.SideBets.Add(sideBet);
-        State.Log($"{playerId} side bet {amount} on {type}.");
+        var target = pointGroup == null ? "" : $" ({pointGroup})";
+        State.Log($"{playerId} side bet {amount} on {type}{target}.");
         return sideBet;
     }
 
@@ -218,6 +220,7 @@ public sealed class StreetDiceGameEngine
             return ResolveShooterLoss(RollResultType.ShooterSevenOutLoss, roll, "Seven out.");
         }
 
+        ResolvePointGroupSideBets(roll.Total);
         var resolution = new RollResolution(RollResultType.None, roll, State.Point, $"Rolled {roll.Total}. Shoot again.");
         State.LastResolution = resolution;
         State.Log(resolution.Message);
@@ -240,6 +243,10 @@ public sealed class StreetDiceGameEngine
         ResolveSideBets(SideBetType.ComeOutLoss, false);
         ResolveSideBets(SideBetType.HitPoint, resultType == RollResultType.ShooterPointWin);
         ResolveSideBets(SideBetType.MissPoint, false);
+        if (resultType == RollResultType.ShooterPointWin && State.Point != null)
+        {
+            ResolvePointGroupSideBets(State.Point.Value);
+        }
 
         State.Point = null;
         State.Phase = GamePhase.ShooterDecision;
@@ -262,6 +269,10 @@ public sealed class StreetDiceGameEngine
         ResolveSideBets(SideBetType.ComeOutLoss, resultType == RollResultType.ShooterComeOutLoss);
         ResolveSideBets(SideBetType.HitPoint, false);
         ResolveSideBets(SideBetType.MissPoint, resultType == RollResultType.ShooterSevenOutLoss);
+        if (resultType == RollResultType.ShooterSevenOutLoss)
+        {
+            ResolveGroupedSideBets(null, hitGroup: false);
+        }
 
         State.Point = null;
         State.Streak = 0;
@@ -299,16 +310,68 @@ public sealed class StreetDiceGameEngine
     {
         foreach (var sideBet in State.SideBets.Where(b => b.Status == SideBetStatus.Open && b.Type == type))
         {
-            if (winningType)
-            {
-                sideBet.Win();
-                State.FindPlayer(sideBet.PlayerId)?.Credit(sideBet.Amount);
-            }
-            else
-            {
-                sideBet.Lose();
-                State.FindPlayer(sideBet.PlayerId)?.Debit(sideBet.Amount);
-            }
+            ResolveSideBet(sideBet, winningType);
+        }
+    }
+
+    private PointNumberGroup? ResolvePointGroupForBet(SideBetType type, int? targetPointNumber)
+    {
+        if (type is not (SideBetType.HitPointGroup or SideBetType.MissPointGroup))
+        {
+            if (targetPointNumber != null) throw new InvalidOperationException("Target point number is only valid for grouped point bets.");
+            return null;
+        }
+
+        if (State.Point == null) throw new InvalidOperationException("Grouped point bets require an established point.");
+
+        var activeGroup = PointGroups.FromPointNumber(State.Point.Value);
+        var requestedGroup = targetPointNumber == null
+            ? activeGroup
+            : PointGroups.FromPointNumber(targetPointNumber.Value);
+
+        if (requestedGroup != activeGroup)
+        {
+            throw new InvalidOperationException("Grouped point bet target must match the shooter's active point group.");
+        }
+
+        return requestedGroup;
+    }
+
+    private void ResolvePointGroupSideBets(int rolledTotal)
+    {
+        if (State.Point == null) return;
+
+        var activeGroup = PointGroups.FromPointNumber(State.Point.Value);
+        if (!PointGroups.Contains(activeGroup, rolledTotal)) return;
+
+        ResolveGroupedSideBets(activeGroup, hitGroup: true);
+    }
+
+    private void ResolveGroupedSideBets(PointNumberGroup? group, bool hitGroup)
+    {
+        foreach (var sideBet in State.SideBets.Where(b =>
+            b.Status == SideBetStatus.Open
+            && b.Type is SideBetType.HitPointGroup or SideBetType.MissPointGroup
+            && (group == null || b.PointGroup == group)))
+        {
+            var winningType = sideBet.Type == SideBetType.HitPointGroup
+                ? hitGroup
+                : !hitGroup;
+            ResolveSideBet(sideBet, winningType);
+        }
+    }
+
+    private void ResolveSideBet(SideBet sideBet, bool winningType)
+    {
+        if (winningType)
+        {
+            sideBet.Win();
+            State.FindPlayer(sideBet.PlayerId)?.Credit(sideBet.Amount);
+        }
+        else
+        {
+            sideBet.Lose();
+            State.FindPlayer(sideBet.PlayerId)?.Debit(sideBet.Amount);
         }
     }
 
