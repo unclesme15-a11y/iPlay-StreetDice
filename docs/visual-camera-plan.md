@@ -115,6 +115,14 @@ Normal dice skins:
 - Green
 - Blue
 
+Prototype dice target:
+
+- Rounded high-resolution mesh, not cube primitives.
+- Recessed pip wells with high-contrast inset pips.
+- Procedural surface grain and subtle bump detail.
+- Small scuffs/wear marks so the dice do not read as flat plastic blocks.
+- Contact shadows under every die to keep them grounded on the Kling plate.
+
 Streak build:
 
 - Chosen color remains visible.

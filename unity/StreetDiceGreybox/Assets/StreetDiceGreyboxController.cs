@@ -27,6 +27,9 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private const int HotDiceThreshold = 5;
     private const float DiceRestY = 0.18f;
+    private const float DieHalfSize = 0.5f;
+    private const float DieCornerRadius = 0.115f;
+    private const int DieMeshDivisions = 16;
 
     private GameObject dieA = null!;
     private GameObject dieB = null!;
@@ -409,13 +412,14 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private GameObject CreateDie(string dieName, Vector3 position)
     {
         var die = new GameObject(dieName);
-        die.AddComponent<MeshFilter>().mesh = CreateRoundedCubeMesh(0.5f, 0.075f, 8);
+        die.AddComponent<MeshFilter>().mesh = CreateRoundedCubeMesh(DieHalfSize, DieCornerRadius, DieMeshDivisions);
         var renderer = die.AddComponent<MeshRenderer>();
         renderer.material = CreateDiceMaterial(selectedDiceColor);
         die.name = dieName;
         die.transform.position = position;
-        die.transform.localScale = Vector3.one * 0.25f;
+        die.transform.localScale = Vector3.one * 0.235f;
         CreatePips(die);
+        CreateFaceWear(die);
         return die;
     }
 
@@ -423,9 +427,68 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         var material = new Material(Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit"));
         material.color = color;
-        material.SetFloat("_Glossiness", 0.38f);
+        material.mainTexture = CreateDiceAlbedoTexture(color);
+        material.SetFloat("_Glossiness", 0.26f);
         material.SetFloat("_Metallic", 0f);
+        material.SetTexture("_BumpMap", CreateDiceNormalTexture());
+        material.SetFloat("_BumpScale", 0.18f);
+        material.EnableKeyword("_NORMALMAP");
         return material;
+    }
+
+    private static Texture2D CreateDiceAlbedoTexture(Color baseColor)
+    {
+        const int size = 96;
+        var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            name = "Procedural Dice Albedo",
+            wrapMode = TextureWrapMode.Repeat,
+            filterMode = FilterMode.Bilinear
+        };
+
+        for (var y = 0; y < size; y++)
+        {
+            for (var x = 0; x < size; x++)
+            {
+                var grain = Hash01(x, y, 17) - 0.5f;
+                var scratch = Mathf.Abs(Mathf.Sin((x * 0.47f + y * 0.12f) * Mathf.Deg2Rad)) < 0.008f ? 0.045f : 0f;
+                var edge = Mathf.Min(Mathf.Min(x, size - 1 - x), Mathf.Min(y, size - 1 - y)) / (float)size;
+                var edgeWear = Mathf.Clamp01(0.12f - edge) * 0.18f;
+                var factor = 1f + grain * 0.08f + scratch + edgeWear;
+                texture.SetPixel(x, y, new Color(
+                    Mathf.Clamp01(baseColor.r * factor),
+                    Mathf.Clamp01(baseColor.g * factor),
+                    Mathf.Clamp01(baseColor.b * factor),
+                    1f));
+            }
+        }
+
+        texture.Apply();
+        return texture;
+    }
+
+    private static Texture2D CreateDiceNormalTexture()
+    {
+        const int size = 96;
+        var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            name = "Procedural Dice Fine Normal",
+            wrapMode = TextureWrapMode.Repeat,
+            filterMode = FilterMode.Bilinear
+        };
+
+        for (var y = 0; y < size; y++)
+        {
+            for (var x = 0; x < size; x++)
+            {
+                var nx = (Hash01(x + 1, y, 31) - Hash01(x - 1, y, 31)) * 0.18f;
+                var ny = (Hash01(x, y + 1, 31) - Hash01(x, y - 1, 31)) * 0.18f;
+                texture.SetPixel(x, y, new Color(0.5f + nx, 0.5f + ny, 1f, 1f));
+            }
+        }
+
+        texture.Apply();
+        return texture;
     }
 
     private static GameObject CreateDieShadow(string shadowName)
@@ -540,13 +603,58 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         var offsets = PipOffsets(value);
         for (var i = 0; i < offsets.Length; i++)
         {
-            var pip = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            pip.name = die.name + " Pip " + value;
-            pip.transform.SetParent(die.transform, false);
-            pip.transform.localPosition = normal * 0.506f + right * offsets[i].x + up * offsets[i].y;
-            pip.transform.localRotation = Quaternion.FromToRotation(Vector3.up, normal);
-            pip.transform.localScale = new Vector3(0.062f, 0.006f, 0.062f);
-            pip.GetComponent<Renderer>().material.color = Color.black;
+            var center = normal * 0.506f + right * offsets[i].x + up * offsets[i].y;
+            CreatePipDisc(die, die.name + " Pip Well " + value, center - normal * 0.002f, normal, 0.074f, 0.004f, new Color(0.03f, 0.032f, 0.03f));
+            CreatePipDisc(die, die.name + " Pip Inset " + value, center + normal * 0.001f, normal, 0.055f, 0.005f, Color.black);
+        }
+    }
+
+    private static void CreatePipDisc(GameObject die, string name, Vector3 localPosition, Vector3 normal, float radius, float thickness, Color color)
+    {
+        var pip = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        pip.name = name;
+        pip.transform.SetParent(die.transform, false);
+        pip.transform.localPosition = localPosition;
+        pip.transform.localRotation = Quaternion.FromToRotation(Vector3.up, normal);
+        pip.transform.localScale = new Vector3(radius, thickness, radius);
+        var renderer = pip.GetComponent<Renderer>();
+        renderer.material = CreatePipMaterial(color);
+    }
+
+    private static Material CreatePipMaterial(Color color)
+    {
+        var material = new Material(Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit"));
+        material.color = color;
+        material.SetFloat("_Glossiness", 0.08f);
+        material.SetFloat("_Metallic", 0f);
+        return material;
+    }
+
+    private static void CreateFaceWear(GameObject die)
+    {
+        CreateFaceWear(die, Vector3.up, Vector3.forward, Vector3.right, 7);
+        CreateFaceWear(die, Vector3.forward, Vector3.up, Vector3.right, 11);
+        CreateFaceWear(die, Vector3.right, Vector3.up, Vector3.back, 13);
+        CreateFaceWear(die, Vector3.left, Vector3.up, Vector3.forward, 17);
+        CreateFaceWear(die, Vector3.back, Vector3.up, Vector3.left, 19);
+    }
+
+    private static void CreateFaceWear(GameObject die, Vector3 normal, Vector3 up, Vector3 right, int seed)
+    {
+        for (var i = 0; i < 4; i++)
+        {
+            var u = Mathf.Lerp(-0.32f, 0.32f, Hash01(seed, i, 5));
+            var v = Mathf.Lerp(-0.32f, 0.32f, Hash01(seed, i, 9));
+            var length = Mathf.Lerp(0.045f, 0.13f, Hash01(seed, i, 14));
+            var angle = Mathf.Lerp(-35f, 35f, Hash01(seed, i, 23));
+            var scratch = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            scratch.name = die.name + " Fine Wear Mark";
+            scratch.transform.SetParent(die.transform, false);
+            scratch.transform.localPosition = normal * 0.512f + right * u + up * v;
+            scratch.transform.localRotation = Quaternion.LookRotation(normal, up) * Quaternion.Euler(0f, 0f, angle);
+            scratch.transform.localScale = new Vector3(length, 0.006f, 0.002f);
+            var renderer = scratch.GetComponent<Renderer>();
+            renderer.material = CreatePipMaterial(new Color(0.72f, 0.72f, 0.68f, 0.55f));
         }
     }
 
@@ -1522,13 +1630,31 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         foreach (var renderer in die.GetComponentsInChildren<Renderer>(true))
         {
-            if (renderer.gameObject.name.Contains("Pip", StringComparison.OrdinalIgnoreCase))
+            if (renderer.gameObject.name.Contains("Pip Well", StringComparison.OrdinalIgnoreCase))
             {
-                renderer.material.color = ShouldUseDarkPips(color) ? Color.black : Color.white;
+                var well = ShouldUseDarkPips(color)
+                    ? new Color(0.045f, 0.047f, 0.043f)
+                    : new Color(0.64f, 0.64f, 0.6f);
+                renderer.material = CreatePipMaterial(well);
                 continue;
             }
 
-            renderer.material.color = color;
+            if (renderer.gameObject.name.Contains("Pip Inset", StringComparison.OrdinalIgnoreCase))
+            {
+                renderer.material = CreatePipMaterial(ShouldUseDarkPips(color) ? Color.black : Color.white);
+                continue;
+            }
+
+            if (renderer.gameObject.name.Contains("Wear", StringComparison.OrdinalIgnoreCase))
+            {
+                var wear = ShouldUseDarkPips(color)
+                    ? new Color(0.68f, 0.68f, 0.63f, 0.55f)
+                    : new Color(0.16f, 0.16f, 0.15f, 0.48f);
+                renderer.material = CreatePipMaterial(wear);
+                continue;
+            }
+
+            renderer.material = CreateDiceMaterial(color);
         }
     }
 
@@ -1536,6 +1662,16 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     {
         var luminance = dieColor.r * 0.2126f + dieColor.g * 0.7152f + dieColor.b * 0.0722f;
         return luminance > 0.62f;
+    }
+
+    private static float Hash01(int x, int y, int seed)
+    {
+        unchecked
+        {
+            var h = x * 374761393 + y * 668265263 + seed * 2147483647;
+            h = (h ^ (h >> 13)) * 1274126177;
+            return ((h ^ (h >> 16)) & 0x7fffffff) / 2147483647f;
+        }
     }
 
     private void PlaceSideBetFromUi(string playerId, bool missGroup)

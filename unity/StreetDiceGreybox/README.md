@@ -11,7 +11,7 @@ It creates the playable scene at runtime:
 - human seats represented by mic/profile markers
 - AI opponent seats represented by mic/profile placeholders until generated bodies are added
 - pulsing mic indicators for table talk / active player feedback
-- two smaller rounded Unity dice with pip geometry, shinier material, and contact shadows for Craps
+- two smaller high-subdivision rounded Unity dice with procedural surface grain, fine bump detail, recessed pip wells, visible wear marks, and contact shadows for Craps
 - third pip die enabled in Cee-lo mode
 - throw animation that enters from the active shooter's seat and lands on the server/local result
 - roll-lock moment when the dice settle
