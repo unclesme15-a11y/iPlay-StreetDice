@@ -8,15 +8,17 @@ It creates the playable scene at runtime:
 
 - first-person shooter camera over a physical street-ground rolling lane
 - no human player bodies for the first playable demo
-- non-shooter seats represented by mic/speaker markers
+- human seats represented by mic/profile markers
+- AI opponent seats represented by mic/profile placeholders until generated bodies are added
 - pulsing mic indicators for table talk / active player feedback
-- two Unity dice with pip geometry for Craps
+- two smaller rounded Unity dice with pip geometry, shinier material, and contact shadows for Craps
 - third pip die enabled in Cee-lo mode
-- throw animation that tumbles into the lane and lands on the server/local result
+- throw animation that enters from the active shooter's seat and lands on the server/local result
 - roll-lock moment when the dice settle
 - compact top-right point / shot status
 - optional tutorial mode for dice math, phase, active point group, side-bet count, and rule explanations
 - player-adjacent Fade/Catch and point-group Side Bet buttons
+- demo-only Next Seat control for testing left, right, back, and back-right throw lanes from the fixed phone view
 - mode switch between Craps and Cee-lo
 - Cee-lo banker/player local table flow plus server evaluator call at `/api/cee-lo/evaluate`
 - tutorial-only deterministic test rolls for seven, point hit, grouped number, Cee-lo `4-5-6`, and Cee-lo `1-2-3`

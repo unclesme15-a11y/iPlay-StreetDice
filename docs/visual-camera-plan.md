@@ -48,8 +48,24 @@ Current art pass sequence:
 1. Lock the low ground bodega/service-door environment.
 2. Add dice readability on the real ground.
 3. Add UI/mic markers only as prototype overlays.
-4. Add computer-generated opponent bodies later, using crouched edge placement.
-5. Human players stay represented by mic/profile overlays instead of bodies.
+4. Map each seat to a throw lane while keeping the phone/table camera fixed.
+5. Add player-adjacent Fade/Catch and side-bet overlays.
+6. Add computer-generated opponent bodies later, using crouched edge placement.
+7. Human players stay represented by mic/profile overlays instead of bodies.
+
+## Seat And Shooter View
+
+The phone view should remain the same table/ground view when another player shoots.
+
+- Local shooter / `p1`: dice enter from the bottom of the screen.
+- Left human / `p3`: dice enter from the left edge.
+- Right human / `p4`: dice enter from the right edge.
+- Catcher AI / `p2`: dice enter from the back of the lane.
+- Back AI / `bot-5`: dice enter from the back-right lane.
+
+Human seats are represented by profile/mic overlays only. They should not receive generated fake bodies.
+
+Computer opponents can later receive generated crouched body plates or short Kling throw clips. When an AI opponent shoots, Kling can provide body language/pose and Unity still owns the dice, final roll, fade state, side bets, and HUD.
 
 ## Rolling Area
 
