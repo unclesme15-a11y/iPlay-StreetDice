@@ -311,7 +311,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private bool CreateKlingEnvironmentPlate()
     {
-        var texture = Resources.Load<Texture2D>("Environments/bodega-ground-photo1-kling-01");
+        var texture = Resources.Load<Texture2D>("Environments/bodega-garage-open-no-characters-kling-01");
         if (texture == null)
         {
             Debug.LogWarning("Kling environment plate texture not found in Resources/Environments.");

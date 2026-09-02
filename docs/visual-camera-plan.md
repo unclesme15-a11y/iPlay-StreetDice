@@ -2,16 +2,16 @@
 
 ## Current Environment Reference
 
-The closest current target is the low ground-level bodega/service-door frame:
+The current base target is the low ground-level bodega garage/service-door frame:
 
 - Camera is almost on the wet asphalt.
 - Foreground is dark, wet street texture.
 - A raised curb/sidewalk cuts horizontally across the middle of frame.
-- Closed metal roll-up service door is centered in the background.
-- Brick walls/pillars sit on both sides of the door.
+- Open outer garage frame is centered, with the deeper back roll-up service door closed.
+- Brick walls/pillars sit on both sides of the garage frame.
 - The scene should feel like a real Brooklyn back-of-bodega/service-door spot, not a game arena.
 - No table. No chairs. No casino styling.
-- Do not prioritize side players yet.
+- Start with no characters in the environment plate.
 
 The side-player reference is useful only for later body placement:
 
@@ -48,7 +48,8 @@ Current art pass sequence:
 1. Lock the low ground bodega/service-door environment.
 2. Add dice readability on the real ground.
 3. Add UI/mic markers only as prototype overlays.
-4. Add side players later, using crouched edge placement.
+4. Add computer-generated opponent bodies later, using crouched edge placement.
+5. Human players stay represented by mic/profile overlays instead of bodies.
 
 ## Rolling Area
 
@@ -118,8 +119,7 @@ Streak broken:
 Real/Kling clip should provide:
 
 - Street energy.
-- Hands entering frame.
-- Players leaning/crouching around the lane.
+- Computer opponent presence only when an AI/NPC is physically at the table.
 - Body language and tension.
 - First-person roll anticipation.
 

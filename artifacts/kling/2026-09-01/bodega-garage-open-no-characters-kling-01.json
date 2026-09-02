@@ -1,0 +1,16 @@
+{
+  "name": "bodega-garage-open-no-characters-kling-01",
+  "provider": "Kling",
+  "model": "kling-image-v3_0",
+  "generationId": "ARDMMwSB2NrNh2jf1kC24Qmmqq7p0dx1_058_IV_RQUx0WzvqlukJ39Z-UAF8vAxop7uuPS0",
+  "creditsConsumed": 1,
+  "sourceReference": "Pasted Image 1 bodega garage street dice angle",
+  "prompt": "Photorealistic cinematic Brooklyn back-of-bodega street dice environment plate based on the reference image composition. Preserve the low first-person street-level view, closed dark corrugated metal garage service door, brick wall, black metal door frame, wet asphalt foreground, concrete ramp and rolling path. Remove every human character completely, remove all bodies, faces, hands, shoes, legs, shadows shaped like people, chairs, stools, tables, dice, UI, text, logos, signs, and game props. The garage door must be fully closed with no visible interior behind it. Empty realistic ground-only rolling lane, gritty urban night lighting, real lens perspective, not cartoon, not video game art, no casino styling. Usable as a clean background plate for Unity dice and microphone/profile overlays.",
+  "unityAsset": "unity/StreetDiceGreybox/Assets/Resources/Environments/bodega-garage-open-no-characters-kling-01.png",
+  "notes": [
+    "Use as the current base environment plate for the first Street Dice bodega garage view.",
+    "Start without characters in the plate.",
+    "Unity overlays dice, mic/profile markers, side-bet UI, and game state.",
+    "Human players should be represented by mic/profile overlays; computer opponents may later use generated bodies."
+  ]
+}
