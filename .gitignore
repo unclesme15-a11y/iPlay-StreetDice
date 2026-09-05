@@ -19,6 +19,9 @@ UserSettings/
 # Generated media and local references
 artifacts/generated/
 artifacts/reference-private/
+artifacts/unitypackage-inspect/
+unity/StreetDiceGreybox/Assets/RRFreelance.meta
+unity/StreetDiceGreybox/Assets/RRFreelance/
 *.mp4
 *.mov
 *.avi

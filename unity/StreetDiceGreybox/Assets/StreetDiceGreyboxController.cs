@@ -26,7 +26,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     [SerializeField] private string baseUrl = "http://localhost:5108";
 
     private const int HotDiceThreshold = 5;
-    private const float DiceRestY = 0.18f;
+    private const float DiceRestY = -0.12f;
     private const float DieHalfSize = 0.5f;
     private const float DieCornerRadius = 0.115f;
     private const int DieMeshDivisions = 16;
@@ -37,8 +37,15 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private GameObject dieAShadow = null!;
     private GameObject dieBShadow = null!;
     private GameObject dieCShadow = null!;
+    private GameObject dieABlur = null!;
+    private GameObject dieBBlur = null!;
+    private GameObject dieCBlur = null!;
     private GameObject rollLane = null!;
     private GameObject environmentPlate = null!;
+    private GameObject thresholdOccluder = null!;
+    private GameObject handRig = null!;
+    private GameObject leftThrowHand = null!;
+    private GameObject rightThrowHand = null!;
     private AudioSource audioSource = null!;
     private AudioClip rollClip = null!;
     private AudioClip lockClip = null!;
@@ -82,7 +89,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
     private bool tutorialMode;
     private bool showPrototypeSeatMarkers;
     private bool sceneInitialized;
+    private bool usingPurchasedHandPack;
     private float rollLockFlashUntil;
+    private float handThrowStartedAt = -10f;
+    private float handThrowVisibleUntil = -10f;
+    private ThrowPath activeThrowPath;
     private Color selectedDiceColor = new Color(0.92f, 0.9f, 0.84f);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -105,6 +116,25 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         BuildRuntimeScene();
     }
 
+    public void BuildHandThrowPreviewForEditor()
+    {
+        showPrototypeSeatMarkers = false;
+        BuildRuntimeScene();
+        shooterId = "p1";
+        rollState = RollState.Rolling;
+        rolling = true;
+        var path = BuildThrowPath();
+        activeThrowPath = path;
+        UpdateThrowHandPose(0.55f, forceVisible: true);
+        dieA.transform.position = Bezier(path.StartA, path.MidA, path.EndA, 0.52f) + Vector3.up * 0.16f;
+        dieB.transform.position = Bezier(path.StartB, path.MidB, path.EndB, 0.5f) + Vector3.up * 0.12f;
+        dieC.SetActive(false);
+        dieCShadow.SetActive(false);
+        UpdateMotionBlur(dieA, dieABlur, new Vector3(480, 650, 370));
+        UpdateMotionBlur(dieB, dieBBlur, new Vector3(610, 420, 540));
+        rollLockFlashUntil = Time.time + 0.7f;
+    }
+
     private void BuildRuntimeScene()
     {
         if (sceneInitialized) return;
@@ -124,8 +154,13 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         dieAShadow = CreateDieShadow("Die A Contact Shadow");
         dieBShadow = CreateDieShadow("Die B Contact Shadow");
         dieCShadow = CreateDieShadow("Die C Contact Shadow");
+        dieABlur = CreateMotionBlur("Die A Motion Blur");
+        dieBBlur = CreateMotionBlur("Die B Motion Blur");
+        dieCBlur = CreateMotionBlur("Die C Motion Blur");
+        CreateFirstPersonHandRig();
         dieC.SetActive(false);
         dieCShadow.SetActive(false);
+        dieCBlur.SetActive(false);
         ResetDiceToShooter();
         ApplyDiceColor();
     }
@@ -146,6 +181,10 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         UpdateDieShadow(dieA, dieAShadow);
         UpdateDieShadow(dieB, dieBShadow);
         UpdateDieShadow(dieC, dieCShadow);
+        UpdateMotionBlur(dieA, dieABlur, new Vector3(480, 650, 370));
+        UpdateMotionBlur(dieB, dieBBlur, new Vector3(610, 420, 540));
+        UpdateMotionBlur(dieC, dieCBlur, new Vector3(530, 360, 720));
+        UpdateThrowHands();
 
         for (var i = 0; i < mics.Length; i++)
         {
@@ -204,11 +243,50 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
         audioSource.volume = 0.45f;
-        rollClip = CreateToneClip("Dice Roll Placeholder", 115f, 0.13f, 0.08f);
-        lockClip = CreateToneClip("Dice Lock Placeholder", 240f, 0.06f, 0.08f);
-        winClip = CreateToneClip("Win Placeholder", 520f, 0.12f, 0.08f);
-        lossClip = CreateToneClip("Loss Placeholder", 150f, 0.12f, 0.08f);
-        fadeClip = CreateToneClip("Fade Placeholder", 330f, 0.07f, 0.06f);
+        rollClip = CreateDiceRollClip("Dice Roll On Wet Pavement", 0.58f);
+        lockClip = CreateImpactClip("Dice Lock On Pavement", 0.12f, 0.26f);
+        winClip = CreateToneClip("Win Click", 520f, 0.12f, 0.08f);
+        lossClip = CreateImpactClip("Loss Tap", 0.16f, 0.18f);
+        fadeClip = CreateImpactClip("Fade Catch Tap", 0.09f, 0.16f);
+    }
+
+    private static AudioClip CreateDiceRollClip(string clipName, float duration)
+    {
+        const int sampleRate = 22050;
+        var sampleCount = Mathf.CeilToInt(sampleRate * duration);
+        var samples = new float[sampleCount];
+        for (var i = 0; i < sampleCount; i++)
+        {
+            var t = i / (float)sampleRate;
+            var envelope = Mathf.Clamp01(1f - t / duration);
+            var grit = HashSigned(i, 41, 9) * 0.035f;
+            var rumble = Mathf.Sin(2f * Mathf.PI * 82f * t) * 0.022f * envelope;
+            var skip = Mathf.Abs(Mathf.Sin(2f * Mathf.PI * 13.5f * t));
+            samples[i] = (grit * skip + rumble) * envelope;
+        }
+
+        var clip = AudioClip.Create(clipName, sampleCount, 1, sampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
+    }
+
+    private static AudioClip CreateImpactClip(string clipName, float duration, float amplitude)
+    {
+        const int sampleRate = 22050;
+        var sampleCount = Mathf.CeilToInt(sampleRate * duration);
+        var samples = new float[sampleCount];
+        for (var i = 0; i < sampleCount; i++)
+        {
+            var t = i / (float)sampleRate;
+            var envelope = Mathf.Exp(-t * 34f);
+            var click = HashSigned(i, 97, 3) * amplitude * envelope;
+            var body = Mathf.Sin(2f * Mathf.PI * 190f * t) * amplitude * 0.24f * envelope;
+            samples[i] = click + body;
+        }
+
+        var clip = AudioClip.Create(clipName, sampleCount, 1, sampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
     }
 
     private static AudioClip CreateToneClip(string clipName, float frequency, float duration, float amplitude)
@@ -355,7 +433,17 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         var material = new Material(shader);
         material.mainTexture = texture;
         environmentPlate.GetComponent<Renderer>().material = material;
+        CreateThresholdOccluder();
         return true;
+    }
+
+    private void CreateThresholdOccluder()
+    {
+        thresholdOccluder = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        thresholdOccluder.name = "Kling Plate Threshold Occlusion Mask";
+        thresholdOccluder.transform.position = new Vector3(0f, 0.126f, -0.06f);
+        thresholdOccluder.transform.localScale = new Vector3(2.05f, 0.035f, 0.018f);
+        thresholdOccluder.GetComponent<Renderer>().material = CreateTransparentMaterial(new Color(0.04f, 0.04f, 0.035f, 0.1f));
     }
 
     private void CreateWallCourse(float x, float z)
@@ -409,6 +497,95 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         return new SeatMic(label, playerId, root, head, pulse, accent, human);
     }
 
+    private void CreateFirstPersonHandRig()
+    {
+        handRig = new GameObject("Local Shooter First Person Hand Rig");
+        leftThrowHand = CreateThrowHand("Left", "FirstPersonHands/FirstPersonHand_L", new Vector3(-0.32f, -0.04f, 0f), Quaternion.Euler(8f, 158f, -12f));
+        rightThrowHand = CreateThrowHand("Right", "FirstPersonHands/FirstPersonHand_R", new Vector3(0.32f, -0.04f, 0f), Quaternion.Euler(8f, -158f, 12f));
+        handRig.SetActive(false);
+    }
+
+    private GameObject CreateThrowHand(string label, string resourcePath, Vector3 localPosition, Quaternion localRotation)
+    {
+        var prefab = Resources.Load<GameObject>(resourcePath);
+        GameObject hand;
+        if (prefab != null)
+        {
+            hand = Instantiate(prefab, handRig.transform);
+            hand.name = label + " Purchased Hand";
+            usingPurchasedHandPack = true;
+            NormalizeHandScale(hand, 0.42f);
+        }
+        else
+        {
+            hand = CreateFallbackHand(label);
+            hand.transform.SetParent(handRig.transform, false);
+        }
+
+        hand.transform.localPosition = localPosition;
+        hand.transform.localRotation = localRotation;
+        return hand;
+    }
+
+    private static void NormalizeHandScale(GameObject hand, float targetMaxSize)
+    {
+        var renderers = hand.GetComponentsInChildren<Renderer>(true);
+        if (renderers.Length == 0)
+        {
+            hand.transform.localScale = Vector3.one;
+            return;
+        }
+
+        var bounds = renderers[0].bounds;
+        for (var i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+
+        var maxSize = Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
+        hand.transform.localScale = maxSize > 0.001f ? Vector3.one * (targetMaxSize / maxSize) : Vector3.one;
+    }
+
+    private static GameObject CreateFallbackHand(string label)
+    {
+        var root = new GameObject(label + " Fallback Hand");
+        var palm = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        palm.name = label + " Fallback Palm";
+        palm.transform.SetParent(root.transform, false);
+        palm.transform.localScale = new Vector3(0.16f, 0.11f, 0.22f);
+        palm.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        palm.GetComponent<Renderer>().material = CreateHandMaterial();
+
+        for (var i = 0; i < 4; i++)
+        {
+            var finger = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            finger.name = label + " Fallback Finger";
+            finger.transform.SetParent(root.transform, false);
+            finger.transform.localPosition = new Vector3(-0.075f + i * 0.05f, 0.02f, 0.18f);
+            finger.transform.localRotation = Quaternion.Euler(68f, 0f, 0f);
+            finger.transform.localScale = new Vector3(0.032f, 0.1f, 0.032f);
+            finger.GetComponent<Renderer>().material = CreateHandMaterial();
+        }
+
+        var thumb = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        thumb.name = label + " Fallback Thumb";
+        thumb.transform.SetParent(root.transform, false);
+        thumb.transform.localPosition = new Vector3(label == "Left" ? 0.14f : -0.14f, -0.015f, 0.04f);
+        thumb.transform.localRotation = Quaternion.Euler(80f, 0f, label == "Left" ? -46f : 46f);
+        thumb.transform.localScale = new Vector3(0.04f, 0.1f, 0.04f);
+        thumb.GetComponent<Renderer>().material = CreateHandMaterial();
+        return root;
+    }
+
+    private static Material CreateHandMaterial()
+    {
+        var material = new Material(Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit"));
+        material.color = new Color(0.5f, 0.31f, 0.22f);
+        material.SetFloat("_Glossiness", 0.18f);
+        material.SetFloat("_Metallic", 0f);
+        return material;
+    }
+
     private GameObject CreateDie(string dieName, Vector3 position)
     {
         var die = new GameObject(dieName);
@@ -433,6 +610,21 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         material.SetTexture("_BumpMap", CreateDiceNormalTexture());
         material.SetFloat("_BumpScale", 0.18f);
         material.EnableKeyword("_NORMALMAP");
+        return material;
+    }
+
+    private static Material CreateTransparentMaterial(Color color)
+    {
+        var material = new Material(Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit"));
+        material.color = color;
+        material.SetFloat("_Mode", 3f);
+        material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        material.SetInt("_ZWrite", 0);
+        material.DisableKeyword("_ALPHATEST_ON");
+        material.EnableKeyword("_ALPHABLEND_ON");
+        material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        material.renderQueue = 3000;
         return material;
     }
 
@@ -493,12 +685,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private static GameObject CreateDieShadow(string shadowName)
     {
-        var shadow = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        var shadow = GameObject.CreatePrimitive(PrimitiveType.Quad);
         shadow.name = shadowName;
-        shadow.transform.localScale = new Vector3(0.18f, 0.004f, 0.13f);
+        shadow.transform.localScale = new Vector3(0.28f, 0.08f, 1f);
         var renderer = shadow.GetComponent<Renderer>();
-        renderer.material = new Material(Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit"));
-        renderer.material.color = new Color(0.008f, 0.009f, 0.009f, 0.62f);
+        renderer.material = CreateTransparentMaterial(new Color(0.002f, 0.002f, 0.002f, 0.72f));
         return shadow;
     }
 
@@ -508,11 +699,37 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         shadow.SetActive(die.activeInHierarchy);
         if (!shadow.activeInHierarchy) return;
 
-        var height = Mathf.Clamp(die.transform.position.y - 0.12f, 0f, 0.75f);
-        var scale = Mathf.Lerp(0.15f, 0.28f, height / 0.75f);
-        shadow.transform.position = new Vector3(die.transform.position.x, 0.06f, die.transform.position.z + 0.025f);
-        shadow.transform.rotation = Quaternion.Euler(0f, die.transform.eulerAngles.y, 0f);
-        shadow.transform.localScale = new Vector3(scale, 0.004f, scale * 0.72f);
+        var height = Mathf.Clamp(die.transform.position.y - DiceRestY, 0f, 0.75f);
+        var scale = Mathf.Lerp(0.34f, 0.2f, height / 0.75f);
+        shadow.transform.position = die.transform.position + new Vector3(0f, -0.19f, -0.02f);
+        shadow.transform.rotation = Camera.main != null
+            ? Quaternion.LookRotation(-Camera.main.transform.forward, Camera.main.transform.up)
+            : Quaternion.identity;
+        shadow.transform.localScale = new Vector3(scale, scale * 0.34f, 1f);
+    }
+
+    private static GameObject CreateMotionBlur(string blurName)
+    {
+        var blur = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        blur.name = blurName;
+        blur.transform.localScale = new Vector3(0.28f, 0.035f, 0.055f);
+        blur.GetComponent<Renderer>().material = CreateTransparentMaterial(new Color(0.92f, 0.9f, 0.84f, 0.16f));
+        blur.SetActive(false);
+        return blur;
+    }
+
+    private void UpdateMotionBlur(GameObject die, GameObject blur, Vector3 spin)
+    {
+        if (die == null || blur == null) return;
+        var active = rolling && die.activeInHierarchy;
+        blur.SetActive(active);
+        if (!active) return;
+
+        var color = streak >= HotDiceThreshold ? new Color(1f, 0.23f, 0.02f, 0.18f) : selectedDiceColor;
+        color.a = 0.18f;
+        blur.GetComponent<Renderer>().material.color = color;
+        blur.transform.position = die.transform.position - die.transform.forward * 0.1f;
+        blur.transform.rotation = Quaternion.LookRotation(spin.normalized, Vector3.up);
     }
 
     private static Mesh CreateRoundedCubeMesh(float halfSize, float radius, int divisions)
@@ -913,7 +1130,9 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         result = gameMode == GameMode.CeeLo
             ? "Local Cee-lo table open. Roll three dice."
             : "Local demo table open. Shooter is first-person. Catcher mic is live.";
-        tutorialDetail = "Table reset. Use Roll to count a live throw.";
+        tutorialDetail = usingPurchasedHandPack
+            ? "Table reset. Purchased first-person hand pack loaded."
+            : "Table reset. Fallback hands loaded; import the hand pack for the real rig.";
         PulseMic(catcherId, 1.5f);
         ResetDiceToShooter();
         ApplyDiceColor();
@@ -1482,6 +1701,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         PlayAudio(rollClip);
         PulseMic(shooterId, 1.35f);
         var path = BuildThrowPath();
+        StartThrowHands(path);
         var endA = path.EndA + new Vector3(UnityEngine.Random.Range(-0.12f, 0.12f), 0f, UnityEngine.Random.Range(-0.18f, 0.18f));
         var endB = path.EndB + new Vector3(UnityEngine.Random.Range(-0.12f, 0.12f), 0f, UnityEngine.Random.Range(-0.18f, 0.18f));
         var endC = path.EndC + new Vector3(UnityEngine.Random.Range(-0.1f, 0.1f), 0f, UnityEngine.Random.Range(-0.16f, 0.16f));
@@ -1492,12 +1712,16 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             var t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
-            var hop = Mathf.Abs(Mathf.Sin(t * Mathf.PI * 3.2f)) * Mathf.Lerp(0.34f, 0.04f, t);
-            dieA.transform.position = Bezier(path.StartA, path.MidA, endA, t) + Vector3.up * hop;
-            dieB.transform.position = Bezier(path.StartB, path.MidB, endB, t) + Vector3.up * (hop * 0.9f);
+            var arc = Mathf.Sin(t * Mathf.PI) * 0.12f;
+            var bounce = Mathf.Abs(Mathf.Sin(t * Mathf.PI * 6.4f)) * Mathf.Lerp(0.22f, 0.012f, t);
+            var skidA = new Vector3(Mathf.Sin(t * 38f) * 0.012f, 0f, Mathf.Cos(t * 31f) * 0.01f) * (1f - t);
+            var skidB = new Vector3(Mathf.Cos(t * 35f) * 0.011f, 0f, Mathf.Sin(t * 29f) * 0.013f) * (1f - t);
+            dieA.transform.position = Bezier(path.StartA, path.MidA, endA, t) + Vector3.up * (arc + bounce) + skidA;
+            dieB.transform.position = Bezier(path.StartB, path.MidB, endB, t) + Vector3.up * (arc * 0.9f + bounce * 0.86f) + skidB;
             if (finalC != null)
             {
-                dieC.transform.position = Bezier(path.StartC, path.MidC, endC, t) + Vector3.up * (hop * 0.82f);
+                var skidC = new Vector3(Mathf.Sin(t * 33f) * 0.01f, 0f, Mathf.Cos(t * 27f) * 0.011f) * (1f - t);
+                dieC.transform.position = Bezier(path.StartC, path.MidC, endC, t) + Vector3.up * (arc * 0.82f + bounce * 0.76f) + skidC;
             }
             yield return null;
         }
@@ -1570,6 +1794,105 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
                 new Vector3(0.38f, DiceRestY, 0.3f),
                 new Vector3(0.02f, DiceRestY, 0.78f))
         };
+    }
+
+    private void StartThrowHands(ThrowPath path)
+    {
+        activeThrowPath = path;
+        handThrowStartedAt = Time.time;
+        handThrowVisibleUntil = Time.time + 0.82f;
+        UpdateThrowHandPose(0f, forceVisible: shooterId == "p1");
+        PlayHandThrowAnimation();
+    }
+
+    private void UpdateThrowHands()
+    {
+        if (handRig == null) return;
+        if (shooterId != "p1" || Time.time > handThrowVisibleUntil)
+        {
+            StopHandThrowAnimation();
+            handRig.SetActive(false);
+            return;
+        }
+
+        var t = Mathf.Clamp01((Time.time - handThrowStartedAt) / 0.72f);
+        UpdateThrowHandPose(t, forceVisible: true);
+    }
+
+    private void UpdateThrowHandPose(float t, bool forceVisible)
+    {
+        if (handRig == null) return;
+        handRig.SetActive(forceVisible);
+        if (!forceVisible) return;
+
+        var startCenter = (activeThrowPath.StartA + activeThrowPath.StartB) * 0.5f;
+        var windup = startCenter + new Vector3(0f, -0.12f, -0.86f);
+        var release = startCenter + new Vector3(0f, 0.1f, 0.22f);
+        var followThrough = startCenter + new Vector3(0.06f, 0.03f, 0.48f);
+        var a = t < 0.72f
+            ? Vector3.Lerp(windup, release, Mathf.SmoothStep(0f, 1f, t / 0.72f))
+            : Vector3.Lerp(release, followThrough, Mathf.SmoothStep(0f, 1f, (t - 0.72f) / 0.28f));
+        handRig.transform.position = a;
+        handRig.transform.rotation = Quaternion.Euler(Mathf.Lerp(22f, -8f, t), 0f, Mathf.Sin(t * Mathf.PI) * 2f);
+        handRig.transform.localScale = Vector3.one;
+
+        if (leftThrowHand != null)
+        {
+            leftThrowHand.transform.localPosition = Vector3.Lerp(new Vector3(-0.38f, -0.07f, 0f), new Vector3(-0.28f, -0.02f, 0.13f), t);
+            leftThrowHand.transform.localRotation = Quaternion.Euler(Mathf.Lerp(18f, -4f, t), Mathf.Lerp(165f, 150f, t), Mathf.Lerp(-16f, -8f, t));
+        }
+
+        if (rightThrowHand != null)
+        {
+            rightThrowHand.transform.localPosition = Vector3.Lerp(new Vector3(0.38f, -0.07f, 0f), new Vector3(0.28f, -0.02f, 0.13f), t);
+            rightThrowHand.transform.localRotation = Quaternion.Euler(Mathf.Lerp(18f, -4f, t), Mathf.Lerp(-165f, -150f, t), Mathf.Lerp(16f, 8f, t));
+        }
+    }
+
+    private void PlayHandThrowAnimation()
+    {
+        if (handRig == null || shooterId != "p1") return;
+        var animators = handRig.GetComponentsInChildren<Animator>(true);
+        for (var i = 0; i < animators.Length; i++)
+        {
+            var animator = animators[i];
+            if (TrySetAnimatorBool(animator, "bShoot", true))
+            {
+                animator.speed = 1.15f;
+                continue;
+            }
+
+            var shootHash = Animator.StringToHash("PoseShoot");
+            if (animator.HasState(0, shootHash))
+            {
+                animator.Play(shootHash, 0, 0f);
+            }
+        }
+    }
+
+    private static bool TrySetAnimatorBool(Animator animator, string parameterName, bool value)
+    {
+        if (animator == null) return false;
+        var parameters = animator.parameters;
+        for (var i = 0; i < parameters.Length; i++)
+        {
+            var parameter = parameters[i];
+            if (parameter.type != AnimatorControllerParameterType.Bool || parameter.name != parameterName) continue;
+            animator.SetBool(parameterName, value);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void StopHandThrowAnimation()
+    {
+        if (handRig == null) return;
+        var animators = handRig.GetComponentsInChildren<Animator>(true);
+        for (var i = 0; i < animators.Length; i++)
+        {
+            TrySetAnimatorBool(animators[i], "bShoot", false);
+        }
     }
 
     private static Vector3 Bezier(Vector3 start, Vector3 mid, Vector3 end, float t)
@@ -1672,6 +1995,11 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             h = (h ^ (h >> 13)) * 1274126177;
             return ((h ^ (h >> 16)) & 0x7fffffff) / 2147483647f;
         }
+    }
+
+    private static float HashSigned(int x, int y, int seed)
+    {
+        return Hash01(x, y, seed) * 2f - 1f;
     }
 
     private void PlaceSideBetFromUi(string playerId, bool missGroup)

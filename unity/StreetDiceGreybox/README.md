@@ -11,9 +11,10 @@ It creates the playable scene at runtime:
 - human seats represented by mic/profile markers
 - AI opponent seats represented by mic/profile placeholders until generated bodies are added
 - pulsing mic indicators for table talk / active player feedback
-- two smaller high-subdivision rounded Unity dice with procedural surface grain, fine bump detail, recessed pip wells, visible wear marks, and contact shadows for Craps
+- two smaller high-subdivision rounded Unity dice with procedural surface grain, fine bump detail, recessed pip wells, visible wear marks, contact shadows, and motion streaks for Craps
 - third pip die enabled in Cee-lo mode
 - throw animation that enters from the active shooter's seat and lands on the server/local result
+- local first-person hand throw rig for the bottom shooter; the purchased Unity hand pack is loaded from ignored local Resources when present, with a simple fallback hand if missing
 - roll-lock moment when the dice settle
 - compact top-right point / shot status
 - optional tutorial mode for dice math, phase, active point group, side-bet count, and rule explanations
@@ -23,7 +24,7 @@ It creates the playable scene at runtime:
 - Cee-lo banker/player local table flow plus server evaluator call at `/api/cee-lo/evaluate`
 - tutorial-only deterministic test rolls for seven, point hit, grouped number, Cee-lo `4-5-6`, and Cee-lo `1-2-3`
 - explicit roll states for fade window, rolling, locked, resolving, and shooter decision
-- placeholder audio for dice roll, lock, fade, win, and loss events
+- procedural dice-on-pavement roll grit plus hard tap sounds for lock, fade, and loss events
 - Kling bodega garage/service-door environment plate with no characters, wet asphalt, curb/sidewalk edge, and no tables
 - streak meter with red/orange hot dice override at full streak
 - standalone local Demo Table mode for APK testing without a running backend
@@ -47,7 +48,17 @@ For non-interactive visual smoke testing:
 
 The screenshot is written to `artifacts/unity-smoke/street-dice-demo-smoke.png`.
 
+For the hand and dice throw preview:
+
+```powershell
+& 'C:\Program Files\Unity\Hub\Editor\6000.4.11f1\Editor\Unity.exe' -batchmode -quit -projectPath .\unity\StreetDiceGreybox -executeMethod StreetDiceDemoBuild.CaptureHandThrowScreenshot -logFile .\unity\hand-throw-screenshot.log
+```
+
+The screenshot is written to `artifacts/unity-smoke/street-dice-hand-throw-preview.png`.
+
 The smoke screenshot verifies the current art pipeline: a Kling-generated low ground-level wet asphalt bodega garage/service-door plate with no characters, with Unity dice overlaid. Human players stay as mic/profile overlays; computer-generated opponent bodies can be added later after the environment framing is right.
+
+The purchased hand pack is intentionally not committed. If Unity has the package locally, import it from `C:\Users\uncle\AppData\Roaming\Unity\Asset Store-5.x\RRFreelance\3D ModelsCharactersHumanoidsHumans\First Person Hand.unitypackage`, then keep the `Assets/RRFreelance` folder ignored.
 
 For the full no-APK validation gate:
 

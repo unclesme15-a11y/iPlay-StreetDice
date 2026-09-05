@@ -51,6 +51,16 @@ public static class StreetDiceDemoBuild
 
     public static void CaptureSmokeScreenshot()
     {
+        CaptureScreenshot("street-dice-demo-smoke.png", controller => controller.BuildEnvironmentPreviewForEditor());
+    }
+
+    public static void CaptureHandThrowScreenshot()
+    {
+        CaptureScreenshot("street-dice-hand-throw-preview.png", controller => controller.BuildHandThrowPreviewForEditor());
+    }
+
+    private static void CaptureScreenshot(string fileName, System.Action<StreetDiceGreyboxController> configure)
+    {
         EnsureDemoScene();
         foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
         {
@@ -59,7 +69,7 @@ public static class StreetDiceDemoBuild
 
         var controllerObject = new GameObject("Smoke Screenshot Controller");
         var controller = controllerObject.AddComponent<StreetDiceGreyboxController>();
-        controller.BuildEnvironmentPreviewForEditor();
+        configure(controller);
 
         var camera = Camera.main;
         if (camera == null)
@@ -69,7 +79,7 @@ public static class StreetDiceDemoBuild
 
         var outputDirectory = Path.GetFullPath("../../artifacts/unity-smoke");
         Directory.CreateDirectory(outputDirectory);
-        var outputPath = Path.Combine(outputDirectory, "street-dice-demo-smoke.png");
+        var outputPath = Path.Combine(outputDirectory, fileName);
 
         var texture = new RenderTexture(1280, 720, 24);
         var previousTarget = camera.targetTexture;

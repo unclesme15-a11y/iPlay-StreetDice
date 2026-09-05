@@ -159,3 +159,20 @@ Unity should provide:
 - Server-confirmed state.
 
 The roll outcome should be decided by the backend, not by interpreting the clip.
+
+## Realism Upgrade Status
+
+The current playable prototype covers the first pass of the 10 realism jumps:
+
+1. Real dice direction: procedural rounded dice now have bevels, recessed pip wells, surface grain, normal detail, scuffs, contact shadows, and player-selectable colors.
+2. Shadow-catcher ground: dice and Cee-lo dice use contact shadows over the Kling plate so they sit on the street surface instead of floating.
+3. Matched lighting: overhead street light, cool door spill, and warm dice practical light are tuned for the wet bodega/service-door frame.
+4. Camera/lens matching: fixed phone-friendly first-person ground view remains locked to the bodega service-door plate.
+5. Realistic roll behavior: throws use directional lanes, bounce, skid, random landing offsets, and a lock-to-result finish.
+6. Motion blur: dice now get subtle colored motion streaks during active rolls, with red/orange reserved for full streak.
+7. Hands only first: the bottom shooter gets a first-person hand throw rig; human opponents remain mic/profile overlays.
+8. Street audio: placeholder beeps were replaced with generated dice-on-pavement grit and short impact taps.
+9. Occlusion: a subtle threshold mask helps blend Unity dice into the garage entrance area.
+10. UI restraint: top-right dice math stays quiet unless tutorial mode is enabled; normal mode keeps only the needed point/shot status.
+
+The next asset-quality jump is replacing procedural dice with scanned or professionally authored dice models/materials, but the current code path already supports authoritative landing results, selected dice color, and hot-streak red/orange override.
