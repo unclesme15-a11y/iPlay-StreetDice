@@ -2,21 +2,21 @@
 
 This Unity project is the first test client for the iPlay Cee-lo & Craps prototype.
 
-It uses a realistic Kling-generated bodega garage/service-door environment plate at runtime, with Unity reserved for dice, UI, audio placeholders, and server/local game state. The primitive street scene remains only as a fallback if the Kling plate asset is missing.
+It uses a realistic Kling-generated bodega roll-up/service-door environment plate at runtime, with Unity reserved for dice, UI, audio, hand hints, and server/local game state. The primitive street scene remains only as a fallback if the Kling plate asset is missing.
 
 It creates the playable scene at runtime:
 
-- first-person shooter camera over a physical street-ground rolling lane
+- first-person shooter camera over a physical street-ground rolling lane with the garage door fully down
 - no human player bodies for the first playable demo
 - human seats represented by mic/profile markers
 - AI opponent seats represented by mic/profile placeholders until generated bodies are added
 - pulsing mic indicators for table talk / active player feedback
-- two smaller high-subdivision rounded Unity dice with procedural surface grain, fine bump detail, recessed pip wells, visible wear marks, contact shadows, and motion streaks for Craps
+- small high-subdivision rounded Unity dice sized to feel like real street dice, with procedural surface grain, fine bump detail, recessed pip wells, visible wear marks, contact shadows, and motion streaks for Craps
 - third pip die enabled in Cee-lo mode
 - throw animation that enters from the active shooter's seat and lands on the server/local result
-- local first-person hand throw rig for the bottom shooter; the purchased Unity hand pack is loaded from ignored local Resources when present, with a simple fallback hand if missing
+- local first-person hand throw rig for the bottom shooter; only fingers and part of the hand should peek from the bottom edge
 - roll-lock moment when the dice settle
-- compact top-right point / shot status
+- compact top-right magnified dice readout plus point / shot status
 - optional tutorial mode for dice math, phase, active point group, side-bet count, and rule explanations
 - player-adjacent Fade/Catch and point-group Side Bet buttons
 - demo-only Next Seat control for testing left, right, back, and back-right throw lanes from the fixed phone view
@@ -25,7 +25,7 @@ It creates the playable scene at runtime:
 - tutorial-only deterministic test rolls for seven, point hit, grouped number, Cee-lo `4-5-6`, and Cee-lo `1-2-3`
 - explicit roll states for fade window, rolling, locked, resolving, and shooter decision
 - procedural dice-on-pavement roll grit plus hard tap sounds for lock, fade, and loss events
-- Kling bodega garage/service-door environment plate with no characters, wet asphalt, curb/sidewalk edge, and no tables
+- Kling bodega roll-up/service-door environment plate with the door closed, no characters, wet asphalt, curb/sidewalk edge, and no tables
 - streak meter with red/orange hot dice override at full streak
 - standalone local Demo Table mode for APK testing without a running backend
 - optional server mode for Create, Open Shot, Fade, Roll, Run Same, Double Up, and Voice Gate
@@ -56,7 +56,7 @@ For the hand and dice throw preview:
 
 The screenshot is written to `artifacts/unity-smoke/street-dice-hand-throw-preview.png`.
 
-The smoke screenshot verifies the current art pipeline: a Kling-generated low ground-level wet asphalt bodega garage/service-door plate with no characters, with Unity dice overlaid. Human players stay as mic/profile overlays; computer-generated opponent bodies can be added later after the environment framing is right.
+The smoke screenshot verifies the current art pipeline: a Kling-generated low ground-level wet asphalt bodega roll-up/service-door plate with no characters and the door down, with small Unity dice overlaid. Human players stay as mic/profile overlays; computer-generated opponent bodies can be added later after the environment framing is right.
 
 The purchased hand pack is intentionally not committed. If Unity has the package locally, import it from `C:\Users\uncle\AppData\Roaming\Unity\Asset Store-5.x\RRFreelance\3D ModelsCharactersHumanoidsHumans\First Person Hand.unitypackage`, then keep the `Assets/RRFreelance` folder ignored.
 

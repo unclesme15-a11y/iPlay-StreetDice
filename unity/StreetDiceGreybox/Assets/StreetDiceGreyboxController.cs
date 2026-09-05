@@ -27,6 +27,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private const int HotDiceThreshold = 5;
     private const float DiceRestY = -0.12f;
+    private const float DiceWorldScale = 0.09f;
     private const float DieHalfSize = 0.5f;
     private const float DieCornerRadius = 0.115f;
     private const int DieMeshDivisions = 16;
@@ -125,7 +126,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         rolling = true;
         var path = BuildThrowPath();
         activeThrowPath = path;
-        UpdateThrowHandPose(0.55f, forceVisible: true);
+        UpdateThrowHandPose(0.28f, forceVisible: true);
         dieA.transform.position = Bezier(path.StartA, path.MidA, path.EndA, 0.52f) + Vector3.up * 0.16f;
         dieB.transform.position = Bezier(path.StartB, path.MidB, path.EndB, 0.5f) + Vector3.up * 0.12f;
         dieC.SetActive(false);
@@ -416,7 +417,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private bool CreateKlingEnvironmentPlate()
     {
-        var texture = Resources.Load<Texture2D>("Environments/bodega-garage-open-no-characters-kling-01");
+        var texture = Resources.Load<Texture2D>("Environments/bodega-ground-photo1-kling-01");
         if (texture == null)
         {
             Debug.LogWarning("Kling environment plate texture not found in Resources/Environments.");
@@ -433,7 +434,6 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         var material = new Material(shader);
         material.mainTexture = texture;
         environmentPlate.GetComponent<Renderer>().material = material;
-        CreateThresholdOccluder();
         return true;
     }
 
@@ -514,7 +514,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
             hand = Instantiate(prefab, handRig.transform);
             hand.name = label + " Purchased Hand";
             usingPurchasedHandPack = true;
-            NormalizeHandScale(hand, 0.42f);
+            NormalizeHandScale(hand, 0.24f);
         }
         else
         {
@@ -594,7 +594,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         renderer.material = CreateDiceMaterial(selectedDiceColor);
         die.name = dieName;
         die.transform.position = position;
-        die.transform.localScale = Vector3.one * 0.235f;
+        die.transform.localScale = Vector3.one * DiceWorldScale;
         CreatePips(die);
         CreateFaceWear(die);
         return die;
@@ -897,23 +897,52 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private void DrawTopRightStatus()
     {
-        var width = tutorialMode ? 330f : 210f;
-        var height = tutorialMode ? 172f : 76f;
+        var width = tutorialMode ? 330f : 238f;
+        var height = tutorialMode ? 220f : 126f;
         var x = Screen.width - width - 18f;
         GUI.Box(new Rect(x, 18f, width, height), "");
         GUI.Label(new Rect(x + 12f, 28f, width - 24f, 22f), gameMode == GameMode.CeeLo ? "CEE-LO" : point == "-" ? "COME OUT" : "POINT " + point);
         GUI.Label(new Rect(x + 12f, 52f, width - 24f, 22f), Time.time < rollLockFlashUntil ? "ROLL LOCKED" : "SHOT " + shotAmount);
+
+        var dieSize = gameMode == GameMode.CeeLo ? 48f : 54f;
+        var diceY = 76f;
+        var diceX = x + 14f;
+        DrawMagnifiedDie(new Rect(diceX, diceY, dieSize, dieSize), die1);
+        DrawMagnifiedDie(new Rect(diceX + dieSize + 10f, diceY, dieSize, dieSize), die2);
+        if (gameMode == GameMode.CeeLo)
+        {
+            DrawMagnifiedDie(new Rect(diceX + (dieSize + 10f) * 2f, diceY, dieSize, dieSize), die3);
+        }
 
         if (tutorialMode)
         {
             var rollText = gameMode == GameMode.CeeLo
                 ? die1 + " / " + die2 + " / " + die3
                 : die1 + " + " + die2 + " = " + (die1 + die2);
-            GUI.Label(new Rect(x + 12f, 76f, width - 24f, 22f), rollText);
-            GUI.Label(new Rect(x + 12f, 98f, width - 24f, 22f), "Phase: " + phase);
-            GUI.Label(new Rect(x + 12f, 120f, width - 24f, 22f), "Group: " + activePointGroup);
-            GUI.Label(new Rect(x + 12f, 142f, width - 24f, 22f), "State: " + rollState + " | Side bets: " + OpenSideBetCount());
+            GUI.Label(new Rect(x + 12f, 136f, width - 24f, 22f), rollText);
+            GUI.Label(new Rect(x + 12f, 158f, width - 24f, 22f), "Phase: " + phase);
+            GUI.Label(new Rect(x + 12f, 180f, width - 24f, 22f), "Group: " + activePointGroup);
+            GUI.Label(new Rect(x + 12f, 202f, width - 24f, 22f), "State: " + rollState + " | Side bets: " + OpenSideBetCount());
         }
+    }
+
+    private void DrawMagnifiedDie(Rect rect, int value)
+    {
+        var previous = GUI.color;
+        GUI.color = streak >= HotDiceThreshold ? new Color(1f, 0.23f, 0.02f) : selectedDiceColor;
+        GUI.Box(rect, "");
+        GUI.color = ShouldUseDarkPips(GUI.color) ? new Color(0.03f, 0.03f, 0.028f) : Color.white;
+
+        var pip = Mathf.Max(5f, rect.width * 0.12f);
+        var inset = rect.width * 0.25f;
+        foreach (var offset in PipOffsets(value))
+        {
+            var px = rect.center.x + offset.x / 0.22f * inset - pip * 0.5f;
+            var py = rect.center.y - offset.y / 0.22f * inset - pip * 0.5f;
+            GUI.DrawTexture(new Rect(px, py, pip, pip), Texture2D.whiteTexture);
+        }
+
+        GUI.color = previous;
     }
 
     private void DrawPlayerOverlays()
@@ -1825,15 +1854,15 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         handRig.SetActive(forceVisible);
         if (!forceVisible) return;
 
-        var startCenter = (activeThrowPath.StartA + activeThrowPath.StartB) * 0.5f;
-        var windup = startCenter + new Vector3(0f, -0.12f, -0.86f);
-        var release = startCenter + new Vector3(0f, 0.1f, 0.22f);
-        var followThrough = startCenter + new Vector3(0.06f, 0.03f, 0.48f);
+        var handAnchor = new Vector3(0f, 0.08f, -3.7f);
+        var windup = handAnchor + new Vector3(0f, -0.16f, -0.42f);
+        var release = handAnchor + new Vector3(0f, -0.1f, 0.08f);
+        var followThrough = handAnchor + new Vector3(0.04f, -0.12f, 0.24f);
         var a = t < 0.72f
             ? Vector3.Lerp(windup, release, Mathf.SmoothStep(0f, 1f, t / 0.72f))
             : Vector3.Lerp(release, followThrough, Mathf.SmoothStep(0f, 1f, (t - 0.72f) / 0.28f));
         handRig.transform.position = a;
-        handRig.transform.rotation = Quaternion.Euler(Mathf.Lerp(22f, -8f, t), 0f, Mathf.Sin(t * Mathf.PI) * 2f);
+        handRig.transform.rotation = Quaternion.Euler(Mathf.Lerp(4f, -12f, t), 0f, Mathf.Sin(t * Mathf.PI) * 2f);
         handRig.transform.localScale = Vector3.one;
 
         if (leftThrowHand != null)
