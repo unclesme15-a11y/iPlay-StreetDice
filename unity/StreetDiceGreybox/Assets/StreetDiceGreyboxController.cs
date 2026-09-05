@@ -417,7 +417,7 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
     private bool CreateKlingEnvironmentPlate()
     {
-        var texture = Resources.Load<Texture2D>("Environments/bodega-ground-photo1-kling-01");
+        var texture = Resources.Load<Texture2D>("Environments/bodega-garage-door-down-one-pavement-02");
         if (texture == null)
         {
             Debug.LogWarning("Kling environment plate texture not found in Resources/Environments.");
@@ -1854,10 +1854,10 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
         handRig.SetActive(forceVisible);
         if (!forceVisible) return;
 
-        var handAnchor = new Vector3(0f, 0.08f, -3.7f);
-        var windup = handAnchor + new Vector3(0f, -0.16f, -0.42f);
-        var release = handAnchor + new Vector3(0f, -0.1f, 0.08f);
-        var followThrough = handAnchor + new Vector3(0.04f, -0.12f, 0.24f);
+        var handAnchor = new Vector3(0f, 0.04f, -3.84f);
+        var windup = handAnchor + new Vector3(0f, -0.16f, -0.24f);
+        var release = handAnchor + new Vector3(0f, -0.08f, 0.08f);
+        var followThrough = handAnchor + new Vector3(0.04f, -0.1f, 0.22f);
         var a = t < 0.72f
             ? Vector3.Lerp(windup, release, Mathf.SmoothStep(0f, 1f, t / 0.72f))
             : Vector3.Lerp(release, followThrough, Mathf.SmoothStep(0f, 1f, (t - 0.72f) / 0.28f));
@@ -1867,14 +1867,14 @@ public sealed class StreetDiceGreyboxController : MonoBehaviour
 
         if (leftThrowHand != null)
         {
-            leftThrowHand.transform.localPosition = Vector3.Lerp(new Vector3(-0.38f, -0.07f, 0f), new Vector3(-0.28f, -0.02f, 0.13f), t);
-            leftThrowHand.transform.localRotation = Quaternion.Euler(Mathf.Lerp(18f, -4f, t), Mathf.Lerp(165f, 150f, t), Mathf.Lerp(-16f, -8f, t));
+            leftThrowHand.transform.localPosition = Vector3.Lerp(new Vector3(-0.32f, -0.08f, 0f), new Vector3(-0.23f, -0.04f, 0.11f), t);
+            leftThrowHand.transform.localRotation = Quaternion.Euler(Mathf.Lerp(-12f, -28f, t), Mathf.Lerp(150f, 136f, t), Mathf.Lerp(166f, 174f, t));
         }
 
         if (rightThrowHand != null)
         {
-            rightThrowHand.transform.localPosition = Vector3.Lerp(new Vector3(0.38f, -0.07f, 0f), new Vector3(0.28f, -0.02f, 0.13f), t);
-            rightThrowHand.transform.localRotation = Quaternion.Euler(Mathf.Lerp(18f, -4f, t), Mathf.Lerp(-165f, -150f, t), Mathf.Lerp(16f, 8f, t));
+            rightThrowHand.transform.localPosition = Vector3.Lerp(new Vector3(0.32f, -0.08f, 0f), new Vector3(0.23f, -0.04f, 0.11f), t);
+            rightThrowHand.transform.localRotation = Quaternion.Euler(Mathf.Lerp(-12f, -28f, t), Mathf.Lerp(-150f, -136f, t), Mathf.Lerp(-166f, -174f, t));
         }
     }
 

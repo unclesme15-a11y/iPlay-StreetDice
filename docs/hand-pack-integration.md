@@ -20,6 +20,7 @@ The entire `Assets/RRFreelance` folder is ignored because it contains paid Asset
 Current behavior:
 
 - Only the local first-person shooter gets visible hands.
+- Hands must enter from the first-person bottom edge; wrists should stay off-screen and the palm side should be the primary visible surface.
 - Imported Animator components are driven on throw with `bShoot` when available, or `PoseShoot` when the static controller is loaded.
 - Human opponents stay represented by mic/profile overlays.
 - AI opponent bodies and Kling throw clips are later visual layers.

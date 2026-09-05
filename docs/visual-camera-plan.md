@@ -5,9 +5,9 @@
 The current base target is the low ground-level bodega roll-up/service-door frame:
 
 - Camera is almost on the wet asphalt.
-- Foreground is dark, wet street texture.
-- A raised curb/sidewalk cuts horizontally across the middle of frame.
-- Roll-up garage/service door is fully down. Do not show a visible open bay or anything behind an open door.
+- Foreground is dark, wet alley pavement.
+- Ground should be one continuous dark pavement material from the first-person foreground to the closed door.
+- Use the garage-up composition as the framing reference, but the roll-up garage/service door is fully down. Do not show a visible open bay or anything behind an open door.
 - Brick walls/pillars sit on both sides of the garage frame.
 - The scene should feel like a real Brooklyn back-of-bodega/service-door spot, not a game arena.
 - No table. No chairs. No casino styling.
@@ -69,8 +69,9 @@ Computer opponents can later receive generated crouched body plates or short Kli
 
 ## Rolling Area
 
-- Street mat, pavement, alley floor, rooftop floor, or branded iPlay dice lane.
+- Dark pavement, alley floor, rooftop floor, or branded iPlay dice lane.
 - Center zone must remain visually readable.
+- Avoid curved curbs, sidewalk transitions, or mixed street/sidewalk ground surfaces in the bodega alley scene.
 - Avoid casino table styling.
 - Use urban iPlay visual language.
 
@@ -172,7 +173,7 @@ The current playable prototype covers the first pass of the 10 realism jumps:
 4. Camera/lens matching: fixed phone-friendly first-person ground view remains locked to the bodega closed roll-up door plate.
 5. Realistic roll behavior: throws use directional lanes, bounce, skid, random landing offsets, and a lock-to-result finish.
 6. Motion blur: dice now get subtle colored motion streaks during active rolls, with red/orange reserved for full streak.
-7. Hands only first: the bottom shooter gets a first-person hand throw rig, but only fingers and part of the hand should show from the bottom edge; human opponents remain mic/profile overlays.
+7. Hands only first: the bottom shooter gets a first-person hand throw rig, but only fingers and part of the palm-side hand should show from the bottom edge; wrists should never enter frame, and human opponents remain mic/profile overlays.
 8. Street audio: placeholder beeps were replaced with generated dice-on-pavement grit and short impact taps.
 9. Occlusion: a subtle threshold mask helps blend Unity dice into the garage entrance area.
 10. UI restraint: top-right dice math stays quiet unless tutorial mode is enabled; normal mode keeps only the needed point/shot status.
