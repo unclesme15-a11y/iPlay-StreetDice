@@ -30,6 +30,7 @@ This is not the iPlay card-game repo. It shares the broader iPlay identity, but 
 - `docs/visual-camera-plan.md` - camera, player layout, magnifier, and Kling/Unity overlay plan.
 - `docs/technical-plan.md` - backend, Unity, voice, and fairness architecture.
 - `docs/roadmap.md` - build order.
+- `docs/post-production-handoff.md` - current punch list of what's left, including a fairness bug that needs fixing before any real-money direction.
 - `server/` - ASP.NET Core backend prototype and xUnit rule tests.
 - `unity/StreetDiceGreybox/` - Unity greybox client project/source.
 - `tools/` - local verification/build tools.
