@@ -8,6 +8,18 @@ This sandbox has no `dotnet` and no Unity Editor installed, so nothing below
 was compiled or run. Findings are based on reading the code/docs only. Treat
 line numbers as of `6964ff1`.
 
+## Decisions locked in (2026-09-19)
+
+- **Wagering model: convert to non-cash virtual currency.** Chips/wallet
+  balances are to have no real-world value, no cash-out, and no way to
+  purchase them with real money. This is what makes a store release
+  possible without gambling licensing. Everywhere the game or docs currently
+  imply real value needs auditing against this — see P5 below.
+- **Target platform order: mobile first (App Store + Google Play), Steam
+  later.** Build-pipeline and store-compliance work should be sequenced
+  mobile-first; Steam-specific work (Steamworks SDK, SteamPipe upload,
+  depot config) is deliberately out of scope until the mobile release ships.
+
 ## P0 - Dice rolls are not actually server-authoritative
 
 `README.md` and `docs/technical-plan.md` both promise: the backend decides
@@ -92,10 +104,55 @@ wire in once the dependency is available.
   is paid Asset Store content and is gitignored on purpose
   (`docs/hand-pack-integration.md`). Confirm the license covers the final
   commercial build/distribution before shipping, not just local dev use.
-- **Legal review**: the game models real wagering (chip wallet, side bets,
-  Double Up) on street dice. Roadmap Phase 6 already flags "Legal review
-  before any real-money or cash-equivalent direction" - do not treat P0's
-  fix as clearing that; it only closes the fairness hole, not the legal one.
+- **Legal review**: decided 2026-09-19 - going virtual-currency-only
+  specifically to avoid needing gambling licensing/legal review as a
+  precondition for a store release. This still needs a plain read-through by
+  someone (not necessarily a lawyer, but ideally one) confirming nothing in
+  the shipped copy/UI implies cash value, once P5's audit below is done.
 - **Mobile performance / device testing**: no profiling or device-matrix
   testing exists in the repo yet - first pass would be running the existing
   Unity greybox scene on a target device once real dice assets (P1) land.
+
+## P5 - Mobile store readiness (App Store + Google Play, decided 2026-09-19)
+
+Checked directly against the repo - none of this exists yet, all of it is
+open:
+
+- **No bundle identifier is set.** `unity/StreetDiceGreybox/ProjectSettings/ProjectSettings.asset`
+  has `applicationIdentifier: {}` and `overrideDefaultApplicationIdentifier: 0` -
+  i.e. no reverse-domain app ID (e.g. `com.iplay.streetdice`) configured for
+  any platform. Required before either store will accept a build.
+- **Product name still says "Craps."** `ProjectSettings.asset:16` -
+  `productName: iPlay Cee-lo & Craps`. This directly contradicts the game's
+  own stated positioning in `README.md` ("Street dice foundation, not casino
+  craps") and is worth a naming decision before it becomes the App
+  Store/Play Store listing name - flagging, not changing, since that's a
+  branding call.
+- **No mobile input handling yet.** `unity/StreetDiceGreybox/Packages/manifest.json`
+  has no `com.unity.inputsystem` (or equivalent touch input) package - the
+  greybox controller was built for desktop testing (mouse/keyboard), not
+  touch.
+- **No in-app purchase package.** No `com.unity.purchasing` in the manifest.
+  Not required for the virtual-currency-only model itself, but worth
+  deciding now: if there's ever a legitimate real-money purchase (e.g.
+  cosmetic dice skins, a "starter chip pack" that's clearly cosmetic/no
+  cash-out), that needs StoreKit (iOS) / Google Play Billing wired in
+  deliberately, reviewed against each store's IAP rules - don't bolt it on
+  late.
+- **No backend hosting exists.** `server/` has no `Dockerfile`, no CI/CD
+  config, and no deployment target anywhere in the repo - `StreetDiceTableStore`
+  is an in-memory `ConcurrentDictionary` (`Program.cs:185-228`), so every
+  game/session/chip balance is lost on server restart. A phone build can't
+  point at `localhost` - this needs an actual always-on hosted backend (with
+  a real datastore, not in-memory) before a store build is meaningfully
+  playable by real users.
+- **Compliance copy audit still open.** Even with virtual currency, both
+  Apple and Google separately classify simulated/social gambling mechanics
+  (dice wagering, streaks, "hot dice," Double Up) as content requiring
+  disclosure and typically a higher minimum age rating - confirm current
+  published guidelines at submission time rather than assuming; policies
+  change. Concretely: every place the game/docs currently say things like
+  "chip wallet," "payout," or "wins X" should be read against "does this
+  read as real value to a reviewer or a player" and adjusted/disclaimed
+  (e.g. an explicit in-app "chips have no cash value and cannot be
+  redeemed" notice) before submission.
