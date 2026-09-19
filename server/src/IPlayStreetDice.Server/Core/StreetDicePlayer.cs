@@ -8,6 +8,14 @@ public sealed class StreetDicePlayer
         Name = name;
     }
 
+    /// <summary>Rehydrates a player from persisted state. Bypasses the normal starting balance.</summary>
+    internal StreetDicePlayer(string id, string name, DiceColor diceColor, int balance)
+        : this(id, name)
+    {
+        DiceColor = diceColor;
+        Balance = balance;
+    }
+
     public string Id { get; }
     public string Name { get; }
     public DiceColor DiceColor { get; private set; } = DiceColor.Black;

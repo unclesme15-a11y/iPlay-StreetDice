@@ -18,6 +18,13 @@ public sealed class SideBet
     public PointNumberGroup? PointGroup { get; }
     public SideBetStatus Status { get; private set; } = SideBetStatus.Open;
 
+    /// <summary>Rehydrates a side bet from persisted state, including its resolved status.</summary>
+    internal SideBet(string id, string playerId, SideBetType type, int amount, PointNumberGroup? pointGroup, SideBetStatus status)
+        : this(id, playerId, type, amount, pointGroup)
+    {
+        Status = status;
+    }
+
     public void Win() => Status = SideBetStatus.Won;
     public void Lose() => Status = SideBetStatus.Lost;
     public void Cancel() => Status = SideBetStatus.Cancelled;

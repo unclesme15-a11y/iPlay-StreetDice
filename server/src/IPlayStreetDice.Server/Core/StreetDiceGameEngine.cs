@@ -7,6 +7,12 @@ public sealed class StreetDiceGameEngine
         State = new StreetDiceGameState { GameId = gameId };
     }
 
+    /// <summary>Rehydrates an engine around state restored from persistence.</summary>
+    internal StreetDiceGameEngine(StreetDiceGameState state)
+    {
+        State = state;
+    }
+
     public StreetDiceGameState State { get; }
 
     public StreetDicePlayer AddPlayer(string playerId, string name)

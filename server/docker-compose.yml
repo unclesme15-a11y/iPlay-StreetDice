@@ -1,0 +1,20 @@
+services:
+  street-dice-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - street-dice-data:/app/data
+    environment:
+      # Fill in with real Vivox Developer Portal credentials to enable voice
+      # access tokens. Left blank, the voice endpoint returns 501 (not
+      # configured) instead of pretending voice is ready - see
+      # docs/post-production-handoff.md.
+      VIVOX_ISSUER: ""
+      VIVOX_KEY: ""
+      VIVOX_DOMAIN: ""
+
+volumes:
+  street-dice-data:
