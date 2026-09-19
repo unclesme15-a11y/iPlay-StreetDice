@@ -15,10 +15,15 @@ line numbers as of `6964ff1`.
   purchase them with real money. This is what makes a store release
   possible without gambling licensing. Everywhere the game or docs currently
   imply real value needs auditing against this — see P5 below.
-- **Target platform order: mobile first (App Store + Google Play), Steam
-  later.** Build-pipeline and store-compliance work should be sequenced
-  mobile-first; Steam-specific work (Steamworks SDK, SteamPipe upload,
-  depot config) is deliberately out of scope until the mobile release ships.
+- **Target platform order: mobile first, Steam later.** Revised 2026-09-19
+  after the store-policy research in P6 below: **Apple App Store first**
+  (viable via a 17+ age rating). **Google Play deprioritized** - its policy
+  language reads as an outright ban on this genre, not just an age-gate, and
+  virtual currency does not clearly avoid it. Amazon Appstore and Samsung
+  Galaxy Store are viable secondary Android targets (same APK/AAB as a
+  Google Play build) since neither shares Google's stricter stance. Steam-
+  specific work (Steamworks SDK, SteamPipe upload, depot config) stays out
+  of scope until Apple ships.
 
 ## P0 - Dice rolls are not actually server-authoritative — FIXED 2026-09-19
 
@@ -106,6 +111,66 @@ conflate them:
 The gate itself (`Program.cs:131-174`) is already correct and intentionally
 returns `501` until both are in place - nothing to fix there, just work to
 wire in once the dependency is available.
+
+## P6 - Store and regional gambling-policy findings (researched 2026-09-19)
+
+This is genre-classification risk, not a missing-config-file problem - it
+determines whether the app can be listed at all on a given store, not just
+what rating it gets. Researched live via web search on 2026-09-19; store
+policies change, so re-verify against the current published guidelines at
+actual submission time rather than trusting this snapshot. None of this is
+legal advice.
+
+- **Apple App Store - viable, chosen as the first target.** Apple doesn't
+  ban simulated gambling outright; it requires a **17+ age rating** for
+  "frequent or intense" simulated gambling (12+ only applies to "infrequent
+  or mild," which this game's core loop - shooter/catcher wagering, side
+  bets, streaks, hot dice - probably doesn't qualify for). South Korea
+  additionally requires a government Rating Classification Number (RCN) for
+  that content tier.
+  ([AppleInsider](https://appleinsider.com/articles/19/08/20/app-store-shakeup-limits-simulated-gambling-to-users-aged-17),
+  [Apple Developer](https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/))
+- **Google Play - deprioritized, likely blocks this genre outright.**
+  Google's own policy text: "Apps must not provide simulated gambling
+  content (for example, social casino apps; apps with virtual slot
+  machines)... [games] where there is no opportunity to win real money or
+  prizes based on the outcome of the game." That describes this game's
+  genre directly. A April 2025 policy update specifically closed the
+  "virtual currency isn't real value" reading - Google now treats
+  virtual-currency games/items as having real-world value for gambling-
+  policy purposes, which undercuts the P5 virtual-currency decision as a
+  fix for Google Play specifically (it still stands for Apple/legal
+  purposes).
+  ([Play Console Help](https://support.google.com/googleplay/android-developer/answer/9877032?hl=en),
+  [Gummicube](https://www.gummicube.com/blog/google-play-developer-policy-changes-real-money-gambling/))
+- **Amazon Appstore - viable secondary Android target.** Amazon's real-money
+  gambling licensing requirements explicitly do not apply to simulated
+  gambling using currency with no value - more permissive than Google here.
+  ([Amazon Developer Policy Center](https://developer.amazon.com/docs/policy-center/restricted-content.html))
+- **Samsung Galaxy Store - viable secondary Android target.** Samsung's
+  distribution guide bars apps that promote/enable real-money gambling but
+  allows gambling-themed play without betting real cash/currency.
+  ([Samsung Developer](https://developer.samsung.com/galaxy-store/distribution-guide.html))
+- **International - flagged high-risk regions, not a full country-by-country
+  audit** (scope chosen 2026-09-19: broad launch, flag risk rather than
+  clear every country up front):
+  - **EU**: Belgium and the Netherlands have precedent treating paid loot-
+    box/gambling-style mechanics as regulated gambling. A broader EU
+    Digital Fairness Act, expected late 2025/early 2026, may restrict these
+    mechanics for minors EU-wide.
+  - **Brazil**: a 2025 child-safety law bans loot-box-style sales to minors
+    starting March 2026.
+  - **UK**: the ASA has moved to active enforcement against app listings
+    that don't disclose gambling-like mechanics.
+  - **Australia**: 2024 rules require stricter age classification for games
+    with simulated gambling; enforcement on major app stores has reportedly
+    been inconsistent so far, which is a compliance gap to close, not a
+    green light to rely on.
+  - **US**: no federal loot-box law; regulation is state-by-state and
+    mostly hasn't reached this category yet - currently the most permissive
+    major market.
+  ([blog.promise.legal](https://blog.promise.legal/lootbox-regulation-2026-game-studios/),
+  [The Conversation](https://theconversation.com/loot-boxes-are-still-rife-in-kids-mobile-games-despite-ban-on-gambling-like-features-266226))
 
 ## P4 - Phase 6: production readiness checklist
 

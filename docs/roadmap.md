@@ -51,6 +51,11 @@
 - Device testing.
 - Commercial asset audit.
 - Wagering model decided 2026-09-19: virtual currency only, no cash value,
-  no cash-out, no real-money purchase of chips. Mobile-first release (App
-  Store + Google Play), Steam later. See `docs/post-production-handoff.md`
-  for the concrete punch list this unlocked.
+  no cash-out, no real-money purchase of chips.
+- Platform order decided 2026-09-19, revised same day after store-policy
+  research: Apple App Store first (17+ age rating path). Google Play
+  deprioritized - its policy reads as an outright ban on this genre, not
+  just an age-gate, even with virtual currency. Amazon Appstore and Samsung
+  Galaxy Store are viable secondary Android targets. Steam later. See
+  `docs/post-production-handoff.md` (P5, P6) for the concrete punch list and
+  sourcing.
