@@ -20,10 +20,34 @@ line numbers as of `6964ff1`.
   mobile-first; Steam-specific work (Steamworks SDK, SteamPipe upload,
   depot config) is deliberately out of scope until the mobile release ships.
 
-## P0 - Dice rolls are not actually server-authoritative
+## P0 - Dice rolls are not actually server-authoritative — FIXED 2026-09-19
 
 `README.md` and `docs/technical-plan.md` both promise: the backend decides
-the dice values, clips/UI just sell it. That is not what the code does today.
+the dice values, clips/UI just sell it. That was not what the code did as of
+`6964ff1` — it now is.
+
+**Fix applied**: `Core/DiceRollFairness.cs` (new) generates the roll
+server-side with `RandomNumberGenerator` by default. The `/roll` endpoint
+(`Program.cs`) only honors client-supplied `Die1`/`Die2` when
+`StreetDice:AllowClientSuppliedRoll` (config) or
+`STREET_DICE_ALLOW_CLIENT_SUPPLIED_ROLL=true` (env var) is explicitly set —
+same pattern as the existing `AllowDevVoiceToken` gate, defaulting to off.
+`RollRequest.Die1`/`Die2` are now optional (`int?`) since a normal client no
+longer sends them at all.
+
+Verified, not just written:
+- `dotnet build IPlayStreetDice.sln` - clean, 0 warnings/errors.
+- `dotnet test IPlayStreetDice.sln` - 34/34 passing (the original 30 engine
+  tests unchanged and green, plus 4 new `DiceRollFairnessTests`).
+- Live HTTP smoke test: ran the real server, opened a shot, and repeatedly
+  called `POST /roll` with a rigged `die1:1, die2:1` payload (what a cheating
+  client would send) - the server ignored it and returned independently
+  random totals every time, confirming the fix holds at the HTTP boundary,
+  not just in the unit test. Separately confirmed the opt-in dev override
+  (`STREET_DICE_ALLOW_CLIENT_SUPPLIED_ROLL=true`) still honors client dice
+  exactly, for local/manual testing.
+
+Original writeup for reference, still accurate as history:
 
 - `server/src/IPlayStreetDice.Server/Program.cs:87-94` (`POST
   /api/street-dice/{gameId}/roll`) takes `Die1`/`Die2` straight from the
@@ -37,25 +61,10 @@ the dice values, clips/UI just sell it. That is not what the code does today.
   real-money or cash-equivalent side-bet use, and it's the concrete item
   behind roadmap Phase 6's "Security and abuse controls."
 
-Suggested shape of the fix (for Codex, not applied here):
-
-- Keep `StreetDiceGameEngine.Roll(DiceRoll roll)` accepting an explicit
-  `DiceRoll` — the engine-level xUnit tests
-  (`server/tests/IPlayStreetDice.Tests/StreetDiceGameEngineTests.cs`) call
-  this directly with fixed values on purpose, and should keep working
-  unmodified.
-- Change the **HTTP** `/roll` endpoint so it generates the dice itself
-  (e.g. via `RandomNumberGenerator` or `Random.Shared`, same idea as the bot
-  path) instead of trusting `request.Die1`/`request.Die2`.
-- If a deterministic-roll path is still needed for manual/local testing over
-  HTTP, gate it the same way the voice endpoint already gates dev tokens:
-  `StreetDice:AllowDevVoiceToken` / `STREET_DICE_ALLOW_DEV_VOICE_TOKEN` is the
-  existing pattern (`Program.cs:140-143`) — mirror it for something like
-  `StreetDice:AllowClientSuppliedRoll`, defaulting to off.
-- Verify with `dotnet test IPlayStreetDice.sln` before pushing; this touches
-  money-moving code (`Credit`/`Debit` in `StreetDiceGameEngine`), so it needs
-  the existing rule-contract tests green, plus a new test asserting the HTTP
-  endpoint ignores/rejects client-supplied dice in the default configuration.
+`StreetDiceGameEngine.Roll(DiceRoll roll)` itself was left unchanged on
+purpose — the engine-level xUnit tests still call it directly with fixed
+values, which is the correct way to keep the rule contract deterministically
+testable. Only the HTTP boundary needed to stop trusting client input.
 
 ## P1 - Phase 4: real Kling clips
 

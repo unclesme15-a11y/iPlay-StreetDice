@@ -84,12 +84,18 @@ app.MapPost("/api/street-dice/{gameId}/fade", (string gameId, FadeRequest reques
     return Results.Ok(new { result, state = engine.State });
 });
 
-app.MapPost("/api/street-dice/{gameId}/roll", (string gameId, RollRequest request, StreetDiceTableStore store) =>
+app.MapPost("/api/street-dice/{gameId}/roll", (string gameId, RollRequest request, StreetDiceTableStore store, IConfiguration config) =>
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.PlayerSessionToken)) return Results.Unauthorized();
     if (!string.Equals(engine.State.ShooterId, request.ShooterId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "Only the current Shooter can roll." });
-    var result = engine.Roll(new DiceRoll(request.Die1, request.Die2));
+
+    var allowClientSuppliedRoll = string.Equals(
+        config["StreetDice:AllowClientSuppliedRoll"] ?? Environment.GetEnvironmentVariable("STREET_DICE_ALLOW_CLIENT_SUPPLIED_ROLL"),
+        "true",
+        StringComparison.OrdinalIgnoreCase);
+    var roll = DiceRollFairness.ResolveRoll(allowClientSuppliedRoll, request.Die1, request.Die2);
+    var result = engine.Roll(roll);
     return Results.Ok(new { result, state = engine.State });
 });
 
@@ -232,7 +238,7 @@ public sealed record DiceColorRequest(string PlayerId, string PlayerSessionToken
 public sealed record OpenShotRequest(string ShooterId, string ShooterSessionToken, string CatcherId, int Amount);
 public sealed record SideBetRequest(string PlayerId, string PlayerSessionToken, SideBetType Type, int Amount, int? TargetPointNumber = null);
 public sealed record FadeRequest(string CatcherId, string PlayerSessionToken);
-public sealed record RollRequest(string ShooterId, string PlayerSessionToken, int Die1, int Die2);
+public sealed record RollRequest(string ShooterId, string PlayerSessionToken, int? Die1 = null, int? Die2 = null);
 public sealed record CeeLoRollRequest(int Die1, int Die2, int Die3);
 public sealed record ShooterDecisionRequest(string ShooterId, string PlayerSessionToken);
 public sealed record BotFillRequest(int TargetPlayers = 5);
