@@ -1,0 +1,32 @@
+name: Server build and tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "server/**"
+      - ".github/workflows/server-tests.yml"
+  pull_request:
+    paths:
+      - "server/**"
+      - ".github/workflows/server-tests.yml"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore IPlayStreetDice.sln
+
+      - name: Build
+        run: dotnet build IPlayStreetDice.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test IPlayStreetDice.sln --no-build --configuration Release --logger "console;verbosity=normal"
