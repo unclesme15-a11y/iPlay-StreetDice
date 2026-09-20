@@ -232,23 +232,27 @@ legal advice.
 
 ## P5 - Mobile store readiness (App Store + Google Play, decided 2026-09-19)
 
-Checked directly against the repo - none of this exists yet, all of it is
-open:
+Checked directly against the repo. Most of this is now resolved as of
+2026-09-19/20:
 
-- **No bundle identifier is set.** `unity/StreetDiceGreybox/ProjectSettings/ProjectSettings.asset`
-  has `applicationIdentifier: {}` and `overrideDefaultApplicationIdentifier: 0` -
-  i.e. no reverse-domain app ID (e.g. `com.iplay.streetdice`) configured for
-  any platform. Required before either store will accept a build.
-- **Product name still says "Craps."** `ProjectSettings.asset:16` -
-  `productName: iPlay Cee-lo & Craps`. This directly contradicts the game's
-  own stated positioning in `README.md` ("Street dice foundation, not casino
-  craps") and is worth a naming decision before it becomes the App
-  Store/Play Store listing name - flagging, not changing, since that's a
-  branding call.
-- **No mobile input handling yet.** `unity/StreetDiceGreybox/Packages/manifest.json`
-  has no `com.unity.inputsystem` (or equivalent touch input) package - the
-  greybox controller was built for desktop testing (mouse/keyboard), not
-  touch.
+- **Bundle identifiers — done.** Android (`com.iplay.ceelocraps`) was set
+  locally by Codex; iOS was added to match on 2026-09-19.
+- **Product name — investigated, not a bug.** `productName: iPlay Cee-lo & Craps`
+  looked like a leftover against the README's "not casino craps" positioning,
+  but it's confirmed intentional: it matches the game's actual shipped
+  branding (logo assets, a "Craps modes" menu screen, and a separate
+  `iPlay-Cee-Lo-Craps` repo the user created). Not touched.
+- **Mobile touch input — already exists, more complete than expected.**
+  Checked 2026-09-20 against the current (post-merge) code, not the old
+  greybox controller: `StreetDicePlayExperience.cs` has real multi-touch
+  handling with finger-ID tracking, a shake-to-throw gesture, and a
+  safe-area-aware edge-swipe drawer gesture; `DieMenu.cs` has matching
+  touch-aware button handling. Phone-resolution screenshots already exist
+  in `artifacts/unity-smoke/`. No Input System package is needed - it's
+  built on Unity's legacy `Input` API, which supports touch natively.
+  Nothing to add here; adding a second, parallel input system would risk
+  conflicting with working code that can't be tested without a Unity
+  Editor.
 - **No in-app purchase package.** No `com.unity.purchasing` in the manifest.
   Not required for the virtual-currency-only model itself, but worth
   deciding now: if there's ever a legitimate real-money purchase (e.g.
