@@ -564,13 +564,13 @@ public sealed partial class StreetDiceGreyboxController
         {
             creditsScroll = GUI.BeginScrollView(new Rect(x, 98, 470, UiHeight - 230), creditsScroll, new Rect(0, 0, 445, 580));
             GUI.Label(new Rect(0, 0, 440, 125), "Regular Dice\n\"Dice\" by macriciox\nCreative Commons Attribution 4.0\nImported, scaled and recolored for gameplay.");
-            if (GUI.Button(new Rect(0, 130, 440, 42), "Regular dice source")) Application.OpenURL("https://skfb.ly/6xKHM");
+            if (DrawMetalButton(new Rect(0, 130, 440, 42), "Regular dice source")) Application.OpenURL("https://skfb.ly/6xKHM");
             GUI.Label(new Rect(0, 196, 440, 125), "Hot Dice\n\"Dice\" by Geug\nCreative Commons Attribution 4.0\nImported, scaled and aligned for gameplay.");
-            if (GUI.Button(new Rect(0, 326, 440, 42), "Hot dice source")) Application.OpenURL("https://skfb.ly/6UoEV");
-            if (GUI.Button(new Rect(0, 385, 440, 42), "CC BY 4.0 License")) Application.OpenURL("https://creativecommons.org/licenses/by/4.0/");
+            if (DrawMetalButton(new Rect(0, 326, 440, 42), "Hot dice source")) Application.OpenURL("https://skfb.ly/6UoEV");
+            if (DrawMetalButton(new Rect(0, 385, 440, 42), "CC BY 4.0 License")) Application.OpenURL("https://creativecommons.org/licenses/by/4.0/");
             GUI.Label(new Rect(0, 456, 440, 120), "Prop money generated for iPlay. Overhead pavement is cropped from the approved iPlay environment.\n\nFirst-person hand pack: RRFreelance.\nMotion references are not redistributed.");
             GUI.EndScrollView();
-            if (GUI.Button(new Rect(x, UiHeight - 102, 470, 44), "Back")) showCredits = false;
+            if (DrawMetalButton(new Rect(x, UiHeight - 102, 470, 44), "Back")) showCredits = false;
             return;
         }
         x = UiWidth / 2 - 450;
