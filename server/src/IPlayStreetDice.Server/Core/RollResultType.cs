@@ -8,5 +8,7 @@ public enum RollResultType
     ShooterComeOutWin,
     ShooterComeOutLoss,
     ShooterPointWin,
-    ShooterSevenOutLoss
+    ShooterSevenOutLoss,
+    ShooterForfeitLoss,
+    NoCount
 }

@@ -89,16 +89,22 @@ POST /api/street-dice/create
 POST /api/street-dice/{gameId}/join
 POST /api/street-dice/{gameId}/dice-color
 POST /api/street-dice/{gameId}/shot
-POST /api/street-dice/{gameId}/roll
-POST /api/street-dice/{gameId}/fade
-POST /api/street-dice/{gameId}/side-bet
+POST /api/street-dice/{gameId}/roll/prepare
+POST /api/street-dice/{gameId}/roll/fade
+POST /api/street-dice/{gameId}/roll/commit
+POST /api/street-dice/{gameId}/wager/offer
+POST /api/street-dice/{gameId}/wager/accept
 POST /api/street-dice/{gameId}/decision/run-same
 POST /api/street-dice/{gameId}/decision/double-up
 POST /api/street-dice/{gameId}/bots/fill
-POST /api/street-dice/{gameId}/bots/advance
 POST /api/street-dice/{gameId}/voice/access-token
 GET  /api/street-dice/{gameId}
 ```
+
+The former face-posting `/roll`, non-roll-ID `/fade`, auto `/bots/advance`, and solo
+`/side-bet` routes return HTTP 410. `GET /api/street-dice/{gameId}` includes a
+pending roll ID and remaining fade time before commit, not die faces; it also
+publishes paired wager offers and the current betting countdown.
 
 ## MVP Verification
 

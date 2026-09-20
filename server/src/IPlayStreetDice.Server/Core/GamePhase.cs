@@ -6,5 +6,6 @@ public enum GamePhase
     ComeOut,
     Point,
     ShooterDecision,
+    SellingDice,
     GameOver
 }

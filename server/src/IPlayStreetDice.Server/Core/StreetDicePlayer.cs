@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace IPlayStreetDice.Server.Core;
 
 public sealed class StreetDicePlayer
@@ -11,7 +13,9 @@ public sealed class StreetDicePlayer
     public string Id { get; }
     public string Name { get; }
     public DiceColor DiceColor { get; private set; } = DiceColor.Black;
+    [JsonIgnore]
     public int Balance { get; private set; } = 1_000;
+    public bool HasLeft { get; internal set; }
 
     public void SelectDiceColor(DiceColor color)
     {
