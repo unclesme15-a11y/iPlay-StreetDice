@@ -11,6 +11,7 @@ public static class StreetDiceDemoBuild
 
     public static void EnsureDemoScene()
     {
+        EnsureHandSkinResources();
         Directory.CreateDirectory("Assets/Scenes");
 
         if (!File.Exists(ScenePath))
@@ -28,6 +29,20 @@ public static class StreetDiceDemoBuild
         PlayerSettings.productName = "iPlay Cee-lo & Craps";
         PlayerSettings.companyName = "iPlay";
         EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+    }
+
+    private static void EnsureHandSkinResources()
+    {
+        const string pack = "Assets/RRFreelance/FirstPersonHand";
+        if (!Directory.Exists(pack)) return;
+        Directory.CreateDirectory(pack + "/Resources/FirstPersonHands/Skins");
+        AssetDatabase.Refresh();
+        foreach (var shade in new[] { "White", "Tan", "Dark" })
+        {
+            var destination = pack + "/Resources/FirstPersonHands/Skins/" + shade + ".mat";
+            if (!File.Exists(destination))
+                AssetDatabase.CopyAsset(pack + "/Materials/CustomShader_" + shade + "Skin.mat", destination);
+        }
     }
 
     public static void BuildAndroidApk()
@@ -49,14 +64,43 @@ public static class StreetDiceDemoBuild
         Debug.Log("Built APK: " + Path.GetFullPath(ApkPath));
     }
 
+    public static void PrepareAndroidWithoutBuilding()
+    {
+        EnsureDemoScene();
+        PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.iplay.ceelocraps");
+        PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+        PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+        PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
+        PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
+        PlayerSettings.allowedAutorotateToPortrait = false;
+        PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+        PlayerSettings.SplashScreen.backgroundColor = new Color(0.02f, 0.031f, 0.043f, 1f);
+        PlayerSettings.SplashScreen.showUnityLogo = false;
+        PlayerSettings.SplashScreen.logos = System.Array.Empty<PlayerSettings.SplashScreenLogo>();
+        AssetDatabase.SaveAssets();
+        Debug.Log("Android configuration prepared. No BuildPipeline call made; no APK built.");
+    }
+
     public static void CaptureSmokeScreenshot()
     {
         CaptureScreenshot("street-dice-demo-smoke.png", controller => controller.BuildEnvironmentPreviewForEditor());
     }
 
+    public static void CaptureHotDiceScreenshot()
+    {
+        CaptureScreenshot("street-dice-hot-preview.png", controller => controller.BuildHotDicePreviewForEditor());
+    }
+
     public static void CaptureHandThrowScreenshot()
     {
         CaptureScreenshot("street-dice-hand-throw-preview.png", controller => controller.BuildHandThrowPreviewForEditor());
+    }
+
+    public static void CaptureHandExitScreenshots()
+    {
+        CaptureScreenshot("street-dice-hand-release.png", controller => controller.BuildHandThrowPreviewForEditor(0.46f));
+        CaptureScreenshot("street-dice-hand-lowering.png", controller => controller.BuildHandThrowPreviewForEditor(0.75f));
+        CaptureScreenshot("street-dice-hand-hidden.png", controller => controller.BuildHandThrowPreviewForEditor(1f));
     }
 
     private static void CaptureScreenshot(string fileName, System.Action<StreetDiceGreyboxController> configure)

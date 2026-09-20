@@ -9,11 +9,12 @@ public sealed class StreetDiceGameState
     public string? ShooterId { get; set; }
     public string? CatcherId { get; set; }
     public int ShotAmount { get; set; }
+    public DiceSale? DiceSale { get; set; }
     public int? Point { get; set; }
     public int FadeCount { get; set; }
     public int ShooterMomentum { get; set; }
-    public int Streak { get; set; }
-    public int HotDiceThreshold { get; init; } = 5;
+    public float Streak { get; set; }
+    public int HotDiceThreshold { get; init; } = 10;
     public bool HotDiceActive => Streak >= HotDiceThreshold;
     public bool LastResolvedShotWasWin { get; set; }
     public bool LastShotWasDoubleUp { get; set; }

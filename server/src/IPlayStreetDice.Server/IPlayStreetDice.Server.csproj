@@ -4,11 +4,15 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="../../../unity/StreetDiceGreybox/Assets/WagerBook.cs" Link="Core/WagerBook.cs" />
+    <Compile Include="../../../unity/StreetDiceGreybox/Assets/DemoOpponentPolicy.cs" Link="Core/DemoOpponentPolicy.cs" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.29" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="BepuPhysics" Version="2.4.0" />
   </ItemGroup>
 
 </Project>

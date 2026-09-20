@@ -1,3 +1,4 @@
+using System.Text.Json;
 using IPlayStreetDice.Server.Core;
 
 namespace IPlayStreetDice.Tests;
@@ -15,6 +16,33 @@ public class StreetDiceGameEngineTests
         Assert.Equal("p1", engine.State.ShooterId);
         Assert.Equal("p2", engine.State.CatcherId);
         Assert.Equal(20, engine.State.ShotAmount);
+    }
+
+    [Fact]
+    public void MainStakeMustBeCoveredBeforeOpeningOrDoubling()
+    {
+        var engine = NewTwoPlayerGame();
+        Assert.Throws<InvalidOperationException>(() => engine.OpenShot("p1", "p2", 1001));
+        Assert.Equal(GamePhase.Lobby, engine.State.Phase);
+
+        engine.OpenShot("p1", "p2", 600);
+        engine.Roll(new DiceRoll(3, 4));
+        Assert.Equal(400, engine.State.FindPlayer("p2")!.Balance);
+        Assert.Throws<InvalidOperationException>(() => engine.DoubleUp("p1"));
+        Assert.Equal(GamePhase.ShooterDecision, engine.State.Phase);
+        Assert.Equal(600, engine.State.ShotAmount);
+        Assert.Throws<InvalidOperationException>(() => engine.RunSame("p1"));
+        Assert.Equal(GamePhase.ShooterDecision, engine.State.Phase);
+    }
+
+    [Fact]
+    public void PublicStateSerializationOmitsPrivateBalances()
+    {
+        var engine = NewTwoPlayerGame();
+        engine.OpenShot("p1", "p2", 20);
+        engine.Roll(new DiceRoll(3, 4));
+        var json = JsonSerializer.Serialize(engine.State, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        Assert.DoesNotContain("balance", json, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -93,7 +121,7 @@ public class StreetDiceGameEngineTests
         var result = engine.Roll(new DiceRoll(3, 4));
 
         Assert.Equal(RollResultType.ShooterSevenOutLoss, result.Result);
-        Assert.Equal(GamePhase.ComeOut, engine.State.Phase);
+        Assert.Equal(GamePhase.Lobby, engine.State.Phase); // New shooter chooses Shoot or Pass before committing.
         Assert.Equal("p2", engine.State.ShooterId);
         Assert.Equal("p1", engine.State.CatcherId);
         Assert.Equal(0, engine.State.Streak);
@@ -307,6 +335,27 @@ public class StreetDiceGameEngineTests
 
         Assert.True(engine.State.HotDiceActive);
         Assert.Equal(new[] { "Black", "White", "Green", "Blue" }, Enum.GetNames<DiceColor>());
+    }
+
+    [Fact]
+    public void TenPointHeatNeedsSeveralWinsAndWonDoubleUpAddsThreeExtra()
+    {
+        var engine = NewLiveShot(20);
+        engine.Roll(new DiceRoll(3, 4));
+        Assert.Equal(1f, engine.State.Streak);
+        Assert.False(engine.State.HotDiceActive);
+
+        engine.DoubleUp("p1");
+        engine.Roll(new DiceRoll(5, 6));
+        Assert.Equal(5f, engine.State.Streak);
+        Assert.False(engine.State.HotDiceActive);
+
+        engine.DoubleUp("p1");
+        engine.Roll(new DiceRoll(4, 6));
+        Assert.Equal(5f, engine.State.Streak);
+        engine.Roll(new DiceRoll(4, 6));
+        Assert.Equal(10f, engine.State.Streak);
+        Assert.True(engine.State.HotDiceActive);
     }
 
     private static StreetDiceGameEngine NewTwoPlayerGame()

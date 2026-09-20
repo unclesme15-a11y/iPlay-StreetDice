@@ -1,0 +1,700 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.4/staging' branch; Version is '6000.4.11f1 (b0a1d6caadd2) revision 11575766'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-uncle" at "2026-09-19T17:44:08.3494518Z"
+OS: 'Windows 11  (10.0.26200) Core' Language: 'en' Physical Memory: 15676 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-09-19T17:44:08Z
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.4.11f1\Editor\Unity.exe
+-batchmode
+-projectPath
+C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox
+-executeMethod
+PlayReadinessVerification.StartStartupOnline
+-logFile
+C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\artifacts\unity-smoke\startup-online-log.txt
+Successfully changed project path to: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox
+C:/Users/uncle/MoneyOS/03_iPlay_StreetDice/unity/StreetDiceGreybox
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+Player connection [43596]  Target information:
+
+Player connection [43596]  * "[IP] 172.17.176.1 [Port] 55504 [Flags] 2 [Guid] 569954394 [EditorId] 569954394 [Version] 1048832 [Id] WindowsEditor(7,AI_SME) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [43596]  * "[IP] 100.84.199.117 [Port] 55504 [Flags] 2 [Guid] 569954394 [EditorId] 569954394 [Version] 1048832 [Id] WindowsEditor(7,AI_SME) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [43596]  * "[IP] 192.168.1.192 [Port] 55504 [Flags] 2 [Guid] 569954394 [EditorId] 569954394 [Version] 1048832 [Id] WindowsEditor(7,AI_SME) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [43596] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [43596] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-43420" after 0.2 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Error: HandshakeResponse reported an error:
+	ResponseCode: 505
+	ResponseStatus: Unsupported protocol version '1.18.1'.
+[Licensing::Module] Error: Failed to handshake to channel: "LicenseClient-uncle"
+[Licensing::IpcConnector] LicenseClient-uncle channel disconnected successfully.
+[Licensing::IpcConnector] Channel LicenseClient-uncle-6000.4.11 doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 47732)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-uncle-6000.4.11" at "2026-09-19T17:44:10.6161169Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 47732, path: "C:/Program Files/Unity/Hub/Editor/6000.4.11f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.1+9fbee8e
+  Session Id:              f1c2a5dc63cf4697b38e9072921df831
+  Correlation Id:          426f690432a45d3463f029df55a5a54f
+  External correlation Id: 8842329033083577765
+  Machine Id:              3q0CWbvlNEe0svTRUAV5nDLiqR0=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-uncle-6000.4.11" (connect: 0.37s, validation: 0.15s, handshake: 0.02s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-uncle-6000.4.11-notifications" at "2026-09-19T17:44:10.7823599Z"
+[Licensing::Module] Connected to LicensingClient (PId: 47732, launch time: 0.01, total connection time: 0.54s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-P8GU-SQQH-RT4K-H9HW-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: Unlimited
+[Licensing::Module] License group:
+  Id: 2475884209837-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-P8GU-SQQH-RT4K-H9HW-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: Unlimited
+[Licensing::Module] License group:
+  Id: 2475884209837-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Module] Licensing Background thread has ended after 2.48s
+[Licensing::Module] Licensing is initialized (took 2.02s).
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-P8GU-SQQH-RT4K-H9HW-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: Unlimited
+[Licensing::Module] License group:
+  Id: 2475884209837-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Initialize engine version: 6000.4.11f1 (b0a1d6caadd2)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.4.11f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/uncle/MoneyOS/03_iPlay_StreetDice/unity/StreetDiceGreybox/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+d3d12: failed to query info queue interface (0x80004002).
+Direct3D:
+    Version:         Direct3D 12 [level 12.2]
+    Renderer:        NVIDIA GeForce RTX 5050 Laptop GPU (ID=0x2d98)
+    Vendor:          NVIDIA
+    VRAM:            7910 MB
+    App VRAM Budget: 7142 MB
+    Driver:          32.0.15.9144
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.4.11f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.4.11f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.4.11f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56420
+CodeReloadManager initialized
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.11f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.11f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-P8GU-SQQH-RT4K-H9HW-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: Unlimited
+[Licensing::Module] License group:
+  Id: 2475884209837-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.11f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+Registered in 0.006696 seconds.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:False
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.407 seconds
+Domain Reload Profiling: 876ms
+	BeginReloadAssembly (147ms)
+		CreateAndSetChildDomain (20ms)
+	RebuildCommonClasses (41ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (69ms)
+	LoadAllAssembliesAndSetupDomain (198ms)
+		LoadAssemblies (125ms)
+		AnalyzeDomain (188ms)
+			TypeCache.Refresh (186ms)
+				TypeCache.ScanAssembly (171ms)
+	FinalizeReload (409ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (57ms)
+			BeforeProcessingInitializeOnLoad (78ms)
+			ProcessInitializeOnLoadAttributes (111ms)
+			ProcessInitializeOnLoadMethodAttributes (100ms)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-P8GU-SQQH-RT4K-H9HW-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: Unlimited
+[Licensing::Module] License group:
+  Id: 2475884209837-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 51 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.cloud.gltfast@6.20.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.cloud.gltfast@11ddc2436f97)
+    com.unity.services.authentication@3.7.2 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.services.authentication@e2c4b6c5d82f)
+    com.unity.services.vivox@16.11.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.services.vivox@50a15770bdad)
+    com.unity.services.core@1.18.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.services.core@3464cb68d709)
+    com.unity.settings-manager@2.1.1 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.settings-manager@0b8638c5ce86)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.burst@1.8.30 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.burst@2f3d916873ea)
+    com.unity.mathematics@1.3.3 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.mathematics@19a9377c4ffa)
+    com.unity.nuget.mono-cecil@1.11.6 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.5.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.test-framework.performance@8b56083ec0f0)
+  Built-in packages:
+    com.unity.multiplayer.center@1.0.1 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ugui@2.0.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.ugui@bf94f8b81813)
+    com.unity.collections@6.4.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.collections@5b6ebd78ccc0)
+    com.unity.test-framework@1.6.0 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.test-framework@996f223345ba)
+    com.unity.ext.nunit@2.0.5 (location: C:\Users\uncle\MoneyOS\03_iPlay_StreetDice\unity\StreetDiceGreybox\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.03 seconds
+[ScriptCompilation] Requested script compilation because: AssetDatabase observed changes in script compilation related files
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.11f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/uncle/MoneyOS/03_iPlay_StreetDice/unity/StreetDiceGreybox
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 1s318ms
+[560/706    0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[702/706    0s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+Assets\Editor\PlayReadinessVerification.cs(1083,86): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\Editor\PlayReadinessVerification.cs(1083,34): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\Editor\PlayReadinessVerification.cs(1419,76): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\Editor\PlayReadinessVerification.cs(1419,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+[703/706    0s] ILPostProcess Library/Bee/artifacts/1900b0aE.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll, with 138 defines and 306 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[704/706    0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+[705/706    0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+*** Tundra build success (1.27 seconds), 5 items updated, 706 evaluated
+Assets\Editor\PlayReadinessVerification.cs(1083,86): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\Editor\PlayReadinessVerification.cs(1083,34): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\Editor\PlayReadinessVerification.cs(1419,76): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\Editor\PlayReadinessVerification.cs(1419,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+AssetDatabase: script compilation time: 1.742704s
+Begin MonoManager ReloadAssembly
+Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
+Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.BurstCompatibilityGen.dll at Library/ScriptAssemblies/Unity.Collections.BurstCompatibilityGen.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.DocCodeSamples.dll at Library/ScriptAssemblies/Unity.Collections.DocCodeSamples.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.PerformanceTests.dll at Library/ScriptAssemblies/Unity.Collections.PerformanceTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.Tests.dll at Library/ScriptAssemblies/Unity.Collections.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.Tests.Playmode.dll at Library/ScriptAssemblies/Unity.Collections.Tests.Playmode.dll not valid. Loading of assembly skipped.
+Assembly Unity.Mathematics.Tests.dll at Library/ScriptAssemblies/Unity.Mathematics.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Editor.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Nuget.Mono-Cecil.dll at Library/ScriptAssemblies/Unity.Nuget.Mono-Cecil.dll not valid. Loading of assembly skipped.
+Assembly Unity.Services.Authentication.Server.dll at Library/ScriptAssemblies/Unity.Services.Authentication.Server.dll not valid. Loading of assembly skipped.
+Assembly Unity.Settings.Tests.dll at Library/ScriptAssemblies/Unity.Settings.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Editor.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.Common.Tests.dll at Library/ScriptAssemblies/UnityEditor.UI.Common.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.EditorTests.dll at Library/ScriptAssemblies/UnityEditor.UI.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
+Refreshing native plugins compatible for Editor in 8.95 ms, found 2 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Refreshing native plugins compatible for Editor in 2.64 ms, found 2 plugins.
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  1.936 seconds
+Domain Reload Profiling: 2848ms
+	BeginReloadAssembly (328ms)
+		DisableScriptedObjects (41ms)
+		CreateAndSetChildDomain (150ms)
+	RebuildCommonClasses (32ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (228ms)
+	LoadAllAssembliesAndSetupDomain (313ms)
+		LoadAssemblies (312ms)
+		AnalyzeDomain (95ms)
+			TypeCache.Refresh (67ms)
+				TypeCache.ScanAssembly (57ms)
+			BuildScriptInfoCaches (24ms)
+	FinalizeReload (1937ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (28ms)
+			BeforeProcessingInitializeOnLoad (118ms)
+			ProcessInitializeOnLoadAttributes (1436ms)
+			ProcessInitializeOnLoadMethodAttributes (207ms)
+			AfterProcessingInitializeOnLoad (6ms)
+		AwakeInstancesAfterBackupRestoration (22ms)
+Refreshing native plugins compatible for Editor in 2.87 ms, found 2 plugins.
+Preloading 1 native plugins for Editor in 3.91 ms.
+(Values over 0.050ms)
+Asset Pipeline Refresh (id=d8a241213afc5ef4b9a899e9af55dac3): Total: 5.126 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=2273 ms
+		Asset DB Callback time: managed=108 ms, native=51 ms
+		Scripting: domain reloads=1, domain reload time=916 ms, compile time=1746 ms, other=29 ms
+		Project Asset Count: scripts=630, non-scripts=456
+		Asset File Changes: new=0, changed=1, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokePackagesCallback: 35.921ms
+	ApplyChangesToAssetFolders: 0.632ms
+	Scan: 113.997ms
+	OnSourceAssetsModified: 1.425ms
+	CategorizeScriptCompilationAssets: 50.746ms
+	ProcessAssetsWithTransientArtifactChanges: 25.548ms
+	CategorizeAssets: 14.223ms
+	CompileScripts: 1745.980ms
+	ImportOutOfDateAssets: 1952.670ms (1952.224ms without children)
+		UnloadImportedAssets: 0.102ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.128ms
+		OnDemandSchedulerStart: 0.213ms
+	PostProcessAllAssets: 112.096ms
+		VCAutoAddAssetPostprocess 2.634ms
+		XRBuildSystem.XRAssetImported 1.235ms
+		PostProcessCallbackCreateDeferredMaterials 0.060ms
+		MonoPostProcessAllAssets: 107.146ms
+			AssetPostprocessor.OnPostprocessAllAssets 65.647ms
+			StyleCatalogPostProcessor.OnPostprocessAllAssets 12.646ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 7.947ms
+			BuilderAssetPostprocessor.OnPostprocessAllAssets 5.175ms
+			AssetChangedListener.OnPostprocessAllAssets 1.178ms
+			RetainedModeAssetPostprocessor.OnPostprocessAllAssets 1.072ms
+			SyncVS.PostprocessSyncProject 1.019ms
+			TMPro_TexturePostProcessor.OnPostprocessAllAssets 0.711ms
+			TextAssetPostProcessor.OnPostprocessAllAssets 0.659ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 0.654ms
+			ArtifactBrowserPostProcessor.OnPostprocessAllAssets 0.472ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.388ms
+			AssetEvents.OnPostprocessAllAssets 0.233ms
+			AudioMixerPostprocessor.OnPostprocessAllAssets 0.221ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.191ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.170ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.153ms
+			ScenarioDriftAssetsTracker.OnPostprocessAllAssets 0.145ms
+			SpeedTreePostProcessor.OnPostprocessAllAssets 0.136ms
+			ConfigAssetsTracker.OnPostprocessAllAssets 0.117ms
+			AudioContainerPostProcessor.OnPostprocessAllAssets 0.060ms
+	PostAssetChangesProfiler: 12.398ms
+	UnloadStreamsBegin: 1.119ms
+	GenerateScriptTypeHashes: 1.819ms
+	GenerateScriptTypeSerializationHashes: 3.707ms
+	Untracked: 1054.631ms
+
+Application.AssetDatabase Initial Refresh End
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.02 seconds
+Scanning for USB devices : 3.924ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-iPlay Cee-lo & Craps
+Unloading 15 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 3039 unused Assets / (4.7 MB). Loaded Objects now: 3651.
+Memory consumption went from 129.5 MB to 124.8 MB.
+Total: 7.723300 ms (FindLiveObjects: 0.330600 ms CreateObjectMapping: 0.090000 ms MarkObjects: 4.562900 ms  DeleteObjects: 2.736800 ms)
+
+Asset Pipeline Refresh (id=2a9b936569aebec4e86b6444fbe8a6fc): Total: 0.014 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Opening scene 'Assets/Scenes/StreetDiceDemo.unity'
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/Scenes/StreetDiceDemo.unity'
+	Deserialize:            1.895 ms
+	Integration:            157.243 ms
+	Integration of assets:  0.002 ms
+	Thread Wait Time:       0.013 ms
+	Total Operation Time:   159.154 ms
+Unloading 2 unused Assets / (1.3 KB). Loaded Objects now: 3653.
+Memory consumption went from 118.4 MB to 118.4 MB.
+Total: 4.968500 ms (FindLiveObjects: 0.187200 ms CreateObjectMapping: 0.044300 ms MarkObjects: 4.708300 ms  DeleteObjects: 0.027800 ms)
+
+Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (Import Result ID: '8d2ed60cc4fd6f44a63ee3a8dbbdb7a1') in 0.0074471 seconds [static dependencies only]. Details - ImportResultOutputID=d3ca6db29495033f6ec6c171ea098da8 DependenciesID=8a3754e1aa5e10a32142301e349e26a7 StaticDependenciesID=8ccb0eaee6ece6c14023084d892d3853 
+Refreshing native plugins compatible for Editor in 2.67 ms, found 2 plugins.
+Asset Pipeline Refresh (id=a05266d76ff4d2345a0965c3e57d805c): Total: 0.033 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Android configuration prepared. No BuildPipeline call made; no APK built.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+StreetDiceDemoBuild:PrepareAndroidWithoutBuilding () (at Assets/Editor/StreetDiceDemoBuild.cs:81)
+PlayReadinessVerification:StartStartupOnline () (at Assets/Editor/PlayReadinessVerification.cs:122)
+
+(Filename: Assets/Editor/StreetDiceDemoBuild.cs Line: 81)
+
+<RI> Initializing input.
+XInput1_3.dll not found. Trying XInput9_1_0.dll instead...
+<RI> Input initialized.
+[Project] Loading completed in 10.642 seconds
+	Project init time: 				9.728 seconds
+		Template init time: 		0.000 seconds
+		Package Manager init time: 		2.244 seconds
+		Asset Database init time: 		0.237 seconds
+		Global illumination init time: 	0.007 seconds
+		Assemblies load time: 			0.973 seconds
+		Unity extensions init time: 	0.003 seconds
+		Asset Database refresh time: 	5.127 seconds
+	Scene opening time: 			0.679 seconds
+##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1789839858982,"processId":43420,"projectLoad":10.6417645,"projectInit":9.7278489,"templateInit":0.0,"packageManagerInit":2.243672,"assetDatabaseInit":0.2367329,"globalIlluminationInit":0.0074718,"assembliesLoad":0.9726519,"unityExtensionsInit":0.0032975,"assetDatabaseRefresh":5.1266096,"sceneOpening":0.6792412}
+##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1789839858982,"processId":43420,"editorVersion":"6000.4.11f1 (b0a1d6caadd2)","branch":"6000.4/staging","buildType":"Release","platform":"Windows"}
+Reloading assemblies for play mode.
+Reloading assemblies after forced synchronous recompile.
+Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
+Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.BurstCompatibilityGen.dll at Library/ScriptAssemblies/Unity.Collections.BurstCompatibilityGen.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.DocCodeSamples.dll at Library/ScriptAssemblies/Unity.Collections.DocCodeSamples.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.PerformanceTests.dll at Library/ScriptAssemblies/Unity.Collections.PerformanceTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.Tests.dll at Library/ScriptAssemblies/Unity.Collections.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.Tests.Playmode.dll at Library/ScriptAssemblies/Unity.Collections.Tests.Playmode.dll not valid. Loading of assembly skipped.
+Assembly Unity.Mathematics.Tests.dll at Library/ScriptAssemblies/Unity.Mathematics.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Editor.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Nuget.Mono-Cecil.dll at Library/ScriptAssemblies/Unity.Nuget.Mono-Cecil.dll not valid. Loading of assembly skipped.
+Assembly Unity.Services.Authentication.Server.dll at Library/ScriptAssemblies/Unity.Services.Authentication.Server.dll not valid. Loading of assembly skipped.
+Assembly Unity.Settings.Tests.dll at Library/ScriptAssemblies/Unity.Settings.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Editor.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.Common.Tests.dll at Library/ScriptAssemblies/UnityEditor.UI.Common.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.EditorTests.dll at Library/ScriptAssemblies/UnityEditor.UI.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
+Begin MonoManager ReloadAssembly
+Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
+Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.BurstCompatibilityGen.dll at Library/ScriptAssemblies/Unity.Collections.BurstCompatibilityGen.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.DocCodeSamples.dll at Library/ScriptAssemblies/Unity.Collections.DocCodeSamples.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.PerformanceTests.dll at Library/ScriptAssemblies/Unity.Collections.PerformanceTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.Tests.dll at Library/ScriptAssemblies/Unity.Collections.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.Tests.Playmode.dll at Library/ScriptAssemblies/Unity.Collections.Tests.Playmode.dll not valid. Loading of assembly skipped.
+Assembly Unity.Mathematics.Tests.dll at Library/ScriptAssemblies/Unity.Mathematics.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Editor.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Nuget.Mono-Cecil.dll at Library/ScriptAssemblies/Unity.Nuget.Mono-Cecil.dll not valid. Loading of assembly skipped.
+Assembly Unity.Services.Authentication.Server.dll at Library/ScriptAssemblies/Unity.Services.Authentication.Server.dll not valid. Loading of assembly skipped.
+Assembly Unity.Settings.Tests.dll at Library/ScriptAssemblies/Unity.Settings.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Editor.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.Common.Tests.dll at Library/ScriptAssemblies/UnityEditor.UI.Common.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.EditorTests.dll at Library/ScriptAssemblies/UnityEditor.UI.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
+Refreshing native plugins compatible for Editor in 2.87 ms, found 2 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.717 seconds
+Domain Reload Profiling: 1213ms
+	BeginReloadAssembly (334ms)
+		DisableScriptedObjects (37ms)
+		CreateAndSetChildDomain (192ms)
+	RebuildCommonClasses (31ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (41ms)
+	LoadAllAssembliesAndSetupDomain (78ms)
+		LoadAssemblies (95ms)
+		AnalyzeDomain (55ms)
+			TypeCache.Refresh (4ms)
+			BuildScriptInfoCaches (48ms)
+	FinalizeReload (717ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (27ms)
+			BeforeProcessingInitializeOnLoad (113ms)
+			ProcessInitializeOnLoadAttributes (110ms)
+			ProcessInitializeOnLoadMethodAttributes (86ms)
+			AfterProcessingInitializeOnLoad (6ms)
+		AwakeInstancesAfterBackupRestoration (146ms)
+(Values over 0.050ms)
+Asset Pipeline Refresh (id=acf43d4c2bbfa0345bfc15003776c6bf): Total: 1.293 seconds - Initiated by StopAssetImportingV2(ForceSynchronousImport | ForceDomainReload)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=747 ms
+		Asset DB Callback time: managed=13 ms, native=0 ms
+		Scripting: domain reloads=1, domain reload time=530 ms, compile time=1 ms, other=0 ms
+		Project Asset Count: scripts=630, non-scripts=456
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokePackagesCallback: 1.802ms
+	ApplyChangesToAssetFolders: 0.301ms
+	ProcessAssetsWithTransientArtifactChanges: 1.549ms
+	CategorizeAssets: 6.030ms
+	CompileScripts: 1.419ms
+	ImportOutOfDateAssets: 722.507ms (722.212ms without children)
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.120ms
+		OnDemandSchedulerStart: 0.166ms
+	PostProcessAllAssets: 13.055ms
+		MonoPostProcessAllAssets: 13.049ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 4.501ms
+			AssetPostprocessor.OnPostprocessAllAssets 1.692ms
+			SyncVS.PostprocessSyncProject 0.923ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 0.759ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.263ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.178ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.129ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.075ms
+	UnloadStreamsBegin: 1.275ms
+	GenerateScriptTypeHashes: 0.622ms
+	GenerateScriptTypeSerializationHashes: 1.277ms
+	Untracked: 541.189ms
+
+Loaded scene 'Temp/__Backupscenes/0.backup'
+	Deserialize:            0.303 ms
+	Integration:            371.667 ms
+	Integration of assets:  0.002 ms
+	Thread Wait Time:       12.133 ms
+	Total Operation Time:   384.105 ms
+Start Indexing on Editor startup
+ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+Parameter name: index
+  at System.Collections.Generic.List`1[T].get_Item (System.Int32 index) [0x00009] in <f713e1c3c5f545ce9b1df47230f4f853>:0 
+  at UnityEditor.Search.SearchDatabase+<EnumerateAll>d__80.MoveNext () [0x00089] in <4cf10e863ca2427692acd6d7815e4f0f>:0 
+  at System.Linq.Enumerable.TryGetFirst[TSource] (System.Collections.Generic.IEnumerable`1[T] source, System.Boolean& found) [0x00045] in <101642b95873440bbf9fec45cfcaa487>:0 
+  at System.Linq.Enumerable.First[TSource] (System.Collections.Generic.IEnumerable`1[T] source) [0x00000] in <101642b95873440bbf9fec45cfcaa487>:0 
+  at UnityEditor.Search.SearchDatabase.GetDefaultSearchDatabase () [0x00005] in <4cf10e863ca2427692acd6d7815e4f0f>:0 
+  at UnityEditor.Search.SearchInit.IndexationOnStartup () [0x0000a] in <4cf10e863ca2427692acd6d7815e4f0f>:0 
+  at UnityEditor.EditorApplication.Internal_CallDelayFunctions () [0x00029] in <5887aa2f2a974eb3af4d0a085628bd64>:0 
+
+Created GICache directory at C:/Users/uncle/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.011s, timestamps: [13.439 - 13.451]
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+[Vivox]: Unable to initialize Vivox. 
+Please ensure that a project is properly linked at "Edit > Project Settings > Services > Vivox" if you intend to use Unity Game Services. 
+If you would like to use custom credentials, you can set them by creating an InitializationOptions instance, calling SetVivoxCredentials(...) on it while providing your credentials, and passing the object into UnityServices.InitializeAsync(...)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:LogError (string,object)
+Unity.Services.Vivox.VivoxLogger:LogError (object) (at ./Library/PackageCache/com.unity.services.vivox@50a15770bdad/Runtime/SDK/Utils/VivoxLogger.cs:15)
+Unity.Services.Vivox.VivoxPackageInitializer:InitializeService (Unity.Services.Core.Internal.CoreRegistry) (at ./Library/PackageCache/com.unity.services.vivox@50a15770bdad/Runtime/VivoxPackageInitializer.cs:78)
+Unity.Services.Vivox.VivoxPackageInitializer:Initialize (Unity.Services.Core.Internal.CoreRegistry) (at ./Library/PackageCache/com.unity.services.vivox@50a15770bdad/Runtime/VivoxPackageInitializer.cs:33)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__InitializePackageAsync|2>d:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/Registry/CoreRegistryInitializer.cs:91)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__InitializePackageAsync|2>d> (Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__InitializePackageAsync|2>d&)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0:<InitializeRegistryAsync>g__InitializePackageAsync|2 (Unity.Services.Core.Internal.IInitializablePackage)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__TryInitializePackageAsync|0>d:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/Registry/CoreRegistryInitializer.cs:63)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__TryInitializePackageAsync|0>d> (Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__TryInitializePackageAsync|0>d&)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0:<InitializeRegistryAsync>g__TryInitializePackageAsync|0 (Unity.Services.Core.Internal.IInitializablePackage)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<InitializeRegistryAsync>d__3:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/Registry/CoreRegistryInitializer.cs:48)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.List`1<Unity.Services.Core.Internal.PackageInitializationInfo>>:Start<Unity.Services.Core.Internal.CoreRegistryInitializer/<InitializeRegistryAsync>d__3> (Unity.Services.Core.Internal.CoreRegistryInitializer/<InitializeRegistryAsync>d__3&)
+Unity.Services.Core.Internal.CoreRegistryInitializer:InitializeRegistryAsync ()
+Unity.Services.Core.Internal.UnityServicesInternal/<>c__DisplayClass33_0/<<InitializeServicesAsync>g__InitializePackagesAsync|1>d:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/UnityServicesInternal.cs:175)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.UnityServicesInternal/<>c__DisplayClass33_0/<<InitializeServicesAsync>g__InitializePackagesAsync|1>d> (Unity.Services.Core.Internal.UnityServicesInternal/<>c__DisplayClass33_0/<<InitializeServicesAsync>g__InitializePackagesAsync|1>d&)
+Unity.Services.Core.Internal.UnityServicesInternal/<>c__DisplayClass33_0:<InitializeServicesAsync>g__InitializePackagesAsync|1 ()
+Unity.Services.Core.Internal.UnityServicesInternal/<InitializeServicesAsync>d__33:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/UnityServicesInternal.cs:156)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.UnityServicesInternal/<InitializeServicesAsync>d__33> (Unity.Services.Core.Internal.UnityServicesInternal/<InitializeServicesAsync>d__33&)
+Unity.Services.Core.Internal.UnityServicesInternal:InitializeServicesAsync ()
+Unity.Services.Core.Internal.UnityServicesInternal/<InitializeAsync>d__27:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/UnityServicesInternal.cs:80)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.UnityServicesInternal/<InitializeAsync>d__27> (Unity.Services.Core.Internal.UnityServicesInternal/<InitializeAsync>d__27&)
+Unity.Services.Core.Internal.UnityServicesInternal:InitializeAsync (Unity.Services.Core.InitializationOptions)
+Unity.Services.Core.UnityServices/<InitializeAsync>d__27:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core/UnityServices.cs:144)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.UnityServices/<InitializeAsync>d__27> (Unity.Services.Core.UnityServices/<InitializeAsync>d__27&)
+Unity.Services.Core.UnityServices:InitializeAsync (Unity.Services.Core.InitializationOptions)
+Unity.Services.Core.UnityServices:InitializeAsync () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core/UnityServices.cs:95)
+StreetDiceVivoxVoiceClient/<JoinAsync>d__25:MoveNext () (at Assets/StreetDiceVivoxVoiceClient.cs:63)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<StreetDiceVivoxVoiceClient/<JoinAsync>d__25> (StreetDiceVivoxVoiceClient/<JoinAsync>d__25&)
+StreetDiceVivoxVoiceClient:JoinAsync ()
+StreetDiceVivoxVoiceClient/<JoinWhenPermitted>d__24:MoveNext () (at Assets/StreetDiceVivoxVoiceClient.cs:53)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+UnityEngine.MonoBehaviour:StartCoroutineManaged2 (System.Collections.IEnumerator)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+StreetDiceVivoxVoiceClient:Join (string,string,string,string) (at Assets/StreetDiceVivoxVoiceClient.cs:34)
+StreetDiceGreyboxController/<JoinRealPlayer>d__177:MoveNext () (at Assets/StreetDiceGreyboxController.cs:1443)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+(Filename: ./Library/PackageCache/com.unity.services.vivox@50a15770bdad/Runtime/VivoxPackageInitializer.cs Line: 78)
+
+[Vivox]: Unable to initialize Vivox. 
+Please ensure that a project is properly linked at "Edit > Project Settings > Services > Vivox" if you intend to use Unity Game Services. 
+If you would like to use custom credentials, you can set them by creating an InitializationOptions instance, calling SetVivoxCredentials(...) on it while providing your credentials, and passing the object into UnityServices.InitializeAsync(...)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:LogError (string,object)
+Unity.Services.Vivox.VivoxLogger:LogError (object) (at ./Library/PackageCache/com.unity.services.vivox@50a15770bdad/Runtime/SDK/Utils/VivoxLogger.cs:15)
+Unity.Services.Vivox.VivoxPackageInitializer:InitializeService (Unity.Services.Core.Internal.CoreRegistry) (at ./Library/PackageCache/com.unity.services.vivox@50a15770bdad/Runtime/VivoxPackageInitializer.cs:78)
+Unity.Services.Vivox.VivoxPackageInitializer:Initialize (Unity.Services.Core.Internal.CoreRegistry) (at ./Library/PackageCache/com.unity.services.vivox@50a15770bdad/Runtime/VivoxPackageInitializer.cs:33)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__InitializePackageAsync|2>d:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/Registry/CoreRegistryInitializer.cs:91)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__InitializePackageAsync|2>d> (Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__InitializePackageAsync|2>d&)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0:<InitializeRegistryAsync>g__InitializePackageAsync|2 (Unity.Services.Core.Internal.IInitializablePackage)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__TryInitializePackageAsync|0>d:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/Registry/CoreRegistryInitializer.cs:63)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__TryInitializePackageAsync|0>d> (Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0/<<InitializeRegistryAsync>g__TryInitializePackageAsync|0>d&)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<>c__DisplayClass3_0:<InitializeRegistryAsync>g__TryInitializePackageAsync|0 (Unity.Services.Core.Internal.IInitializablePackage)
+Unity.Services.Core.Internal.CoreRegistryInitializer/<InitializeRegistryAsync>d__3:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/Registry/CoreRegistryInitializer.cs:48)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Collections.Generic.List`1<Unity.Services.Core.Internal.PackageInitializationInfo>>:Start<Unity.Services.Core.Internal.CoreRegistryInitializer/<InitializeRegistryAsync>d__3> (Unity.Services.Core.Internal.CoreRegistryInitializer/<InitializeRegistryAsync>d__3&)
+Unity.Services.Core.Internal.CoreRegistryInitializer:InitializeRegistryAsync ()
+Unity.Services.Core.Internal.UnityServicesInternal/<>c__DisplayClass33_0/<<InitializeServicesAsync>g__InitializePackagesAsync|1>d:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/UnityServicesInternal.cs:175)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.UnityServicesInternal/<>c__DisplayClass33_0/<<InitializeServicesAsync>g__InitializePackagesAsync|1>d> (Unity.Services.Core.Internal.UnityServicesInternal/<>c__DisplayClass33_0/<<InitializeServicesAsync>g__InitializePackagesAsync|1>d&)
+Unity.Services.Core.Internal.UnityServicesInternal/<>c__DisplayClass33_0:<InitializeServicesAsync>g__InitializePackagesAsync|1 ()
+Unity.Services.Core.Internal.UnityServicesInternal/<InitializeServicesAsync>d__33:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/UnityServicesInternal.cs:156)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.UnityServicesInternal/<InitializeServicesAsync>d__33> (Unity.Services.Core.Internal.UnityServicesInternal/<InitializeServicesAsync>d__33&)
+Unity.Services.Core.Internal.UnityServicesInternal:InitializeServicesAsync ()
+Unity.Services.Core.Internal.UnityServicesInternal/<InitializeAsync>d__27:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core.Internal/UnityServicesInternal.cs:80)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.Internal.UnityServicesInternal/<InitializeAsync>d__27> (Unity.Services.Core.Internal.UnityServicesInternal/<InitializeAsync>d__27&)
+Unity.Services.Core.Internal.UnityServicesInternal:InitializeAsync (Unity.Services.Core.InitializationOptions)
+Unity.Services.Core.UnityServices/<InitializeAsync>d__27:MoveNext () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core/UnityServices.cs:144)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<Unity.Services.Core.UnityServices/<InitializeAsync>d__27> (Unity.Services.Core.UnityServices/<InitializeAsync>d__27&)
+Unity.Services.Core.UnityServices:InitializeAsync (Unity.Services.Core.InitializationOptions)
+Unity.Services.Core.UnityServices:InitializeAsync () (at ./Library/PackageCache/com.unity.services.core@3464cb68d709/Runtime/Core/UnityServices.cs:95)
+StreetDiceVivoxVoiceClient/<JoinAsync>d__25:MoveNext () (at Assets/StreetDiceVivoxVoiceClient.cs:63)
+System.Runtime.CompilerServices.AsyncTaskMethodBuilder:Start<StreetDiceVivoxVoiceClient/<JoinAsync>d__25> (StreetDiceVivoxVoiceClient/<JoinAsync>d__25&)
+StreetDiceVivoxVoiceClient:JoinAsync ()
+StreetDiceVivoxVoiceClient/<JoinWhenPermitted>d__24:MoveNext () (at Assets/StreetDiceVivoxVoiceClient.cs:53)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+UnityEngine.MonoBehaviour:StartCoroutineManaged2 (System.Collections.IEnumerator)
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+StreetDiceVivoxVoiceClient:Join (string,string,string,string) (at Assets/StreetDiceVivoxVoiceClient.cs:34)
+StreetDiceGreyboxController/<JoinRealPlayer>d__177:MoveNext () (at Assets/StreetDiceGreyboxController.cs:1443)
+UnityEngine.SetupCoroutine:InvokeMoveNext (System.Collections.IEnumerator,intptr)
+
+(Filename: ./Library/PackageCache/com.unity.services.vivox@50a15770bdad/Runtime/VivoxPackageInitializer.cs Line: 78)
+
+STARTUP ONLINE PASSED: typed Host and Guest names, hosted table, typed code, joined second seat
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+PlayReadinessVerification/<VerifyStartupOnline>d__28:MoveNext () (at Assets/Editor/PlayReadinessVerification.cs:452)
+PlayReadinessVerification:Tick () (at Assets/Editor/PlayReadinessVerification.cs:204)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: Assets/Editor/PlayReadinessVerification.cs Line: 452)
+
+Killing ADB server in 2.1157453 seconds.
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-uncle-6000.4.11-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-uncle-6000.4.11 channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+CodeReloadManager destroyed
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server process was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1789839869744,"processId":43420,"allocatedMemory":11943704,"memoryLabels":[{"Default":192417},{"Permanent":15276},{"NewDelete":66171},{"Thread":4237552},{"Manager":33197},{"VertexData":8},{"Geometry":816},{"Texture":24},{"Shader":849882},{"Material":24},{"GfxDevice":58800},{"Animation":392},{"Audio":2632},{"FreeType":8},{"FontEngine":736},{"Physics":2146},{"Physics2D":16},{"Serialization":952},{"Input":9880},{"JobScheduler":33024},{"TextLib":216},{"Mono":32},{"ScriptingNativeRuntime":155052},{"BaseObject":1620432},{"Resource":1184},{"Renderer":3008},{"Transform":4685},{"File":4017},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":27396},{"StaticString":6718},{"Utility":2672774},{"Curl":2478},{"PoolAlloc":2216},{"AI":80},{"TypeTree":16157},{"ScriptManager":448},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":120},{"GI":7792},{"Director":8320},{"CloudService":9872},{"WebRequest":2540},{"VR":48050},{"SceneManager":504},{"Video":208},{"LazyScriptCache":32},{"Camera":17},{"Secure":2377},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":472},{"Hierarchy":608},{"CoreStats":13112},{"Identifiers":12960},{"Gui":128},{"EditorUtility":141339},{"VersionControl":4},{"Undo":931},{"AssetDatabase":1258565},{"EditorGi":328},{"UnityConnect":37777},{"Upm":1912},{"UpmDiagnostics":8},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":211},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2891},{"Windowing":456},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}

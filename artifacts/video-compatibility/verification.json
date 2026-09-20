@@ -1,0 +1,26 @@
+[
+  {
+    "Style": "tap",
+    "Frames": "51",
+    "Seconds": "0.850000",
+    "Profile": "Constrained Baseline",
+    "Color": "bt709",
+    "Output": "C:\\Users\\uncle\\MoneyOS\\03_iPlay_StreetDice\\artifacts\\video-compatibility\\catch-tap-kling.mp4"
+  },
+  {
+    "Style": "plant",
+    "Frames": "44",
+    "Seconds": "0.733333",
+    "Profile": "Constrained Baseline",
+    "Color": "bt709",
+    "Output": "C:\\Users\\uncle\\MoneyOS\\03_iPlay_StreetDice\\artifacts\\video-compatibility\\catch-plant-kling.mp4"
+  },
+  {
+    "Style": "wave",
+    "Frames": "46",
+    "Seconds": "0.766667",
+    "Profile": "Constrained Baseline",
+    "Color": "bt709",
+    "Output": "C:\\Users\\uncle\\MoneyOS\\03_iPlay_StreetDice\\artifacts\\video-compatibility\\catch-wave-kling.mp4"
+  }
+]

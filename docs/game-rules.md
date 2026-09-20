@@ -2,6 +2,24 @@
 
 Working title: **iPlay Street Dice**
 
+Current product name: **iPlay Cee-lo & Craps**.
+
+## Shoot, Sell and Leaving
+
+- A player offered the dice chooses Shoot or Sell before committing a wager.
+- Sell is available only with at least three active players and never interrupts a point or unsettled wager.
+- A five-second public auction opens. Bids start at $1, have no fixed maximum, and cannot exceed the bidder's available balance.
+- The current Catcher holds a forced $1 default bid. If nobody outbids it, the Catcher buys the dice for $1 and begins with +1.5 heat.
+- As a disclosed iPlay sale perk, that forced-default buyer cannot roll 2/3/12 while establishing the first point. The protection ends as soon as the point is set; 7 remains possible on come-out and during the point phase.
+- The winner pays the seller immediately, becomes Shooter, and the sale price is public. Remaining balances stay private.
+- The seller sits out the buyer's main bet and moves to the back of the turn queue, but may watch, use voice chat, and place eligible side bets.
+- After the buyer seven-outs, the dice go to the next player from the original clockwise order rather than back to the seller.
+- Leaving as shooter with a committed wager counts as a crap/forfeit loss, not a new random roll.
+- During a point, the main wager loses; point-hit bets lose and point/group-miss bets win, as on a point-phase loss. Already settled bets are not paid again.
+- Leaving as a side bettor forfeits that player's open bets without resetting another shooter's point.
+- Leave Game requires confirmation and is the last in-game drawer option.
+- After a seven-out, the next shooter receives a choice before a new wager is committed.
+
 ## Players
 
 - 2 to 5 players.
@@ -25,7 +43,7 @@ After a point is established:
 - Shooter keeps rolling until the point is hit or a `7` is rolled.
 - Point hit: Shooter wins.
 - `7` before point: Shooter loses, craps out, and gives up the dice.
-- MVP handoff: the Catcher becomes the next Shooter, and the old Shooter becomes the Catcher on the same shot amount.
+- Clockwise handoff: the next player in the active turn queue becomes Shooter. The old Shooter becomes Catcher unless a Sell substitution excludes that seller from the buyer's main bet.
 
 ## Fade / Catch
 
@@ -40,6 +58,8 @@ Fade/Catch is the iPlay active defensive mechanic.
   - Shooter shoots again.
 
 Fade/Catch is not just accepting the action. It means the Catcher stops that roll from counting.
+
+Fade presentation is hand-only. Once the fade kills the roll, dice disappear and the overhead display plays the catcher's selected Kling hand animation: Tap, Plant or Wave. The selection is saved in main settings alongside hand appearance. No dice appear in the fade animation; normal rolls still use the magnified dice camera. The catcher never touches dice.
 
 ## Fade Momentum
 
@@ -69,6 +89,12 @@ Possible side bets:
 
 Side bets do not resolve on faded rolls.
 
+- Every craps roll opens a public 10-second betting window after the main shot is committed.
+- Every non-shooter sees a real `10` through `1` countdown. The shooter sees one continuous `15` through `1` countdown because only the shooter receives the additional five-second acceptance period.
+- The shooter cannot begin the throw until the 15-second countdown reaches zero.
+- New side-bet offers and non-shooter acceptances received after 10 seconds are rejected. The shooter may accept an already offered wager during the additional five seconds; no new offer can be created then.
+- If the point remains active after a roll, a fresh 10/15-second role-specific window opens before the shooter's next roll.
+
 Point group side bets use these street dice groups:
 
 - `4/10`
@@ -82,6 +108,15 @@ Example:
 - If Shooter rolls `4`, that grouped side bet loses, but Shooter still keeps shooting for `10`.
 - If Shooter rolls `10`, that grouped side bet also loses, and the main shot resolves as a point hit.
 - If Shooter rolls `7` before either grouped number, the grouped miss bet wins.
+
+During a point, CRAP side bets explicitly target the point or its grouped mate (`CRAP 10` or `CRAP 4` for point `10`). The target stays on the wager lock so two offers can be distinguished. Under the grouped rule above, either `4` or `10` defeats those CRAP offers; `7` wins them. On come-out, the CRAP target is `2/3/12` instead of a point number.
+
+After an eligible bet against the Shooter is accepted during a point, its bettor may make two independent add-on requests before a later roll:
+
+- **Double Up** requests one additional wager equal to that accepted bet on the same number.
+- **Paired Number** requests one additional wager of the same amount on the point's grouped mate.
+- Each request is separate. The Shooter may accept one, both, or neither.
+- An unaccepted add-on expires when the next roll begins.
 
 ## Cee-lo Street / Banker Rules
 
@@ -167,18 +202,23 @@ The streak meter is a central table drama mechanic.
 
 Streak should build from:
 
-- Hitting your point.
-- Going longer without crapping out.
-- Taking and winning side bets.
-- Winning after fade momentum has built.
-- Winning after Double Up.
+- Hitting your point: +2.
+- Winning on the come-out: +1.
+- Winning one accepted side bet on one roll: +0.5; winning two or more on that same roll: +1 total.
+- Winning a Double Up wager: +3 in addition to the normal shooter win.
+- Winning after fade momentum has built, beginning after the third fade.
 
-Streak should not build from doubles by default.
+The meter has 10 points and belongs to the current Shooter. Side-bet heat counts only when the Shooter wins those bets. Merely lasting several rolls and rolling doubles do not add heat. Come-out 2/3/12 empties the meter even though the Shooter keeps the dice; seven-out empties it and passes the dice.
 
 At full streak:
 
-- Dice enter red/orange hot mode.
+- Dice enter red/orange hot mode on the next throw, never midway through the roll that filled the meter.
 - Red/orange is reserved for streak and cannot be selected as a normal dice color.
+- The in-game UI shows only a fire-filled hot meter, not the individual point awards.
+
+## Fair Play
+
+Your bankroll is private. Other players see the bets you place and public dice-sale prices, not your remaining balance. The server decides counted dice results and settles each wager once; no player's phone can choose an outcome. The only designed outcome adjustment is the disclosed forced-$1 buyer protection described in Shoot, Sell and Leaving.
 
 ## Dice Colors
 
@@ -198,4 +238,3 @@ Reserved streak color:
 - Exact payout multipliers.
 - Exact number of fades before momentum starts: MVP prototype uses after 3 fades.
 - Whether Double Up requires one Catcher to cover full amount or can be split.
-- Whether side bets have a timeout before roll lock.

@@ -6,7 +6,7 @@
 - Confirm payout model. **Done for MVP: table chip wallet.**
 - Confirm side-bet menu. **Done for MVP: come-out win/loss and hit/miss point.**
 - Confirm fade timing window. **Done for MVP API: Catcher can Fade/Catch while shot is live.**
-- Confirm streak meter thresholds. **Done for MVP: hot dice at 5.**
+- Confirm streak meter thresholds. **Done for prototype: 10-point hot meter with half-point side-bet awards; red dice begin on the next throw.**
 - Confirm Double Up risk model. **Done: next shot amount doubles only after a win.**
 
 ## Phase 2 - Backend Prototype

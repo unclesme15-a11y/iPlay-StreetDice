@@ -13,7 +13,8 @@ public static class GameSnapshotMapper
                 Id = p.Id,
                 Name = p.Name,
                 DiceColor = p.DiceColor,
-                Balance = p.Balance
+                Balance = p.Balance,
+                HasLeft = p.HasLeft
             }).ToList(),
             SideBets = state.SideBets.Select(b => new SideBetSnapshot
             {
@@ -60,7 +61,10 @@ public static class GameSnapshotMapper
 
         foreach (var player in snapshot.Players)
         {
-            state.Players.Add(new StreetDicePlayer(player.Id, player.Name, player.DiceColor, player.Balance));
+            state.Players.Add(new StreetDicePlayer(player.Id, player.Name, player.DiceColor, player.Balance)
+            {
+                HasLeft = player.HasLeft
+            });
         }
 
         foreach (var bet in snapshot.SideBets)
