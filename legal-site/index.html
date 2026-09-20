@@ -1,0 +1,309 @@
+<title>iPlay Cee-Lo & Craps — Legal</title>
+<style>
+  :root {
+    --ink: #eef2f5;
+    --ink-dim: #a9b4bd;
+    --ground: #0b0f14;
+    --panel: #11161d;
+    --panel-line: #1f2831;
+    --cyan: #2fd8f5;
+    --cyan-dim: #1a8fa8;
+    --red: #d43b3b;
+    --font-display: 'Permanent Marker', cursive;
+    --font-head: 'Barlow Condensed', sans-serif;
+    --font-body: 'Barlow', sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ink: #14181d;
+      --ink-dim: #4b5560;
+      --ground: #f3f1ec;
+      --panel: #ffffff;
+      --panel-line: #e2ded4;
+      --cyan-dim: #0e7c92;
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #14181d;
+    --ink-dim: #4b5560;
+    --ground: #f3f1ec;
+    --panel: #ffffff;
+    --panel-line: #e2ded4;
+    --cyan-dim: #0e7c92;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0 16px;
+    line-height: 1.55;
+  }
+  a { color: var(--cyan-dim); }
+
+  header {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 0 24px;
+    border-bottom: 1px solid var(--panel-line);
+  }
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 6vw, 40px);
+    color: var(--cyan);
+    text-shadow: 0 0 18px rgba(47, 216, 245, 0.35);
+    margin: 0 0 4px;
+    line-height: 1;
+  }
+  .wordmark span { color: var(--ink); text-shadow: none; }
+  header p {
+    font-family: var(--font-head);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-dim);
+    margin: 0;
+    font-size: 15px;
+  }
+
+  nav.tabs {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    gap: 8px;
+    padding: 20px 0;
+    flex-wrap: wrap;
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    background: var(--ground);
+    z-index: 5;
+  }
+  nav.tabs button {
+    font-family: var(--font-head);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 15px;
+    background: var(--panel);
+    color: var(--ink-dim);
+    border: 1px solid var(--panel-line);
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  nav.tabs button[aria-selected="true"] {
+    color: var(--ground);
+    background: var(--cyan);
+    border-color: var(--cyan);
+  }
+
+  main { max-width: 760px; margin: 0 auto; padding-bottom: 64px; }
+  section[hidden] { display: none; }
+
+  h2 {
+    font-family: var(--font-head);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-size: 28px;
+    border-bottom: 2px solid var(--cyan-dim);
+    padding-bottom: 8px;
+    margin: 0 0 20px;
+  }
+  h3 {
+    font-family: var(--font-head);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 19px;
+    color: var(--cyan-dim);
+    margin: 28px 0 8px;
+  }
+  p, li { color: var(--ink); font-size: 16px; }
+  p.meta { color: var(--ink-dim); font-size: 14px; margin-top: -12px; }
+
+  .callout {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-left: 4px solid var(--cyan);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin: 20px 0;
+  }
+  .callout.warn { border-left-color: var(--red); }
+  .callout strong { color: var(--ink); }
+
+  .placeholder {
+    background: rgba(212, 59, 59, 0.12);
+    color: var(--red);
+    border: 1px dashed var(--red);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: monospace;
+    font-size: 0.92em;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--panel-line); font-size: 15px; }
+  th { font-family: var(--font-head); text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-dim); font-weight: 500; }
+
+  footer {
+    max-width: 760px; margin: 0 auto; padding: 32px 0 48px;
+    color: var(--ink-dim); font-size: 13px; border-top: 1px solid var(--panel-line);
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Barlow+Condensed:wght@500;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+
+<header>
+  <p class="wordmark"><span>i</span>PLAY <span>Cee-Lo &amp; Craps</span></p>
+  <p>Support · Privacy Policy · Terms of Use</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-target="support">Support</button>
+  <button role="tab" aria-selected="false" data-target="privacy">Privacy Policy</button>
+  <button role="tab" aria-selected="false" data-target="terms">Terms of Use</button>
+</nav>
+
+<main>
+  <section id="support">
+    <h2>Support</h2>
+    <p class="meta">Last updated <span class="placeholder">[DATE]</span></p>
+
+    <p>iPlay Cee-Lo &amp; Craps is a street-dice game for adults — Cee-Lo and Craps table modes, played with other people for play-money chips.</p>
+
+    <h3>Contact us</h3>
+    <p>Something broken, a question, or a report about another player? Email <span class="placeholder">[YOUR SUPPORT EMAIL]</span> and we'll get back to you.</p>
+
+    <h3>Common questions</h3>
+
+    <p><strong>Is this real-money gambling?</strong><br>
+    No. Every chip and dollar amount in the game is play money. It has no cash value, can't be bought with real money, and can't be cashed out, transferred, or redeemed for anything. See the Terms of Use for the full policy.</p>
+
+    <p><strong>Do I need an account?</strong><br>
+    No email or password is required to play. You're identified by an anonymous player ID and whatever display name you choose.</p>
+
+    <p><strong>How does voice chat work?</strong><br>
+    Table voice chat is optional and only connects you to other players seated at your table. It's provided by Unity Gaming Services (Vivox); we don't record or store your voice.</p>
+
+    <p><strong>Someone is being abusive in voice chat or in a game.</strong><br>
+    Please report it to <span class="placeholder">[YOUR SUPPORT EMAIL]</span> with the table/game details and roughly when it happened.</p>
+
+    <p><strong>I want my data deleted.</strong><br>
+    Since play doesn't require an email or real name, most data is tied only to an anonymous device/player ID. Contact <span class="placeholder">[YOUR SUPPORT EMAIL]</span> and we'll help.</p>
+  </section>
+
+  <section id="privacy" hidden>
+    <h2>Privacy Policy</h2>
+    <p class="meta">Last updated <span class="placeholder">[DATE]</span></p>
+
+    <div class="callout">
+      This policy describes what iPlay Cee-Lo &amp; Craps actually does today. Read it against the real app before publishing, and have someone qualified confirm it before this ships to any store — this is a working draft, not a substitute for legal review.
+    </div>
+
+    <h3>What we collect</h3>
+    <table>
+      <tr><th>Data</th><th>Why</th></tr>
+      <tr><td>An anonymous player/device ID</td><td>To identify you across a session and at the table, without needing an account.</td></tr>
+      <tr><td>The display name you choose</td><td>Shown to other players at your table.</td></tr>
+      <tr><td>Gameplay data (rolls, wagers, chip balances)</td><td>To run the game. All amounts are play money — see Terms of Use.</td></tr>
+      <tr><td>Voice audio, only while you're in a voice-enabled table and choose to speak</td><td>Transmitted in real time to other players at your table via Unity Gaming Services (Vivox). Not recorded or stored by us.</td></tr>
+    </table>
+
+    <h3>What we don't collect</h3>
+    <p>We don't ask for your email, a password, your real name, or any payment information — there is nothing to purchase in the app.</p>
+
+    <h3>Third-party services</h3>
+    <p>Voice chat and anonymous player identity are provided by <strong>Unity Gaming Services</strong> (Vivox voice, Unity Authentication). Their handling of this data is governed by
+      <a href="https://unity.com/legal/game-player-and-app-user-privacy-policy" target="_blank" rel="noopener">Unity's own privacy policy</a>.</p>
+
+    <h3>Children</h3>
+    <p>This app is for adults. It is not directed at children, and players confirm they are 18 or older before entering the game.</p>
+
+    <h3>Data retention and deletion</h3>
+    <p>Because play doesn't require a persistent account tied to your real identity, most stored data is scoped to your anonymous player ID. To request deletion of what we hold against that ID, contact <span class="placeholder">[YOUR SUPPORT EMAIL]</span>.</p>
+
+    <h3>Changes to this policy</h3>
+    <p>If this policy changes in a way that matters, we'll update the date at the top of this page.</p>
+
+    <h3>Contact</h3>
+    <p><span class="placeholder">[YOUR COMPANY / DEVELOPER LEGAL NAME]</span> · <span class="placeholder">[YOUR SUPPORT EMAIL]</span></p>
+  </section>
+
+  <section id="terms" hidden>
+    <h2>Terms of Use</h2>
+    <p class="meta">Last updated <span class="placeholder">[DATE]</span></p>
+
+    <div class="callout warn">
+      <strong>This is a working draft, not a substitute for legal review.</strong> Given the real-money-adjacent wagering mechanics in this game, have this reviewed by a lawyer — especially the virtual-currency and liability sections — before publishing it to any store.
+    </div>
+
+    <h3>Age requirement</h3>
+    <p>You must be 18 years or older to play. The app asks you to confirm this before you can enter the game.</p>
+
+    <h3>Play money only — not gambling</h3>
+    <p>All chips, cash amounts, wagers, and balances in iPlay Cee-Lo &amp; Craps are <strong>virtual, play-money only</strong>. They:</p>
+    <ul>
+      <li>have no real-world monetary value,</li>
+      <li>cannot be purchased with real money,</li>
+      <li>cannot be redeemed, cashed out, exchanged, or transferred for real money or anything of value, and</li>
+      <li>exist solely for entertainment within the app.</li>
+    </ul>
+    <p>Nothing in this app constitutes real-money gambling.</p>
+
+    <h3>License</h3>
+    <p>We grant you a limited, personal, non-transferable license to install and play iPlay Cee-Lo &amp; Craps for your own entertainment. You may not resell, sublicense, or use the app for any commercial purpose.</p>
+
+    <h3>Acceptable use</h3>
+    <p>Playing with other people means playing fair. You agree not to:</p>
+    <ul>
+      <li>cheat, exploit bugs, or use unauthorized tools to affect game outcomes,</li>
+      <li>harass, threaten, or abuse other players, including over voice chat,</li>
+      <li>attempt to buy, sell, or trade in-game chips for real money or anything of value outside the app.</li>
+    </ul>
+    <p>We may suspend or remove access for violating these terms.</p>
+
+    <h3>Voice chat</h3>
+    <p>Table voice chat is optional and connects you only to other players at your table, through Unity Gaming Services (Vivox). You're responsible for what you say. Report abuse to <span class="placeholder">[YOUR SUPPORT EMAIL]</span>.</p>
+
+    <h3>Disclaimer of warranties</h3>
+    <p>The app is provided "as is," without warranties of any kind, to the fullest extent permitted by law.</p>
+
+    <h3>Limitation of liability</h3>
+    <p><span class="placeholder">[LIABILITY LIMITATION — HAVE A LAWYER DRAFT THIS FOR YOUR JURISDICTION]</span></p>
+
+    <h3>Governing law</h3>
+    <p>These terms are governed by the laws of <span class="placeholder">[YOUR JURISDICTION]</span>, without regard to conflict-of-law principles.</p>
+
+    <h3>Changes to these terms</h3>
+    <p>If we change these terms in a way that matters, we'll update the date at the top of this page.</p>
+
+    <h3>Contact</h3>
+    <p><span class="placeholder">[YOUR COMPANY / DEVELOPER LEGAL NAME]</span> · <span class="placeholder">[YOUR SUPPORT EMAIL]</span></p>
+  </section>
+</main>
+
+<footer>
+  iPlay Cee-Lo &amp; Craps is a game of entertainment. All in-game currency is play money with no real-world value. Must be 18+ to play.
+</footer>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll('nav.tabs button');
+  var sections = { support: document.getElementById('support'), privacy: document.getElementById('privacy'), terms: document.getElementById('terms') };
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      buttons.forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
+      btn.setAttribute('aria-selected', 'true');
+      Object.keys(sections).forEach(function (key) { sections[key].hidden = key !== btn.dataset.target; });
+      try { history.replaceState(null, '', '#' + btn.dataset.target); } catch (e) {}
+    });
+  });
+  try {
+    var hash = location.hash.replace('#', '');
+    if (sections[hash]) {
+      var target = document.querySelector('nav.tabs button[data-target="' + hash + '"]');
+      if (target) target.click();
+    }
+  } catch (e) {}
+})();
+</script>

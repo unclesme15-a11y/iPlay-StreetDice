@@ -256,20 +256,29 @@ open:
   cash-out), that needs StoreKit (iOS) / Google Play Billing wired in
   deliberately, reviewed against each store's IAP rules - don't bolt it on
   late.
-- **No backend hosting exists.** `server/` has no `Dockerfile`, no CI/CD
-  config, and no deployment target anywhere in the repo - `StreetDiceTableStore`
-  is an in-memory `ConcurrentDictionary` (`Program.cs:185-228`), so every
-  game/session/chip balance is lost on server restart. A phone build can't
-  point at `localhost` - this needs an actual always-on hosted backend (with
-  a real datastore, not in-memory) before a store build is meaningfully
-  playable by real users.
-- **Compliance copy audit still open.** Even with virtual currency, both
-  Apple and Google separately classify simulated/social gambling mechanics
-  (dice wagering, streaks, "hot dice," Double Up) as content requiring
-  disclosure and typically a higher minimum age rating - confirm current
-  published guidelines at submission time rather than assuming; policies
-  change. Concretely: every place the game/docs currently say things like
-  "chip wallet," "payout," or "wins X" should be read against "does this
-  read as real value to a reviewer or a player" and adjusted/disclaimed
-  (e.g. an explicit in-app "chips have no cash value and cannot be
-  redeemed" notice) before submission.
+- **Backend hosting — Docker exists, live deployment doesn't.** `server/Dockerfile`,
+  `docker-compose.yml`, and periodic-snapshot persistence
+  (`Core/Persistence/`) were added and verified 2026-09-19/20: built the real
+  image, ran it, killed the container, started a fresh one against the same
+  named volume, confirmed a game and its player session survived. What's
+  still missing is an actual place to run that container 24/7, reachable by
+  a phone over the internet - a cloud host (Fly.io, Render, Azure App
+  Service, etc.) needs to be chosen and paid for; this repo doesn't pick one.
+- **Compliance copy audit — done, came back clean.** Checked 2026-09-20:
+  no code anywhere implements a real-money purchase or cash-out path (no
+  `com.unity.purchasing`, no billing code, confirmed by grep). The team's
+  own `docs/decisions/2026-08-19-founding-table-pass-opportunity.md`
+  independently reached the same "play-only, no cash value, cannot be
+  purchased, withdrawn, transferred, or redeemed" position already. There's
+  also a real, working 18+ self-attestation age gate in the startup flow
+  (`unity/StreetDiceGreybox/Assets/StreetDiceStartup.cs`, `DrawAdultGate()`)
+  that already says "Play money only." No copy changes were needed.
+- **Privacy Policy / Terms of Use / Support page — drafted and published.**
+  A working draft grounded in what the app actually does (anonymous player
+  ID, no email/password, Vivox voice via Unity Gaming Services, no
+  purchases) is live at https://claude.ai/artifact/Qm6GkeYCcDEgeyFkmBrGUy
+  and committed at `legal-site/index.html`. It has clearly marked
+  placeholders (support email, legal entity name, jurisdiction, liability
+  clause) that must be filled in - and the liability/jurisdiction language
+  specifically should be reviewed by a lawyer - before this is used as the
+  real Privacy Policy/Support URL in any store listing.
