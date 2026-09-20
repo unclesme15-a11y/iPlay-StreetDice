@@ -1,12 +1,55 @@
 # Post-Production Handoff
 
-Snapshot taken 2026-09-19 against `6964ff1` (tip of both `main` and this branch).
-Nothing was uncommitted or unpushed at that point — this file captures what is
-left to do next, not recovered work.
+Originally snapshotted 2026-09-19 against `6964ff1`. On 2026-09-19/20, a large
+amount of real local work (Codex's, never previously pushed) landed on `main`
+at `6b5a80a` and was merged into this branch at `a94da6a` - see "2026-09-20
+merge" below for what that actually contained and how P0/P3 below were
+superseded. The rest of this document's P1/P2/P4-P9 findings still apply
+except where noted.
 
-This sandbox has no `dotnet` and no Unity Editor installed, so nothing below
-was compiled or run. Findings are based on reading the code/docs only. Treat
-line numbers as of `6964ff1`.
+This sandbox has `dotnet` (installed via apt mid-session) but no Unity Editor,
+so server-side claims below are compiled/tested/HTTP-verified; Unity-side
+claims are reading-only.
+
+## 2026-09-20 merge: Codex's real feature work landed
+
+`main` had been stuck at an old commit because Codex's local work was too
+large to upload through GitHub's web UI (a Unity `Library/` cache folder
+mistakenly included, ~4GB) - not because the work didn't exist. Once pushed
+properly through git (respecting `.gitignore`), it turned out to be
+substantial and well-tested: **101 passing tests**, covering:
+
+- A full server-owned physical dice-roll lifecycle (`/roll/prepare` →
+  `/roll/fade` → `/roll/commit`), replacing the old `/roll` endpoint (now
+  `410 Gone`). This independently found and fixed the exact same
+  client-trusted-dice vulnerability P0 below describes, via a more complete
+  fix than the one applied here on 2026-09-19 - **that earlier fix
+  (`DiceRollFairness.cs`) has been removed as superseded.**
+- A real Vivox token signer (`VivoxTokenSigner.cs`) that additionally
+  includes a Unity Gaming Services environment ID in the identity URIs - a
+  requirement this session's own signer (`VivoxAccessTokenGenerator.cs`,
+  also removed as superseded) didn't know about and would have silently
+  failed against a real Vivox account.
+- A peer-to-peer wager system (replacing side-bets), a 5-second dice-sale
+  auction, a 20-second reconnect-grace window for dropped connections, and
+  per-game request locking.
+
+This session's persistence layer (snapshot/restore across restarts) and
+Docker packaging were merged forward and updated to match the richer game
+state, then re-verified end-to-end (real HTTP server, real game, hard `kill
+-9`, restart, confirmed state and session tokens survived) against the
+merged code. **Scope note**: persistence covers enduring state (players,
+balances, phase, history) but deliberately not the few-seconds-long in-flight
+negotiations (an open dice-sale auction, a pending wager offer, a roll
+mid-flight) - a restart loses at most a few seconds of that ceremony, never a
+player's money or seat. See `Core/Persistence/GameSnapshot.cs`.
+
+The stale `serverAuthoritativeRolls: false` in the `/health` response (a
+leftover from before the physical-roll system existed) was corrected to
+`true`.
+
+Merge result: 103 passing tests (101 Codex's + 2 new persistence tests),
+clean build, pushed to `claude/amazing-hopper-k9u8qv` at `a94da6a`.
 
 ## Decisions locked in (2026-09-19)
 
@@ -25,7 +68,7 @@ line numbers as of `6964ff1`.
   specific work (Steamworks SDK, SteamPipe upload, depot config) stays out
   of scope until Apple ships.
 
-## P0 - Dice rolls are not actually server-authoritative — FIXED 2026-09-19
+## P0 - Dice rolls are not actually server-authoritative — SUPERSEDED, see 2026-09-20 merge note above
 
 `README.md` and `docs/technical-plan.md` both promise: the backend decides
 the dice values, clips/UI just sell it. That was not what the code did as of
@@ -96,7 +139,7 @@ client-side (no new state to sync) or need a server contract like side bets
 do. Spectator-style camera cuts (roadmap Phase 5) are Unity-only and can
 start independently once the real clips from P1 exist to cut to.
 
-## P3 - Production voice token signing
+## P3 - Production voice token signing — SUPERSEDED, see 2026-09-20 merge note above
 
 `docs/technical-plan.md:72` says it outright: production Vivox signing
 "depends on the real signer used by the main card-game voice stack" - a
