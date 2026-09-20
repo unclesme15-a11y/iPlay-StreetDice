@@ -30,15 +30,16 @@ This is not the iPlay card-game repo. It shares the broader iPlay identity, but 
 - `docs/visual-camera-plan.md` - camera, player layout, magnifier, and Kling/Unity overlay plan.
 - `docs/technical-plan.md` - backend, Unity, voice, and fairness architecture.
 - `docs/roadmap.md` - build order.
-- `docs/post-production-handoff.md` - current punch list of what's left, including a fairness bug that needs fixing before any real-money direction.
-- `server/` - ASP.NET Core backend prototype and xUnit rule tests.
+- `docs/post-production-handoff.md` - current punch list of what's left.
+- `docs/store-submission-checklists.md` - Apple/Amazon/Samsung/Vivox account setup steps.
+- `legal-site/index.html` - Privacy Policy/Terms of Use/Support page, also published at https://claude.ai/artifact/Qm6GkeYCcDEgeyFkmBrGUy.
+- `server/` - ASP.NET Core backend and xUnit rule tests. `Dockerfile` + `docker-compose.yml` for containerized deployment.
+- `.github/workflows/` - CI (build + test on push/PR).
 - `unity/StreetDiceGreybox/` - Unity greybox client project/source.
 - `tools/` - local verification/build tools.
 - `artifacts/` - generated review material and private references.
 
 ## Current Status
-
-Backend prototype is implemented under `server/`.
 
 Run verification:
 
@@ -47,7 +48,13 @@ Run verification:
 .\tools\verify-street-dice-local.ps1 -StartServer
 ```
 
-Current backend supports deterministic Street Dice rule testing, table creation, joining with seat tokens, opening a Shooter/Catcher shot, rolling fixed dice values, Fade/Catch, side bets, Run Same, Double Up, bot fill/advance, streak, momentum, hot dice state, seven-out dice handoff, and a configuration-gated voice-token endpoint.
+The backend is server-authoritative end to end: a full physical dice-roll
+lifecycle (`/roll/prepare` → `/roll/fade` → `/roll/commit`) where the server
+generates the randomness and simulates the physics, a peer-to-peer wager
+system, dice-sale auctions, a 20-second reconnect-grace window for dropped
+connections, real Vivox voice token signing, and state that survives a
+server restart or container redeploy (snapshotted to disk periodically and
+on shutdown). 103 tests currently pass (`dotnet test IPlayStreetDice.sln`).
 
 Unity greybox:
 
