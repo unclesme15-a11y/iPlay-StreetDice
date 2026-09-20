@@ -165,6 +165,7 @@ PlayerSettings:
   androidMinAspectRatio: 1
   applicationIdentifier:
     Android: com.iplay.ceelocraps
+    iPhone: com.iplay.ceelocraps
   buildNumber:
     Standalone: 0
     VisionOS: 0
