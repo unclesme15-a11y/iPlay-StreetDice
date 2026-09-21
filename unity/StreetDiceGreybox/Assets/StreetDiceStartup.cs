@@ -106,6 +106,7 @@ public sealed partial class StreetDiceGreyboxController
     private void DrawAdultGate()
     {
         DrawPregameBackdrop();
+        DrawBrandLogo();
         float center = UiWidth / 2f, top = UiHeight * 0.29f;
         DrawMetalPlate(new Rect(center - 380f, top, 760f, 172f));
         var heading = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 34 };
@@ -126,6 +127,7 @@ public sealed partial class StreetDiceGreyboxController
     private void DrawAdultDenied()
     {
         DrawPregameBackdrop();
+        DrawBrandLogo();
         var centered = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 27 };
         DrawMetalPlate(new Rect(UiWidth / 2f - 360f, UiHeight * 0.35f, 720f, 110f));
         GUI.Label(new Rect(UiWidth / 2f - 330f, UiHeight * 0.35f + 19f, 660f, 74f),
@@ -136,9 +138,7 @@ public sealed partial class StreetDiceGreyboxController
     private void DrawDieStartMenu()
     {
         DrawPregameBackdrop();
-        float brandWidth = Mathf.Min(350f, UiWidth * 0.25f);
-        GUI.DrawTexture(new Rect(UiWidth - brandWidth - 16f, 8f, brandWidth, brandWidth * 0.5f),
-            menuBrand, ScaleMode.ScaleToFit, true);
+        DrawBrandLogo();
         float size = Mathf.Min(UiHeight * 0.92f, UiWidth * 0.57f);
         var rect = new Rect((UiWidth - size) / 2f, (UiHeight - size) / 2f + 11f, size, size);
         GUI.DrawTexture(rect, staticMenuDie, ScaleMode.StretchToFill, true);
@@ -168,12 +168,18 @@ public sealed partial class StreetDiceGreyboxController
         if (DrawMetalButton(new Rect(UiWidth / 2f + 13, UiHeight / 2f + 14, 165, 47), "Exit")) QuitFromMenu();
     }
 
+    /// <summary>Top-right iPlay Cee-lo &amp; Craps mark. Belongs on every out-of-game screen.</summary>
+    private void DrawBrandLogo(float widthScale = 1f)
+    {
+        float brandWidth = Mathf.Min(350f, UiWidth * 0.25f) * widthScale;
+        GUI.DrawTexture(new Rect(UiWidth - brandWidth - 16f, 8f, brandWidth, brandWidth * 0.5f),
+            menuBrand, ScaleMode.ScaleToFit, true);
+    }
+
     private void DrawFlowBackground(string title)
     {
         DrawPregameBackdrop();
-        float brandWidth = Mathf.Min(350f, UiWidth * 0.25f);
-        GUI.DrawTexture(new Rect(UiWidth - brandWidth - 16f, 8f, brandWidth, brandWidth * 0.5f),
-            menuBrand, ScaleMode.ScaleToFit, true);
+        DrawBrandLogo();
         var style = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 38 };
         GUI.Label(new Rect(UiWidth * 0.18f, UiHeight * 0.14f, UiWidth * 0.64f, 60f), title, style);
     }
@@ -182,6 +188,7 @@ public sealed partial class StreetDiceGreyboxController
     {
         var old = GUI.color;
         GUI.color = available ? Color.white : new Color(0.62f, 0.66f, 0.68f, 0.75f);
+        DrawMetalPlate(rect);
         var style = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 30 };
         GUI.Label(rect, title, style);
         GUI.color = old;
