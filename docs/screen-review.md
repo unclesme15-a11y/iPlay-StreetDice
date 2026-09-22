@@ -52,6 +52,17 @@ corner is tight.
 None of the above is verified in the Unity Editor — no Editor is
 available in the environment these changes were made in.
 
+### Sound moved off Global Settings — done 2026-09-22
+
+Global Settings is reached before a table exists to hear the effect on,
+so its Sound slider was adjusting a mix the player had no feedback for.
+It was also a pure duplicate: the in-game "Voice & Sound" drawer page
+already has a "Dice & Impact Volume" slider bound to the exact same
+`effectsVolume` field (`StreetDicePlayExperience.cs`, `DrawDrawer()`).
+Removed from Global Settings; the in-game one is unchanged and is now
+the only one. Bottom band shrunk from 130px to 78px now that it holds
+one row instead of two.
+
 ### Logo on Global Settings and Credits — done 2026-09-22
 
 Sized against a real render. The IMGUI canvas is 1100x620
@@ -182,6 +193,8 @@ have anywhere to put.
 
 ### The remaining S4 problem — four button treatments
 
+Still open — needs a call from you (see chat).
+
 | Control | Treatment | Reads as clickable? |
 | --- | --- | --- |
 | CRAPS face | invisible rect over the PNG | no feedback of any kind |
@@ -189,6 +202,7 @@ have anywhere to put.
 | Settings | bare gear icon, right of the die | icon convention only |
 | Exit | red `exitSign` graphic, below the gear | graphic only |
 | PROFILE | Style A metal plate, left of the die | yes |
+| Tutorial | Style A switch (`DrawOptionSwitch`), left of the die | yes |
 
 Options, cheapest first:
 
@@ -200,8 +214,33 @@ Options, cheapest first:
 3. **Small Style A plates under the die** labelled CRAPS and CEE-LO,
    with the faces still clickable. Works on every platform, but adds
    chrome to the one screen that currently has none.
-4. **Style A plates for the gear and exit** to match PROFILE, leaving
-   the die faces bare. Fixes the inconsistency without touching the die.
+4. **Style A plates for the gear and exit** to match PROFILE/Tutorial,
+   leaving the die faces bare. Fixes the inconsistency without touching
+   the die.
+
+### Mobile tap on CRAPS / CEE-LO — already works, no fix needed
+
+Confirmed 2026-09-22: those two faces are ordinary `GUI.Button` calls.
+Unity's IMGUI (`OnGUI`) has always treated a phone tap identically to a
+mouse click -- there is no separate "mobile" input path to wire up, no
+`EventSystem` involved (that's a uGUI/Canvas concept; this project is
+entirely `OnGUI`), and the whole screen already renders through the same
+safe-area-aware `GUI.matrix` transform
+(`StreetDiceGreyboxController.OnGUI -> DrawPlayExperience`) that the
+rest of the game uses, so the hit rects land in the right place on any
+phone regardless of notch or aspect ratio. Nothing here is blocked on
+Codex.
+
+### Tutorial Mode moved off Global Settings, onto this screen — done 2026-09-22
+
+Own control now, not nested in a settings screen: `Rect(8, controlY+142,
+240, 44)`, stacked below PROFILE in the left margin. The die fills
+nearly the full screen height (570 of 620px at 0.92 * UiHeight), so
+there is no usable space below it -- the left/right margins beside the
+die (about 265px each) are the only open room, which is also where
+PROFILE and the gear/exit controls already live. 44px tall for an easy
+mobile tap target. Re-verified: no overlap with PROFILE, gear, exit, or
+the die itself; nothing off-canvas.
 
 ## Group 2 — In-game loop
 

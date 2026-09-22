@@ -555,7 +555,7 @@ public sealed partial class StreetDiceGreyboxController
             DrawMetalPlate(new Rect(bandX, 143f, 960f, 194f));
             DrawMetalPlate(new Rect(bandX, 338f, 960f, 58f));
             DrawMetalPlate(new Rect(bandX, 402f, 960f, 85f));
-            DrawMetalPlate(new Rect(bandX, 490f, 960f, 130f));
+            DrawMetalPlate(new Rect(bandX, 490f, 960f, 78f));
         }
         var heading = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 30 };
         GUI.Label(new Rect(UiWidth / 2 - 450, 40, 900, 44),
@@ -627,13 +627,12 @@ public sealed partial class StreetDiceGreyboxController
             if (DrawDicePreview(new Rect(choices + i * 150, 404, 110, 76), i))
             { selectedDiceColor = DiceColors[i]; ApplyDiceColor(); PlayerPrefs.SetInt("StreetDice.DiceColor", i); PlayerPrefs.Save(); }
         }
-        // Two rows inside the 490-620 band. Row 1 ends at 552, row 2 starts at 562,
-        // so the Credits plate can no longer land on top of the Tutorial switch.
-        GUI.Label(new Rect(x, 516, 145, 32), "Sound");
-        SetEffectsVolume(DrawPregameVolume(new Rect(x + 150, 512, 330, 40), effectsVolume));
-        SetTutorialMode(DrawPregameTutorial(new Rect(x + 610, 512, 290, 40), tutorialMode));
-        GUI.Label(new Rect(x, 569, 600, 28), "Offline demo | Play money");
-        if (DrawMetalButton(new Rect(x + 650, 562, 250, 44), "Credits")) showCredits = true;
+        // Sound moved to the in-game Voice & Sound drawer (Dice & Impact Volume slider,
+        // same effectsVolume field) -- Global Settings is reached before a table exists,
+        // so a sound slider here was controlling a mix the player couldn't hear yet.
+        // Tutorial moved to its own control on the die menu. One row left in this band.
+        GUI.Label(new Rect(x, 522, 600, 28), "Offline demo | Play money");
+        if (DrawMetalButton(new Rect(x + 650, 512, 250, 44), "Credits")) showCredits = true;
     }
 
     private void SetTutorialMode(bool enabled)

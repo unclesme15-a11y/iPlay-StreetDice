@@ -160,6 +160,11 @@ public sealed partial class StreetDiceGreyboxController
                 exitConfirmation = true;
             if (DrawFlowChoice(new Rect(rect.x - 168f, controlY + 70f, 150f, 52f), "PROFILE"))
                 OpenProfile(StartupScreen.DieMenu);
+            // Tutorial used to be buried inside Global Settings. It's its own control
+            // here instead, stacked below PROFILE in the same left-hand margin -- the
+            // die fills nearly the full screen height, so there's no room under it.
+            // 44px tall for an easy phone tap.
+            SetTutorialMode(DrawPregameTutorial(new Rect(8f, controlY + 142f, 240f, 44f), tutorialMode));
         }
         if (!exitConfirmation) return;
         DrawOpaquePanel(new Rect(UiWidth / 2f - 205, UiHeight / 2f - 92, 410, 184));
