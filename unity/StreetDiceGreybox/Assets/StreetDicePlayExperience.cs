@@ -557,9 +557,16 @@ public sealed partial class StreetDiceGreyboxController
             DrawMetalPlate(new Rect(bandX, 402f, 960f, 85f));
             DrawMetalPlate(new Rect(bandX, 490f, 960f, 130f));
         }
-        var heading = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = showCredits ? 20 : 30 };
+        var heading = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 30 };
         GUI.Label(new Rect(UiWidth / 2 - 450, 40, 900, 44),
-            startupScreen == StartupScreen.GlobalSettings ? "Global Settings" : "iPlay Cee-lo & Craps", heading);
+            showCredits ? "Credits"
+                : startupScreen == StartupScreen.GlobalSettings ? "Global Settings" : "iPlay Cee-lo & Craps",
+            heading);
+        // S12/S14: the mark was missing from Global Settings and Credits. Scaled to
+        // 0.55 so it ends at y=84 and clears the button row at y=90; at full size it
+        // would run to y=145 and sit on top of the Exit button. The legacy pregame
+        // screen is skipped because its own title is already the brand name.
+        if (showCredits || startupScreen == StartupScreen.GlobalSettings) DrawBrandLogo(0.55f);
         if (showCredits)
         {
             creditsScroll = GUI.BeginScrollView(new Rect(x, 98, 470, UiHeight - 230), creditsScroll, new Rect(0, 0, 445, 580));
@@ -577,10 +584,10 @@ public sealed partial class StreetDiceGreyboxController
         float choices = x + 300;
         if (startupScreen == StartupScreen.GlobalSettings)
         {
-            if (DrawMetalButton(new Rect(x, 96, 220, 48), "Back")) ReturnToDieMenu();
-            if (DrawMetalButton(new Rect(x + 275, 96, 350, 48), "Advanced"))
+            if (DrawMetalButton(new Rect(x, 90, 220, 48), "Back")) ReturnToDieMenu();
+            if (DrawMetalButton(new Rect(x + 275, 90, 350, 48), "Advanced"))
                 startupScreen = StartupScreen.ServerSettings;
-            if (DrawMetalButton(new Rect(x + 680, 96, 220, 48), "Exit"))
+            if (DrawMetalButton(new Rect(x + 680, 90, 220, 48), "Exit"))
             {
                 ReturnToDieMenu();
                 exitConfirmation = true;
@@ -588,8 +595,8 @@ public sealed partial class StreetDiceGreyboxController
         }
         else
         {
-            if (DrawMetalButton(new Rect(x, 96, 440, 48), "Play Craps")) { gameMode = GameMode.Craps; StartLocalDemo(); }
-            if (DrawMetalButton(new Rect(x + 460, 96, 440, 48), "Play Cee-lo")) { gameMode = GameMode.CeeLo; StartLocalDemo(); }
+            if (DrawMetalButton(new Rect(x, 90, 440, 48), "Play Craps")) { gameMode = GameMode.Craps; StartLocalDemo(); }
+            if (DrawMetalButton(new Rect(x + 460, 90, 440, 48), "Play Cee-lo")) { gameMode = GameMode.CeeLo; StartLocalDemo(); }
         }
         GUI.Label(new Rect(x, 218, 270, 36), "Hand Color");
         for (int i = 0; i < 3; i++)
@@ -620,11 +627,13 @@ public sealed partial class StreetDiceGreyboxController
             if (DrawDicePreview(new Rect(choices + i * 150, 404, 110, 76), i))
             { selectedDiceColor = DiceColors[i]; ApplyDiceColor(); PlayerPrefs.SetInt("StreetDice.DiceColor", i); PlayerPrefs.Save(); }
         }
-        GUI.Label(new Rect(x, 527, 145, 32), "Sound");
-        SetEffectsVolume(DrawPregameVolume(new Rect(x + 150, 527, 330, 40), effectsVolume));
-        SetTutorialMode(DrawPregameTutorial(new Rect(x + 610, 527, 290, 40), tutorialMode));
-        GUI.Label(new Rect(x, 570, 600, 28), "Offline demo | Play money");
-        if (DrawMetalButton(new Rect(x + 650, 545, 250, 44), "Credits")) showCredits = true;
+        // Two rows inside the 490-620 band. Row 1 ends at 552, row 2 starts at 562,
+        // so the Credits plate can no longer land on top of the Tutorial switch.
+        GUI.Label(new Rect(x, 516, 145, 32), "Sound");
+        SetEffectsVolume(DrawPregameVolume(new Rect(x + 150, 512, 330, 40), effectsVolume));
+        SetTutorialMode(DrawPregameTutorial(new Rect(x + 610, 512, 290, 40), tutorialMode));
+        GUI.Label(new Rect(x, 569, 600, 28), "Offline demo | Play money");
+        if (DrawMetalButton(new Rect(x + 650, 562, 250, 44), "Credits")) showCredits = true;
     }
 
     private void SetTutorialMode(bool enabled)

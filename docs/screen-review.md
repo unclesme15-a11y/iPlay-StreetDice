@@ -52,12 +52,19 @@ corner is tight.
 None of the above is verified in the Unity Editor — no Editor is
 available in the environment these changes were made in.
 
-### Still missing the logo
+### Logo on Global Settings and Credits — done 2026-09-22
 
-`StreetDicePlayExperience.cs` draws Global Settings and Credits, and
-neither carries the mark. Their top-right corner is already occupied
-(Exit button on Global Settings), so the logo there needs a size and
-position picked against a real render rather than guessed.
+Sized against a real render. The IMGUI canvas is 1100x620
+(`UiScale = max(0.45, min(width/1100, height/620))`), so every rect
+resolves to fixed numbers regardless of device resolution.
+
+At the default scale the mark is 275x138 and runs from y=8 to y=145,
+which lands on top of the Exit button (y 90-138). `DrawBrandLogo(0.55f)`
+gives 151x76 at x 933-1084, y 8-84 — clear of the button row by 6px and
+clear of the credits scroll view by 148px horizontally.
+
+Skipped on the legacy pregame screen, whose own title is already the
+words "iPlay Cee-lo & Craps"; a mark there would duplicate it.
 
 ## Group 1 — Startup flow
 
@@ -77,9 +84,9 @@ Source screenshots: `artifacts/unity-smoke/startup/`. Code:
 | S9 | Join Table (Enter Code / saved table) | B → A | "The Jungle" shown greyed. | THEME done |
 | S10 | Enter Code (table code field) | B → A | | THEME done |
 | S11 | Exit confirmation | A | Same dialog from every entry point — consistent. | KEEP |
-| S12 | Global Settings | A | Drawn in `StreetDicePlayExperience.cs`. Still no logo. | logo open |
+| S12 | Global Settings | A | Drawn in `StreetDicePlayExperience.cs`. Logo added at 0.55 scale. Credits/Tutorial overlap fixed. | KEEP |
 | S13 | Advanced Settings (server address) | B → A | | THEME done |
-| S14 | Credits | C → A | Restyled 2026-09-20. Still no logo. | logo open |
+| S14 | Credits | C → A | Restyled 2026-09-20. Logo added. Was titled "Global Settings" — fixed. | KEEP |
 | S15 | Profile | B → A | Save Name + GOOGLE / APPLE / EMAIL CODE, all three greyed out (not implemented). **No screenshot exists.** | open |
 
 ### Open on Group 1
@@ -90,10 +97,33 @@ Source screenshots: `artifacts/unity-smoke/startup/`. Code:
   currently lives one level deeper in Advanced Settings (S13). Needs a
   call on which parts survive.
 - **S4**: four button treatments on one screen — see below.
-- **S12 / S14 logo**: top-right is occupied; needs a size/position picked
-  against a real render.
 - **S15**: three sign-in options are greyed placeholders. Keep them
   visible as "coming soon", or hide until they work?
+
+## S12 / S14 — global settings, fixed 2026-09-22
+
+Three defects, found from a screenshot and confirmed by resolving every
+rect on the screen against the 1100x620 canvas.
+
+1. **Credits button drawn on top of the Tutorial switch.** The toggle
+   occupied x+610..x+900, y 527..567; the Credits plate occupied
+   x+650..x+900, y 545..589. They shared a 250x22 block, and Credits is
+   drawn second, so it covered the word "Tutorial" and the lower half of
+   the OFF/ON switch. The bottom band is now two clean rows: row 1
+   (Sound + Tutorial) at y 512-552, row 2 (play-money line + Credits) at
+   y 562-606, inside a band that runs 490-620.
+2. **The Credits screen was titled "Global Settings".** Credits is not
+   its own `StartupScreen`; it is a mode inside Global Settings toggled
+   by `showCredits`, and the heading only tested `startupScreen`. It now
+   tests `showCredits` first and reads "Credits". The heading also no
+   longer shrinks to 20pt in credits mode — it stays at 30pt like every
+   other screen title.
+3. **Top button row fused into the first band.** The row ended at y=144
+   and the Hand Color band starts at y=143, so the plate glow edges
+   merged. Row moved to y=90, leaving a 5px gap.
+
+Verified by resolving all 23 controls and 4 bands: no control-to-control
+overlap, no control escaping its band, nothing off-canvas.
 
 ## S4 — the die menu, investigated 2026-09-22
 
