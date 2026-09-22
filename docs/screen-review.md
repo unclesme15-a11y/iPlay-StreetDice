@@ -87,7 +87,7 @@ Source screenshots: `artifacts/unity-smoke/startup/`. Code:
 | S1 | App icon splash (Intro) | — | Logo only, no chrome. | KEEP |
 | S2 | Adult gate (18+ / Under 18) | A | Carries the "Play money only" line. Logo added. | KEEP |
 | S3 | Under-18 denied | A | Dead end + Exit. Logo added. | KEEP |
-| S4 | Die menu (main hub) | mixed | Static die PNG + gear icon + red EXIT sign + Style A PROFILE. Four treatments on one screen — open. Hit boxes verified correct. | open |
+| S4 | Die menu (main hub) | mixed | Die faces bare, everything else Style A (gear, exit, PROFILE, Tutorial). Option 4 applied. | KEEP |
 | S5 | Craps mode menu | B → A | Play vs AI / Online, both live. | THEME done |
 | S6 | Cee-Lo mode menu | B → A | Online greyed — no online Cee-Lo backend exists. | THEME done |
 | S7 | Online Craps — form version | A | Name + Server + Host Table + Table code + Join. | MERGE — open |
@@ -107,7 +107,7 @@ Source screenshots: `artifacts/unity-smoke/startup/`. Code:
   S7's extra piece is the inline **Server address** field, which
   currently lives one level deeper in Advanced Settings (S13). Needs a
   call on which parts survive.
-- **S4**: four button treatments on one screen — see below.
+- **S4**: resolved, option 4 applied — see below.
 - **S15**: three sign-in options are greyed placeholders. Keep them
   visible as "coming soon", or hide until they work?
 
@@ -191,32 +191,28 @@ ever revived it needs a scene-authored die GameObject with a collider,
 which this project's runtime-bootstrap architecture does not currently
 have anywhere to put.
 
-### The remaining S4 problem — four button treatments
+### S4 resolved — option 4 applied 2026-09-22
 
-Still open — needs a call from you (see chat).
+Gear and exit now sit on their own Style A metal plates
+(`Rect(controlX-5, controlY-17, 150, 84)` and
+`Rect(controlX-5, gearPlate.yMax+20, 150, 66)`), matching PROFILE and
+Tutorial. The die's two faces are left bare on purpose — a plate over
+the hand-lettering would cover the thing that reads as clickable in the
+first place. Plates sit 23px clear of the die's right edge, the same
+gap the bare icons used to keep. The plate is also the tap target now
+(not just the icon), which is a bigger, easier hit on a phone.
+
+Re-verified: no overlaps among die / gear plate / exit plate / PROFILE /
+Tutorial, nothing off-canvas.
 
 | Control | Treatment | Reads as clickable? |
 | --- | --- | --- |
-| CRAPS face | invisible rect over the PNG | no feedback of any kind |
-| CEE-LO face | invisible rect over the PNG | no feedback of any kind |
-| Settings | bare gear icon, right of the die | icon convention only |
-| Exit | red `exitSign` graphic, below the gear | graphic only |
-| PROFILE | Style A metal plate, left of the die | yes |
-| Tutorial | Style A switch (`DrawOptionSwitch`), left of the die | yes |
-
-Options, cheapest first:
-
-1. **Leave it.** The die is the hero image; plates over its faces would
-   cover the hand-lettering that makes it work.
-2. **Hover glow on the two faces** — tint the face rect on
-   `rect.Contains(Event.current.mousePosition)`. Desktop/Steam only;
-   does nothing on mobile, where there is no hover.
-3. **Small Style A plates under the die** labelled CRAPS and CEE-LO,
-   with the faces still clickable. Works on every platform, but adds
-   chrome to the one screen that currently has none.
-4. **Style A plates for the gear and exit** to match PROFILE/Tutorial,
-   leaving the die faces bare. Fixes the inconsistency without touching
-   the die.
+| CRAPS face | bare, over the PNG | yes — real photo of hand-lettering |
+| CEE-LO face | bare, over the PNG | yes — real photo of hand-lettering |
+| Settings | Style A plate | yes |
+| Exit | Style A plate | yes |
+| PROFILE | Style A plate | yes |
+| Tutorial | Style A switch | yes |
 
 ### Mobile tap on CRAPS / CEE-LO — already works, no fix needed
 

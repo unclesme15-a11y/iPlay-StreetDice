@@ -151,12 +151,22 @@ public sealed partial class StreetDiceGreyboxController
 
             float controlX = rect.xMax + 28f;
             float controlY = UiHeight * 0.46f;
-            var gearButton = new Rect(controlX - 5f, controlY - 5f, 74f, 74f);
-            GUI.DrawTexture(gearButton, settingsGear, ScaleMode.ScaleToFit, true);
-            if (GUI.Button(gearButton, new GUIContent("", "Settings"), GUIStyle.none)) OpenGlobalSettings();
-            var exitRect = new Rect(controlX - 8f, controlY + 78f, 80f, 44f);
-            GUI.DrawTexture(exitRect, exitSign, ScaleMode.ScaleToFit, true);
-            if (GUI.Button(exitRect, new GUIContent("", "Exit iPlay"), GUIStyle.none))
+            // S4 option 4: gear and exit now sit on their own Style A plates, matching
+            // PROFILE and Tutorial. The die's two faces are left bare on purpose -- a
+            // plate over the hand-lettering would cover the thing that reads as
+            // clickable in the first place. Plates start 23px clear of the die's
+            // right edge, same gap the bare icons used to keep.
+            var gearPlate = new Rect(controlX - 5f, controlY - 17f, 150f, 84f);
+            DrawMetalPlate(gearPlate);
+            var gearIcon = new Rect(gearPlate.x + 38f, gearPlate.y + 5f, 74f, 74f);
+            GUI.DrawTexture(gearIcon, settingsGear, ScaleMode.ScaleToFit, true);
+            if (GUI.Button(gearPlate, new GUIContent("", "Settings"), GUIStyle.none)) OpenGlobalSettings();
+
+            var exitPlate = new Rect(controlX - 5f, gearPlate.yMax + 20f, 150f, 66f);
+            DrawMetalPlate(exitPlate);
+            var exitIcon = new Rect(exitPlate.x + 35f, exitPlate.y + 11f, 80f, 44f);
+            GUI.DrawTexture(exitIcon, exitSign, ScaleMode.ScaleToFit, true);
+            if (GUI.Button(exitPlate, new GUIContent("", "Exit iPlay"), GUIStyle.none))
                 exitConfirmation = true;
             if (DrawFlowChoice(new Rect(rect.x - 168f, controlY + 70f, 150f, 52f), "PROFILE"))
                 OpenProfile(StartupScreen.DieMenu);
