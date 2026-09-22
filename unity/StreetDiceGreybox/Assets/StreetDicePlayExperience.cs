@@ -584,9 +584,10 @@ public sealed partial class StreetDiceGreyboxController
         float choices = x + 300;
         if (startupScreen == StartupScreen.GlobalSettings)
         {
+            // "Advanced" used to open a screen holding only the Server Address
+            // field, which now lives on the Online screen where it's actually
+            // used. Nothing left here worth its own button.
             if (DrawMetalButton(new Rect(x, 90, 220, 48), "Back")) ReturnToDieMenu();
-            if (DrawMetalButton(new Rect(x + 275, 90, 350, 48), "Advanced"))
-                startupScreen = StartupScreen.ServerSettings;
             if (DrawMetalButton(new Rect(x + 680, 90, 220, 48), "Exit"))
             {
                 ReturnToDieMenu();

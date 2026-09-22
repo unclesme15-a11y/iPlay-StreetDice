@@ -90,8 +90,8 @@ Source screenshots: `artifacts/unity-smoke/startup/`. Code:
 | S4 | Die menu (main hub) | mixed | Die faces bare, everything else Style A (gear, exit, PROFILE, Tutorial). Option 4 applied. | KEEP |
 | S5 | Craps mode menu | B → A | Play vs AI / Online, both live. | THEME done |
 | S6 | Cee-Lo mode menu | B → A | Online greyed — no online Cee-Lo backend exists. | THEME done |
-| S7 | Online Craps — form version | A | Name + Server + Host Table + Table code + Join. | MERGE — open |
-| S8 | Online Craps — list version | B → A | Name + Host Table / Join Table. This is the live one in code. | MERGE — open |
+| S7 | Online Craps — form version | A | Server field idea kept; rest of the layout came from S8. | MERGED into S8 |
+| S8 | Online Craps — list version | A | Now the one screen: Server Address + Host Table + Join Table + Profile (conditional). | KEEP |
 | S9 | Join Table (Enter Code / saved table) | B → A | "The Jungle" shown greyed. | THEME done |
 | S10 | Enter Code (table code field) | B → A | | THEME done |
 | S11 | Exit confirmation | A | Same dialog from every entry point — consistent. | KEEP |
@@ -110,6 +110,43 @@ Source screenshots: `artifacts/unity-smoke/startup/`. Code:
 - **S4**: resolved, option 4 applied — see below.
 - **S15**: three sign-in options are greyed placeholders. Keep them
   visible as "coming soon", or hide until they work?
+
+## S7 + S8 merge — done 2026-09-22
+
+Traced the actual navigation tree first (the code, not guesswork) to see
+where Advanced Settings really lived. It turned out to answer its own
+question: Advanced Settings is not a child of the Online screen at all --
+it hangs off the gear icon on the die menu, a completely separate branch:
+`Die Menu -> gear -> Global Settings -> Advanced -> Server Address`. The
+old S7 mock only *looked* like Online had a Server field; in the live
+code, that field was three taps away in an unrelated menu.
+
+Decision: move Server Address onto the Online screen (`DrawOnlineMenu`),
+since `ValidOnlineIdentity` was already silently checking it before
+letting Host/Join work -- a bad address just greyed the buttons out with
+no way to see or fix why, unless you already knew to go hunting under
+the gear icon.
+
+`DrawServerSettings` (S13, Advanced Settings) held nothing but this one
+field, a Save button, and Back -- once the field moved, there was
+nothing left there worth its own screen. Removed the "Advanced" button
+from Global Settings. `StartupScreen.ServerSettings` and
+`DrawServerSettings` are left in the code (unreachable from normal play
+now) rather than deleted outright, because the Editor verification
+harness (`PlayReadinessVerification.cs`) reflection-navigates straight
+to that screen by name and captures `04a-advanced-server.png` from it;
+deleting the screen would break that capture. Safe to remove properly
+whenever that test is updated.
+
+Also: `DrawFlowBack()` on the Online screen now saves the address too
+(previously only Host/Join saved it), so an edited address isn't
+silently lost if you type it and back out without hosting or joining.
+
+Re-verified the full online screen layout -- title, field + its floating
+label, Host Table, Join Table, Profile, Back -- against the 1100x620
+canvas: no overlaps, nothing off-canvas. (First pass had the field's
+label overlapping the title by 10px; moved the field from 0.28 to 0.32
+of screen height to clear it.)
 
 ## S12 / S14 — global settings, fixed 2026-09-22
 

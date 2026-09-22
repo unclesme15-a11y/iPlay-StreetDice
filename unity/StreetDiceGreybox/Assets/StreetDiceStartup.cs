@@ -254,17 +254,21 @@ public sealed partial class StreetDiceGreyboxController
     {
         DrawFlowBackground("ONLINE CRAPS");
         float x = UiWidth * 0.32f, w = UiWidth * 0.36f;
-        if (DrawFlowChoice(new Rect(x, UiHeight * 0.43f, w, 55f), "HOST TABLE", ValidOnlineIdentity))
+        // S7+S8 merge: SERVER ADDRESS used to live two taps away, behind the gear
+        // icon -> Global Settings -> Advanced. It only matters right here, the
+        // moment before you go online, so it moved onto this screen instead.
+        DrawFlowField(new Rect(x, UiHeight * 0.32f, w, 46f), "SERVER ADDRESS", ref baseUrl, 120);
+        if (DrawFlowChoice(new Rect(x, UiHeight * 0.44f, w, 55f), "HOST TABLE", ValidOnlineIdentity))
         {
             SaveServerAddress();
             StartCoroutine(CreateRealTable());
         }
-        if (DrawFlowChoice(new Rect(x, UiHeight * 0.61f, w, 55f), "JOIN TABLE", ValidOnlineIdentity))
+        if (DrawFlowChoice(new Rect(x, UiHeight * 0.60f, w, 55f), "JOIN TABLE", ValidOnlineIdentity))
             startupScreen = StartupScreen.JoinMenu;
         if (string.IsNullOrWhiteSpace(playerName) &&
-            DrawFlowChoice(new Rect(x, UiHeight * 0.76f, w, 46f), "PROFILE"))
+            DrawFlowChoice(new Rect(x, UiHeight * 0.74f, w, 46f), "PROFILE"))
             OpenProfile(StartupScreen.OnlineMenu);
-        if (DrawFlowBack()) startupScreen = StartupScreen.ModeMenu;
+        if (DrawFlowBack()) { SaveServerAddress(); startupScreen = StartupScreen.ModeMenu; }
     }
 
     private void OpenProfile(StartupScreen returnTo)
