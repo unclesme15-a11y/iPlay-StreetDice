@@ -12,10 +12,9 @@ Every setup is a **locked Kling plate**: one approved still frame that every cli
 
 | # | Name | What you see | When it's used |
 |---|------|--------------|----------------|
-| 1 | **Thrower View** | First person from your pitcher's box, looking down the lane at the far board, about 27 ft away. Your hand holding a bag comes in from the bottom edge. | Aiming and releasing. Also shows far-end opponents throwing toward you. |
-| 2 | **Far Board Cam** | Close-up of the far board, low and slightly to the side. | Right after you release: the camera cuts here so you can see the bag land. |
-| 3 | **Near Board Cam** | Close-up of the board at your feet, facing down-lane toward the far players. | When the far end throws at your board (2v2 only). |
-| 4 | **Neighbor Cut** | Short side angle of the player sharing your end, on the other side of the board. | When the player beside you throws. In singles this is **always** how you see your opponent, because official singles has both players at the same end. |
+| 1 | **Thrower View** | First person from your pitcher's box, looking down the lane at the far board, about 27 ft away. **Your own board is visible in the lower part of the frame, right in front of you.** Your hand holding a bag comes in from the bottom-right edge (bottom-left for lefties), so it doesn't cover your board. | Aiming and releasing. Also where you watch far-end players throw at the board right in front of you. No cut needed for that. |
+| 2 | **Far Board Cam** | Close-up of the far board, low and slightly to the side. **On by default.** | Only for bags thrown at the **far** board: yours, and your neighbor's. |
+| 3 | **Neighbor Cut** | Short side angle of the player sharing your end, on the other side of the board. | When the player beside you throws. In singles this is **always** how you see your opponent, because official singles has both players at the same end. |
 
 Every plate has a matching **invisible Unity board**, meaning a collider plus a hole trigger, placed so it sits exactly on the video board. Bags hit the invisible board, but it looks like they hit the real one in the video.
 
@@ -44,20 +43,50 @@ This is why one throw clip can be reused for every outcome. The video only shows
 4. About 0.3 s into the flight, **cut to Far Board Cam**. The bag drops into frame and lands, slides, or goes in the hole.
 5. Hold for about 1.2 s after it stops, show the result tag (`+3 CORNHOLE`, `WOODY`, `OFF`), then cut back to Thrower View.
 
-Setting: **"Stay on me"** turns off the board-cam cut for players who'd rather watch the full flight.
+Board cam is **on by default**. A **"Stay on me"** setting turns it off for players who'd rather watch the full flight.
 
 ## Opponent Throw Flow
 
-- **Far-end players (2v2 only, throwing at you):** stays on Thrower View. They step up, throw, and the bag comes toward the camera. Cut to **Near Board Cam** for the landing, then play their reaction clip.
+- **Far-end players (2v2 only, throwing at you):** stays on Thrower View the whole time. They step up and throw, and the bag flies toward you and lands on the board right in front of you. No camera cut. Then their reaction clip plays.
 - **Neighbor opponent (same end as you):** play the **Neighbor Cut** clip, then at release cut to **Far Board Cam** for the landing, same as your own throws.
 
 ## Bag Visuals
 
-- Two team colors per match, for example iPlay black and iPlay green. Avoid red/orange, which stays reserved as a "hot" state the way Street Dice uses it.
+- Each team picks its own bag color from the palette below (see **Bag Color Pick**).
 - Soft cloth-like mesh with a small wobble while flying. Bags squash and settle on landing.
 - Contact shadow on the board so bags don't look like they're floating on the video.
 - **Hole masking:** the hole on each invisible board has a depth mask, so a bag going in really disappears into the video's hole.
 - Bags stay on the board for the whole inning (they block and stack), and they're cleared with a quick sweep at the end of the inning.
+
+## Bag Color Pick
+
+Right after Match Setup, every team picks a bag color. **First come, first served.**
+
+- When a team picks a color, it's locked for that match. It goes grey on everyone else's screen with the team's name on it ("Taken by Team A").
+- Two teams can never have the same color.
+- In 2v2, whichever partner taps first picks for the team, and the other partner sees it right away.
+- Video bot teams pick **last**, from whatever colors are left.
+- 15-second timer. If a team doesn't pick in time, it gets a random free color.
+
+**Palette (12 colors, chosen so no two are easy to mix up on a wood board from 27 ft):**
+
+| Color | Hex |
+|-------|-----|
+| Black | `#1B1B1B` |
+| White | `#F4F4F2` |
+| Red | `#C8102E` |
+| Orange | `#FF6A13` |
+| Yellow | `#FFD100` |
+| Kelly Green | `#009A44` |
+| Royal Blue | `#1D4ED8` |
+| Sky Blue | `#6CC5F0` |
+| Purple | `#6B2C91` |
+| Hot Pink | `#E0218A` |
+| Teal | `#00A5A8` |
+| Maroon | `#6D1A2A` |
+
+- On top of the color, each team's bags get a small iPlay stitch pattern (team A plain, team B with a stitched X). That way color-blind players can still tell whose bag is whose.
+- The HUD bag counters and the score bar use each team's chosen color.
 
 ## HUD
 
@@ -80,5 +109,26 @@ Setting: **"Stay on me"** turns off the board-cam cut for players who'd rather w
 - The crowd stays **behind and to the sides** of the boards, never between them. The lane has to stay clear and readable.
 - Background people are slightly soft-focus so the boards and the throwing players stand out.
 - No logos, no brand names, no readable text.
+
+## Crowd Behavior (Modern Crowd)
+
+The crowd should feel like a real cookout in 2026, where everybody has a phone out. Every idle loop and reaction clip mixes in:
+
+- People **glancing down at their phone** now and then, like they're checking messages or firing off a quick text, then looking back up.
+- **Women taking selfies**: posing, fixing their hair, a couple of friends squeezing into one shot.
+- People **recording for a reel**: phone held up sideways or vertical, some talking to their camera.
+- Everyday cookout stuff: holding a plate or a cup, laughing, dancing a little, pointing at the game.
+
+**Following the bag with their phones.** Kling can't see the Unity bag, so we fake it with timing:
+
+| Moment | Crowd clip that plays | What the crowd does |
+|--------|-----------------------|---------------------|
+| Nobody throwing | `crowd_idle` loop | Texting, selfies, talking, eating. Nobody's locked in. |
+| Someone steps up | `crowd_lock_in` | A few people raise their phones and start recording toward the lane. |
+| Bag in the air | `crowd_track` | Phones up. Heads and phones swing from the thrower toward the board, following the bag's path. |
+| Cornhole (in the hole) | `crowd_hype` | Cheers, phones still recording, a couple of people turn the phone around to film themselves reacting. |
+| Woody / miss | `crowd_settle` | "Ooh," then people drop their phones back down and go back to texting. |
+
+Because each clip is timed to the throw, it looks like the crowd is following the bag, even though the video never actually sees it.
 
 Later scenes (after this one is locked): backyard, rooftop, beach.

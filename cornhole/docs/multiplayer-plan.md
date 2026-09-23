@@ -27,6 +27,8 @@ The trick that makes mixing easy: **every seat, human or bot, is shown as a vide
 
 That means you can put **any mix** in a match: you + bot partner vs 2 humans, 2 humans + 2 bots, all bots for practice, and so on.
 
+Characters are picked from the roster in `characters.md` (4 men and 4 women to start). Two players in the same match can't use the same character. Bots get whoever is left.
+
 If a human doesn't pick an avatar, show a mic/profile marker with a throwing-arm silhouette instead, like the human seats in Street Dice.
 
 ## Throw Input (Server-Authoritative)

@@ -4,12 +4,13 @@
 
 - **Layout:** regulation only. No Face-Off mode.
 - **Target score:** picked on the Match Setup screen, default 21.
-- **First scene:** big open park, summertime hood BBQ cookout, with a female-heavy crowd in the distance.
+- **First scene:** big open park, summertime hood BBQ cookout, with a female-heavy crowd in the distance that's always on their phones (texting, selfies, recording reels, filming the bag).
+- **Board cam:** on by default, **far board only**. Your own board is right in front of you, so there's no cut for it.
+- **Bag colors:** teams pick from a 12-color palette, first come first served, and no two teams can share a color.
+- **Characters:** at least 4 men and 4 women for the first build, ages 30-50, summer outfits (see `characters.md`).
 - **Wagers:** none, ever.
-- **Repo:** its own repo (`iPlay-Cornhole`).
+- **Repo:** its own repo (`iPlay-Cornhole`). Waiting for the empty repo to be created on GitHub.
 
 ## Still Open
 
-1. Should the board-cam cut be on by default? Recommendation: yes, with a setting to turn it off.
-2. Which bag colors should the two teams use? Recommendation: iPlay black vs iPlay green.
-3. How many video opponent characters should be ready for the first playable build? Recommendation: 3.
+- Nothing right now.

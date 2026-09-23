@@ -4,7 +4,8 @@
 
 - Approve the rules contract (`game-rules.md`) and settle what's left in `open-decisions.md`.
 - Generate and lock the **Thrower View** still in Kling (text-to-image first; don't spend on video yet).
-- Lock the matching Far Board Cam and Near Board Cam stills from the same setting.
+- Lock the matching Far Board Cam and Neighbor Cut stills from the same setting.
+- Generate the 5 crowd behavior clips (idle, lock-in, track, hype, settle).
 
 ## Phase 2: Scoring Backend
 
@@ -23,11 +24,11 @@
 ## Phase 4: Video Opponents
 
 - Generate one character's clip set (idle, step-up, throw, 3 reactions) with Kling image-to-video from the locked plate.
+- Then the rest of the 8-character roster in `characters.md`.
 - Add the release-frame JSON and the Unity bag hand-off.
-- Second and third characters once the first one looks right.
 
 ## Phase 5: Multiplayer
 
-- 2v2 seats, human/bot mixing, avatar selection.
+- 2v2 seats, human/bot mixing, character pick, bag color pick (first come first served).
 - Voice.
 - Reconnect / bot takeover.

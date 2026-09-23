@@ -19,6 +19,7 @@ Separate repo for the iPlay cornhole game. It shares the broader iPlay identity 
 
 - `docs/game-rules.md`: rules contract (regulation cornhole plus the iPlay choices).
 - `docs/visual-camera-plan.md`: camera angles, how the video plates and Unity bags line up, and the board-cam cut.
+- `docs/characters.md`: the 8 video characters (4 men, 4 women, ages 30-50).
 - `docs/multiplayer-plan.md`: seats, 2v2 layout, mixing humans and video bots, throw input.
 - `docs/roadmap.md`: build order.
 - `docs/open-decisions.md`: calls the owner still needs to make.

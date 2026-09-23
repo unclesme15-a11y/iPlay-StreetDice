@@ -54,10 +54,12 @@ Before every match, the host sees one setup screen. Everything starts at the def
 | Skunk (11-0) | Off / On | Off |
 | Distance | Regulation 27 ft / Backyard 21 ft | 27 ft |
 | Throw timer | 20 s / Off | 20 s |
-| Board-cam cut | On / Off | On |
+| Board-cam cut (far board only) | On / Off | **On** |
 | Tutorial tips | On / Off | Off |
 
 Whatever the host picks shows on everyone's screen before the coin toss, so all players know the rules for that game.
+
+After setup, each player picks a video character, then each team picks a bag color, first come first served. Two teams can never share a color (see `visual-camera-plan.md` → Bag Color Pick). Then the coin toss.
 
 ## Fouls (Bag Removed, Scores 0)
 
