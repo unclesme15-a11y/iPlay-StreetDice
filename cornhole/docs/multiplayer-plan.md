@@ -2,7 +2,7 @@
 
 ## Seats
 
-Every match has 4 seats in 2v2 (2 in 1v1). **Any seat can be a Human or a Video Bot.**
+Every match has 4 seats in 2v2 (2 in 1v1). **Any seat can be a Human or a Video Bot.** The host fills seats on the Match Setup screen (see `game-rules.md`).
 
 ```text
           FAR END
@@ -57,4 +57,4 @@ Bots also use simple strategy: block the hole with a bag when they're ahead, and
 
 ## Disconnects
 
-- A human who drops gets 30 s to come back. Their seat is then taken over by a Video Bot at the same skill level until the game ends. Nothing is forfeited unless there's a wager on the game.
+- A human who drops gets 30 s to come back. Their seat is then taken over by a Video Bot at the same skill level until the game ends. Nothing is forfeited. There are no wagers in this game.

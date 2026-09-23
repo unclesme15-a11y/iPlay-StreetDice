@@ -4,22 +4,26 @@ Rule of thumb from Street Dice: **lock stills with text-to-image first, then mak
 
 ## 1. Plates (Stills, No Opponents)
 
+Scene: **big open park, summertime hood BBQ cookout, female-heavy crowd in the distance.** The crowd is background only and never stands in the lane.
+
+If Kling softens or refuses a prompt, keep the descriptions of the women's bodies to "curvy" and "thick-figured". Words about specific body parts get filtered more often.
+
 ### Thrower View (Plate 1)
 
 ```text
-First-person point of view standing in a cornhole pitcher's box at a city block party court at golden hour, eye level about 5 feet, looking straight down a clear 27 foot lane at a regulation wooden cornhole board with a round hole, a matching board just out of frame at the bottom, smooth paved court surface, string lights overhead, blurred crowd far in the background, no people between the boards, no logos, no text, realistic photo, natural lighting, 9:16 vertical
+First-person point of view standing in a cornhole pitcher's box on flat trimmed grass, eye level about 5 feet, looking straight down a clear 27 foot lane at a regulation wooden cornhole board with a round hole, a matching board just out of frame at the bottom, wide open green city park at a summertime hood BBQ cookout, bright afternoon sun, grills smoking, pop-up tents, folding tables and coolers in the background, a big lively crowd in the distance behind and to the sides of the lane, mostly curvy thick-figured adult Black women, with Latina and white women too, in summer cookout outfits like sundresses, shorts and tank tops, a few men mixed in, background crowd slightly soft focus, no people between the boards, no logos, no text, realistic photo, natural lighting, 9:16 vertical
 ```
 
 ### Far Board Cam (Plate 2)
 
 ```text
-Low close-up camera angle beside a regulation wooden cornhole board with a round hole, same city block party court at golden hour, board fills the lower half of the frame, clean empty board surface, string lights and soft blurred background, no bags, no people, no logos, no text, realistic photo, 9:16 vertical
+Low close-up camera angle beside a regulation wooden cornhole board with a round hole, same summertime park BBQ cookout on trimmed grass, board fills the lower half of the frame, clean empty board surface, cookout tents and crowd of mostly curvy adult Black and Latina women soft and blurred in the background, no bags, no people, no logos, no text, realistic photo, 9:16 vertical
 ```
 
 ### Near Board Cam (Plate 3)
 
 ```text
-Low close-up behind and above a regulation wooden cornhole board with a round hole, looking down the lane toward the far board 27 feet away, same city block party court at golden hour, board in the lower third of the frame, no bags, no logos, no text, realistic photo, 9:16 vertical
+Low close-up behind and above a regulation wooden cornhole board with a round hole, looking down the lane toward the far board 27 feet away, same summertime park BBQ cookout on trimmed grass, crowd of mostly curvy adult women watching from behind the far board, board in the lower third of the frame, no bags, no logos, no text, realistic photo, 9:16 vertical
 ```
 
 ## 2. Character Clip Set (Per Video Opponent)
@@ -39,7 +43,7 @@ Make one character's full set first. Use the same character reference image for 
 ### Example Throw Clip Prompt (Image-To-Video From Plate 1)
 
 ```text
-An adult man in a plain dark t-shirt stands in the far pitcher's box beside the far cornhole board, facing the camera, steps forward and makes a smooth underhand cornhole toss toward the camera, the bag leaves his hand and immediately exits the top of the frame, camera completely locked off and still, boards and background do not move, realistic, natural motion, 3 seconds
+An adult man in a plain dark t-shirt and shorts stands in the far pitcher's box beside the far cornhole board, facing the camera, steps forward and makes a smooth underhand cornhole toss toward the camera, the bag leaves his hand and immediately exits the top of the frame, camera completely locked off and still, boards and background do not move, realistic, natural motion, 3 seconds
 ```
 
 Key words to keep in every clip prompt: **"camera completely locked off"**, **"boards and background do not move"**. If the camera drifts, the Unity boards won't line up.

@@ -4,7 +4,7 @@
 
 The people and the place are real video. The bags, the board hit areas, and the score are Unity. The server decides what counts.
 
-This is the same split as Street Dice. There, Kling makes the bodega and Unity owns the dice. Here, Kling makes the backyard/block party and the opponents, and Unity owns the bags.
+This is the same split as Street Dice. There, Kling makes the bodega and Unity owns the dice. Here, Kling makes the park cookout and the opponents, and Unity owns the bags.
 
 ## Camera Setups (Plates)
 
@@ -14,8 +14,8 @@ Every setup is a **locked Kling plate**: one approved still frame that every cli
 |---|------|--------------|----------------|
 | 1 | **Thrower View** | First person from your pitcher's box, looking down the lane at the far board, about 27 ft away. Your hand holding a bag comes in from the bottom edge. | Aiming and releasing. Also shows far-end opponents throwing toward you. |
 | 2 | **Far Board Cam** | Close-up of the far board, low and slightly to the side. | Right after you release: the camera cuts here so you can see the bag land. |
-| 3 | **Near Board Cam** | Close-up of the board at your feet, facing down-lane toward the far players. | When the far end throws at your board (doubles / Face-Off). |
-| 4 | **Neighbor Cut** | Short side angle of the player sharing your end, on the other side of the board. | When the player beside you throws (singles, and doubles at your end). |
+| 3 | **Near Board Cam** | Close-up of the board at your feet, facing down-lane toward the far players. | When the far end throws at your board (2v2 only). |
+| 4 | **Neighbor Cut** | Short side angle of the player sharing your end, on the other side of the board. | When the player beside you throws. In singles this is **always** how you see your opponent, because official singles has both players at the same end. |
 
 Every plate has a matching **invisible Unity board**, meaning a collider plus a hole trigger, placed so it sits exactly on the video board. Bags hit the invisible board, but it looks like they hit the real one in the video.
 
@@ -48,7 +48,7 @@ Setting: **"Stay on me"** turns off the board-cam cut for players who'd rather w
 
 ## Opponent Throw Flow
 
-- **Far-end opponent (throwing at you):** stays on Thrower View. They step up, throw, and the bag comes toward the camera. Cut to **Near Board Cam** for the landing, then play their reaction clip.
+- **Far-end players (2v2 only, throwing at you):** stays on Thrower View. They step up, throw, and the bag comes toward the camera. Cut to **Near Board Cam** for the landing, then play their reaction clip.
 - **Neighbor opponent (same end as you):** play the **Neighbor Cut** clip, then at release cut to **Far Board Cam** for the landing, same as your own throws.
 
 ## Bag Visuals
@@ -70,10 +70,15 @@ Setting: **"Stay on me"** turns off the board-cam cut for players who'd rather w
 - Tutorial mode explains cancellation scoring live, using the actual inning's numbers.
 - Mic/profile rings on each seat for voice chat, the same pattern as Street Dice.
 
-## Environment Look
+## Environment Look (Locked Direction)
 
-Start with one setting and lock it before making more:
+**Scene 1: big open park, summertime hood BBQ cookout.**
 
-- Recommended first plate: **city block party / rec-center court at golden hour**. Paved or turf lane, string lights, people blurred in the background, no logos.
-- Later: backyard grass, rooftop, tailgate, and beach as extra "courts".
-- The lane between the boards must stay clear and readable. Don't put people or objects between the boards.
+- Wide open green park in full summer afternoon sun. The cornhole lane is on flat, trimmed grass with plenty of open space around it.
+- Cookout life in the **background only**: grills smoking, pop-up tents, folding tables, coolers, a speaker, string lights or balloons on the tents.
+- A **big, female-heavy crowd** off in the distance: mostly Black women, then Latina, then white. Curvy, thick-figured adults in summer cookout outfits (sundresses, shorts, tank tops, sandals), hanging out, dancing, and watching the game. Some men mixed in, but mostly women.
+- The crowd stays **behind and to the sides** of the boards, never between them. The lane has to stay clear and readable.
+- Background people are slightly soft-focus so the boards and the throwing players stand out.
+- No logos, no brand names, no readable text.
+
+Later scenes (after this one is locked): backyard, rooftop, beach.

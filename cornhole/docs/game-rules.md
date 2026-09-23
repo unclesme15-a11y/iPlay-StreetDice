@@ -11,7 +11,7 @@ This file uses standard regulation cornhole (the version used by the major leagu
 ## Equipment
 
 - **[Reg]** Board: 2 ft x 4 ft playing surface. 6 in hole, centered 9 in from the top edge. Front edge about 3-4 in off the ground, back edge about 12 in.
-- **[Reg]** Distance: 27 ft between the front edges of the two boards. The junior/casual distance is 21 ft. **[iPlay]** Default is 27 ft. A "Backyard 21 ft" table option makes it easier.
+- **[Reg]** Distance: 27 ft between the front edges of the two boards. The junior/casual distance is 21 ft. **[iPlay]** Default is 27 ft. "Backyard 21 ft" is an option on the Match Setup screen.
 - **[Reg]** Bags: 6 in x 6 in, about 16 oz. Each player gets 4 bags, and each team uses one color.
 - **[Reg]** Pitcher's box: a 3 ft x 4 ft area on each side of every board. The player must stay in it while throwing. The **foul line** is the front edge of the board.
 
@@ -31,13 +31,33 @@ This file uses standard regulation cornhole (the version used by the major leagu
 - **[Reg]** One inning = every player at that end throws all 4 bags. Players alternate one bag at a time: A, B, A, B, A, B, A, B.
 - **[Reg]** The team that scored in the last inning throws first in the next one. After a wash, the team that threw first last time goes first again.
 - **[Reg]** Coin toss decides who throws first in the first inning. **[iPlay]** The app uses a server coin flip with an animation.
+- **[Reg]** Singles: after each inning, both players walk to the other end. **[iPlay]** The park scene looks the same from both ends, so the camera stays put. You just keep throwing "down the lane" every inning.
 
 ## Winning
 
 - **[Reg]** The first team to reach **21 or more** at the end of an inning wins. You don't need to land on exactly 21.
-- **[House] Bust rule:** a team that goes over 21 drops back to 15 (the table can set 11 or 13 instead). Off by default.
-- **[House] Skunk:** a team leading 11-0 at the end of an inning wins right away. Off by default. It's useful for shorter ranked games.
-- **[iPlay] Quick Match:** play to 11 for short mobile sessions.
+- **[House] Bust rule:** a team that goes over the target score drops back (to 15 when playing to 21). Off by default.
+- **[House] Skunk:** a team leading 11-0 at the end of an inning wins right away. Off by default.
+- The target score and these toggles are all set on the **Match Setup** screen below.
+
+## Match Setup Screen **[iPlay]**
+
+Before every match, the host sees one setup screen. Everything starts at the default, so they can just tap **Start**.
+
+| Option | Choices | Default |
+|--------|---------|---------|
+| Mode | 1v1 / 2v2 | 2v2 |
+| Seats | Each seat: Human (invite) or Video Bot | You + 3 bots |
+| Bot skill | Rookie / Regular / Pro (per bot) | Regular |
+| Play to | 11 / 15 / 21 | **21** |
+| Bust rule | Off / On | Off |
+| Skunk (11-0) | Off / On | Off |
+| Distance | Regulation 27 ft / Backyard 21 ft | 27 ft |
+| Throw timer | 20 s / Off | 20 s |
+| Board-cam cut | On / Off | On |
+| Tutorial tips | On / Off | Off |
+
+Whatever the host picks shows on everyone's screen before the coin toss, so all players know the rules for that game.
 
 ## Fouls (Bag Removed, Scores 0)
 
@@ -53,9 +73,8 @@ This file uses standard regulation cornhole (the version used by the major leagu
 - **[Reg] Singles (1v1):** both players stand at the same end, one on each side of the board, and throw at the far board. After each inning they walk to the other end.
 - **[Reg] Doubles (2v2):** partners stand at **opposite** ends. Each end has one player from each team. Only one end throws in an inning. The next inning, the other end throws back.
   - This is the key layout point for the video idea. When the far end is throwing, you are looking straight at those two players as they throw at **your** board. That's the "their hole is right in front of me" shot.
-- **[iPlay] Face-Off (1v1, not regulation):** each player stays at their own end. You throw at the far board, and your opponent throws back at the board by your feet. It's still cancellation scoring, just across two boards. This gives every 1v1 match the facing-the-opponent video shot. Keep it or drop it; see `open-decisions.md`.
+- **[iPlay]** Only regulation layouts are used. There is no non-regulation face-off mode.
 
-## Wagers (Optional, Matches Street Dice)
+## No Wagers
 
-- **[iPlay]** If the iPlay wallet is used, the stake is set before the coin toss and locked for the game. Winners are settled by the server only.
-- **[iPlay]** Leaving mid-game forfeits the game.
+- **[iPlay]** Cornhole has no wagers, no wallet, and no money of any kind. Matches are played for wins, stats, and bragging rights only.

@@ -1,6 +1,6 @@
 # iPlay Cornhole (Concept)
 
-Design pack for a second iPlay game. It lives in this repo for now only so it sits next to Street Dice as a style reference. Like Street Dice, it should move to its own repo (for example `iPlay-Cornhole`) once building starts, because the rules, clips, and table flow are different.
+Separate repo for the iPlay cornhole game. It shares the broader iPlay identity and style with iPlay Street Dice (first-person view, Kling video backgrounds, Unity overlays, server-authoritative results), but it's planned and built as its own game.
 
 ## Core Direction
 
@@ -10,7 +10,10 @@ Design pack for a second iPlay game. It lives in this repo for now only so it si
 - Unity is responsible for the bags, the boards' hit areas, scoring, the HUD, and audio. The video provides the people and the setting.
 - The server decides every result. The video and bag flight make it look good, but the backend holds the score.
 - After the local player releases the bag, the camera cuts to a close-up of the far board so the landing is easy to read.
-- Modes: 1v1 and 2v2. Any seat can be a human or a video bot, so you can mix them freely.
+- Regulation cornhole only: 1v1 and 2v2. Any seat can be a human or a video bot, so you can mix them freely.
+- A Match Setup screen before every game lets the host set the target score (default 21) and the other options.
+- First scene: a big open park at a summertime hood BBQ cookout.
+- No wagers or money of any kind.
 
 ## Repo Map
 
