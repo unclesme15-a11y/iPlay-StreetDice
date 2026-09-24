@@ -151,29 +151,29 @@ public sealed partial class StreetDiceGreyboxController
 
             float controlX = rect.xMax + 28f;
             float controlY = UiHeight * 0.46f;
-            // S4 option 4: gear and exit now sit on their own Style A plates, matching
-            // PROFILE and Tutorial. The die's two faces are left bare on purpose -- a
-            // plate over the hand-lettering would cover the thing that reads as
-            // clickable in the first place. Plates start 23px clear of the die's
-            // right edge, same gap the bare icons used to keep.
-            var gearPlate = new Rect(controlX - 5f, controlY - 17f, 150f, 84f);
-            DrawMetalPlate(gearPlate);
-            var gearIcon = new Rect(gearPlate.x + 38f, gearPlate.y + 5f, 74f, 74f);
-            GUI.DrawTexture(gearIcon, settingsGear, ScaleMode.ScaleToFit, true);
-            if (GUI.Button(gearPlate, new GUIContent("", "Settings"), GUIStyle.none)) OpenGlobalSettings();
-
-            var exitPlate = new Rect(controlX - 5f, gearPlate.yMax + 20f, 150f, 66f);
+            // Right-hand column, top to bottom: PROFILE, SETTINGS, EXIT. Three equal
+            // plates instead of two icon plates + a text plate on the other side of
+            // the die, so the die's right margin now reads as one clear stack.
+            const float stackW = 150f, plateH = 54f, gap = 14f;
+            float stackX = controlX - 5f, stackY = controlY - 45f;
+            if (DrawFlowChoice(new Rect(stackX, stackY, stackW, plateH), "PROFILE"))
+                OpenProfile(StartupScreen.DieMenu);
+            // Settings used to be a bare gear icon -- text reads faster and matches
+            // every other plate on this screen.
+            if (DrawFlowChoice(new Rect(stackX, stackY + (plateH + gap), stackW, plateH), "SETTINGS"))
+                OpenGlobalSettings();
+            var exitPlate = new Rect(stackX, stackY + (plateH + gap) * 2f, stackW, plateH);
             DrawMetalPlate(exitPlate);
-            var exitIcon = new Rect(exitPlate.x + 35f, exitPlate.y + 11f, 80f, 44f);
+            // Scaled up to fill the plate -- was inset 35/11px per side (roughly a
+            // third of the plate's area); now inset 6px on every side, so it reads
+            // as a sign filling its frame instead of an icon floating inside one.
+            var exitIcon = new Rect(exitPlate.x + 6f, exitPlate.y + 6f, stackW - 12f, plateH - 12f);
             GUI.DrawTexture(exitIcon, exitSign, ScaleMode.ScaleToFit, true);
             if (GUI.Button(exitPlate, new GUIContent("", "Exit iPlay"), GUIStyle.none))
                 exitConfirmation = true;
-            if (DrawFlowChoice(new Rect(rect.x - 168f, controlY + 70f, 150f, 52f), "PROFILE"))
-                OpenProfile(StartupScreen.DieMenu);
-            // Tutorial used to be buried inside Global Settings. It's its own control
-            // here instead, stacked below PROFILE in the same left-hand margin -- the
-            // die fills nearly the full screen height, so there's no room under it.
-            // 44px tall for an easy phone tap.
+            // Tutorial keeps its original spot in the left margin -- PROFILE moved
+            // out from here to the right column above, nothing else changed on this
+            // side. 44px tall for an easy phone tap.
             SetTutorialMode(DrawPregameTutorial(new Rect(8f, controlY + 142f, 240f, 44f), tutorialMode));
         }
         if (!exitConfirmation) return;
@@ -254,10 +254,12 @@ public sealed partial class StreetDiceGreyboxController
     {
         DrawFlowBackground("ONLINE CRAPS");
         float x = UiWidth * 0.32f, w = UiWidth * 0.36f;
-        // S7+S8 merge: SERVER ADDRESS used to live two taps away, behind the gear
-        // icon -> Global Settings -> Advanced. It only matters right here, the
-        // moment before you go online, so it moved onto this screen instead.
-        DrawFlowField(new Rect(x, UiHeight * 0.32f, w, 46f), "SERVER ADDRESS", ref baseUrl, 120);
+        // Order top to bottom: PROFILE, HOST TABLE, JOIN TABLE, SERVER ADDRESS.
+        // Profile first since it's the thing most people touch on a first visit;
+        // Server Address last since most players never need to change it.
+        if (string.IsNullOrWhiteSpace(playerName) &&
+            DrawFlowChoice(new Rect(x, UiHeight * 0.30f, w, 46f), "PROFILE"))
+            OpenProfile(StartupScreen.OnlineMenu);
         if (DrawFlowChoice(new Rect(x, UiHeight * 0.44f, w, 55f), "HOST TABLE", ValidOnlineIdentity))
         {
             SaveServerAddress();
@@ -265,9 +267,7 @@ public sealed partial class StreetDiceGreyboxController
         }
         if (DrawFlowChoice(new Rect(x, UiHeight * 0.60f, w, 55f), "JOIN TABLE", ValidOnlineIdentity))
             startupScreen = StartupScreen.JoinMenu;
-        if (string.IsNullOrWhiteSpace(playerName) &&
-            DrawFlowChoice(new Rect(x, UiHeight * 0.74f, w, 46f), "PROFILE"))
-            OpenProfile(StartupScreen.OnlineMenu);
+        DrawFlowField(new Rect(x, UiHeight * 0.78f, w, 46f), "SERVER ADDRESS", ref baseUrl, 120);
         if (DrawFlowBack()) { SaveServerAddress(); startupScreen = StartupScreen.ModeMenu; }
     }
 

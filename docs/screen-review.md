@@ -283,3 +283,53 @@ Not yet reviewed. Source: `artifacts/unity-smoke/readiness/`,
 ## Group 3 — Wagers, fade, hot dice, dice sale
 
 Not yet reviewed.
+
+
+## Round 2 fixes — 2026-09-24
+
+User feedback on the Group 1 review page.
+
+**S5/S6/S9/S10 -- not a code issue.** Confirmed in the live code: all four
+already call `DrawFlowChoice`, the same Style A plate function as
+everything else. The confusion came from the review page itself --
+Part B showed the old, pre-fix screenshots as the main image with only
+a small caption saying the style had changed underneath, easy to skim
+past. Fix going forward: when a screen's old screenshot is Style B but
+the live code is Style A, show the reconstructed Style A version as the
+primary image, not the stale capture.
+
+**S4 die menu -- right column reordered to Profile, Settings, Exit.**
+Three equal 150x54 plates stacked on the die's right margin (was two
+icon plates on the right + PROFILE alone on the left):
+- PROFILE moved from the left margin to the top of this stack.
+- Settings is now a text plate ("SETTINGS") instead of a bare gear icon.
+- Exit's icon is now inset 6px on every side (was 35/11px) -- fills
+  most of its plate instead of floating in the middle of it.
+Tutorial keeps its original spot in the left margin; only PROFILE moved
+out of that side. Re-verified: no overlaps, nothing off-canvas, 23px
+clear of the die's right edge same as before.
+
+**S7+S8 (Online Craps) -- reordered to Profile, Host Table, Join Table,
+Server Address.** Profile first (still only shown when no name is
+saved), Server Address last since most players never touch it. Field's
+floating label re-checked against Join Table above it and the Back
+button below -- clear by 19.6px and 12.4px.
+
+**S12 Global Settings -- Exit button removed, Credits moved to the left.**
+Exit did `ReturnToDieMenu()` and then raised the quit dialog -- same
+first step as Back, so it read as a duplicate control. Removed; Back
+re-centered under the title (440-660 of a 1100-wide canvas, dead center
+of the button band) rather than left-pinned with empty space where Exit
+used to be. Credits and the "Offline demo | Play money" label swapped
+sides -- Credits now left at its original width, the label now right-
+aligned in the remaining space, edge-aligned with the band's right edge.
+
+**S14 Credits -- "Creative Commons Attribution 4.0" cut from three
+mentions to one.** It appeared under Regular Dice, again under Hot Dice,
+and a third time as the license button's own label -- three statements
+of the same fact. Each artist keeps their own one-line credit (CC BY
+requires per-source attribution); the license itself is now named once,
+as a one-line lead-in directly above the button that links to it.
+Scroll content shortened from 580 to 470 to match the now-shorter text
+(labels went from 4 lines to 2), so there's no dead scroll space at the
+bottom.

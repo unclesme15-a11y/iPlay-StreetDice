@@ -569,13 +569,19 @@ public sealed partial class StreetDiceGreyboxController
         if (showCredits || startupScreen == StartupScreen.GlobalSettings) DrawBrandLogo(0.55f);
         if (showCredits)
         {
-            creditsScroll = GUI.BeginScrollView(new Rect(x, 98, 470, UiHeight - 230), creditsScroll, new Rect(0, 0, 445, 580));
-            GUI.Label(new Rect(0, 0, 440, 125), "Regular Dice\n\"Dice\" by macriciox\nCreative Commons Attribution 4.0\nImported, scaled and recolored for gameplay.");
-            if (DrawMetalButton(new Rect(0, 130, 440, 42), "Regular dice source")) Application.OpenURL("https://skfb.ly/6xKHM");
-            GUI.Label(new Rect(0, 196, 440, 125), "Hot Dice\n\"Dice\" by Geug\nCreative Commons Attribution 4.0\nImported, scaled and aligned for gameplay.");
-            if (DrawMetalButton(new Rect(0, 326, 440, 42), "Hot dice source")) Application.OpenURL("https://skfb.ly/6UoEV");
-            if (DrawMetalButton(new Rect(0, 385, 440, 42), "CC BY 4.0 License")) Application.OpenURL("https://creativecommons.org/licenses/by/4.0/");
-            GUI.Label(new Rect(0, 456, 440, 120), "Prop money generated for iPlay. Overhead pavement is cropped from the approved iPlay environment.\n\nFirst-person hand pack: RRFreelance.\nMotion references are not redistributed.");
+            // "Creative Commons Attribution 4.0" used to appear three times -- once
+            // under each dice credit, then a third time as this button's own label,
+            // all pointing at the same fact. Each artist is still named once (CC BY
+            // requires that per source); the license itself is now stated once, as
+            // the lead-in to the one button that actually links to it.
+            creditsScroll = GUI.BeginScrollView(new Rect(x, 98, 470, UiHeight - 230), creditsScroll, new Rect(0, 0, 445, 470));
+            GUI.Label(new Rect(0, 0, 440, 60), "Regular Dice\n\"Dice\" by macriciox. Imported, scaled and recolored for gameplay.");
+            if (DrawMetalButton(new Rect(0, 66, 440, 42), "Regular dice source")) Application.OpenURL("https://skfb.ly/6xKHM");
+            GUI.Label(new Rect(0, 126, 440, 60), "Hot Dice\n\"Dice\" by Geug. Imported, scaled and aligned for gameplay.");
+            if (DrawMetalButton(new Rect(0, 192, 440, 42), "Hot dice source")) Application.OpenURL("https://skfb.ly/6UoEV");
+            GUI.Label(new Rect(0, 252, 440, 26), "Both dice models are licensed under:");
+            if (DrawMetalButton(new Rect(0, 282, 440, 42), "CC BY 4.0 License")) Application.OpenURL("https://creativecommons.org/licenses/by/4.0/");
+            GUI.Label(new Rect(0, 340, 440, 120), "Prop money generated for iPlay. Overhead pavement is cropped from the approved iPlay environment.\n\nFirst-person hand pack: RRFreelance.\nMotion references are not redistributed.");
             GUI.EndScrollView();
             if (DrawMetalButton(new Rect(x, UiHeight - 102, 470, 44), "Back")) showCredits = false;
             return;
@@ -587,12 +593,11 @@ public sealed partial class StreetDiceGreyboxController
             // "Advanced" used to open a screen holding only the Server Address
             // field, which now lives on the Online screen where it's actually
             // used. Nothing left here worth its own button.
-            if (DrawMetalButton(new Rect(x, 90, 220, 48), "Back")) ReturnToDieMenu();
-            if (DrawMetalButton(new Rect(x + 680, 90, 220, 48), "Exit"))
-            {
-                ReturnToDieMenu();
-                exitConfirmation = true;
-            }
+            // "Exit" removed too -- it did ReturnToDieMenu() first just like Back,
+            // then raised the quit dialog on top of it. Back alone covers the only
+            // thing this screen needs to do; Exit lives one screen away, on the die
+            // menu, where the actual quit control belongs.
+            if (DrawMetalButton(new Rect(x + 340, 90, 220, 48), "Back")) ReturnToDieMenu();
         }
         else
         {
@@ -632,8 +637,11 @@ public sealed partial class StreetDiceGreyboxController
         // same effectsVolume field) -- Global Settings is reached before a table exists,
         // so a sound slider here was controlling a mix the player couldn't hear yet.
         // Tutorial moved to its own control on the die menu. One row left in this band.
-        GUI.Label(new Rect(x, 522, 600, 28), "Offline demo | Play money");
-        if (DrawMetalButton(new Rect(x + 650, 512, 250, 44), "Credits")) showCredits = true;
+        // Credits moved to the left, "Offline demo" to the right -- swapped from
+        // the previous layout.
+        if (DrawMetalButton(new Rect(x, 512, 250, 44), "Credits")) showCredits = true;
+        var demoLabelStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight };
+        GUI.Label(new Rect(x + 280, 522, 650, 28), "Offline demo | Play money", demoLabelStyle);
     }
 
     private void SetTutorialMode(bool enabled)
