@@ -110,25 +110,29 @@ Right after Match Setup, every team picks a bag color. **First come, first serve
 - Background people are slightly soft-focus so the boards and the throwing players stand out.
 - No logos, no brand names, no readable text.
 
-## Crowd Behavior (Modern Crowd)
+## Background Life (Keep It Random)
 
-The crowd should feel like a real cookout in 2026, where everybody has a phone out. Every idle loop and reaction clip mixes in:
+The background should look like a real cookout that happens to be going on while you play. Nobody in the crowd is performing for the camera, and nobody is doing the same thing at the same time.
 
-- People **glancing down at their phone** now and then, like they're checking messages or firing off a quick text, then looking back up.
-- **Women taking selfies**: posing, fixing their hair, a couple of friends squeezing into one shot.
-- People **recording for a reel**: phone held up sideways or vertical, some talking to their camera.
-- Everyday cookout stuff: holding a plate or a cup, laughing, dancing a little, pointing at the game.
+**What's going on out there, loosely mixed:**
+- Mostly **regular conversation**: small groups standing and talking, somebody laughing hard, someone telling a story with their hands, people eating off paper plates.
+- **Little kids running and playing in the distance**: chasing each other, a ball getting kicked around, a kid on a scooter. Always far away and never near the lane.
+- **People walking by**: someone carrying a cooler or a tray of food past the tents, a couple strolling across the far background, somebody coming back from the grill.
+- Now and then **one person** glances at their phone, takes a quick selfie, or holds it up for a second. That's it. Phones are seasoning, not the meal.
 
-**Following the bag with their phones.** Kling can't see the Unity bag, so we fake it with timing:
+**Rules that keep it from looking fake:**
+- **No checklist prompts.** Listing every action makes Kling put all of them front and center at once, and that's what makes it look staged (probably what went wrong with the Codex prompts). Describe the vibe, mention one or two small details, and let the model fill in the rest.
+- **At most one or two phones** in any shot. Some shots have none.
+- **Nobody stares into the camera** or poses.
+- **Not everybody watches the game.** Most people are into their own conversations. Only the few people closest to the lane even look over.
 
-| Moment | Crowd clip that plays | What the crowd does |
-|--------|-----------------------|---------------------|
-| Nobody throwing | `crowd_idle` loop | Texting, selfies, talking, eating. Nobody's locked in. |
-| Someone steps up | `crowd_lock_in` | A few people raise their phones and start recording toward the lane. |
-| Bag in the air | `crowd_track` | Phones up. Heads and phones swing from the thrower toward the board, following the bag's path. |
-| Cornhole (in the hole) | `crowd_hype` | Cheers, phones still recording, a couple of people turn the phone around to film themselves reacting. |
-| Woody / miss | `crowd_settle` | "Ooh," then people drop their phones back down and go back to texting. |
+**How the game plays it (randomness):**
+- Make **3-4 long background takes** (8-10 s each) from the same locked Plate 1, all with different random life in them.
+- Unity picks the next take **at random** and never plays the same take twice in a row, crossfading between them. The background never runs on an obvious loop.
+- On a **cornhole** only, a short "nearby reaction" take can play where the handful of people closest to the lane react ("ayy!", a clap, maybe one person who happened to be filming). The rest of the crowd keeps doing their own thing. For woodies and misses, the background doesn't change at all.
 
-Because each clip is timed to the throw, it looks like the crowd is following the bag, even though the video never actually sees it.
+**Sound:**
+- A long ambient audio bed: overlapping chatter you can't quite make out, music from a speaker far off, grill sizzle, a breeze.
+- Random one-shots at random times: a laugh, a kid yelling far away, "you want a plate?", a car horn, a dog bark. Unity fires them on random timers so no two minutes sound the same.
 
 Later scenes (after this one is locked): backyard, rooftop, beach.

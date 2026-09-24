@@ -29,9 +29,9 @@ All clothes are **plain, with no logos, team names, or readable text.**
 Each character needs the same set (details in `artifacts/kling/cornhole-prompts.md`):
 
 - `idle` (far end), `stepup`, `throw`, `react_good`, `react_bad`, `react_opponent_scored`, `neighbor_throw` (side angle).
-- Some idles should include the modern phone habits too: a quick glance down at their phone between throws, or holding it up to film their partner's throw.
+- Idles should feel natural and a little different each time: bouncing the bag, stretching, saying something to their partner. Once in a while one of them glances at their phone, but only rarely.
 
-That's 7 clips x 8 characters = **56 character clips** for the first build, plus the 5 crowd clips.
+That's 7 clips x 8 characters = **56 character clips** for the first build, plus 3-4 background life takes and 1 nearby-reaction take.
 
 ## Keeping Each Character Consistent
 

@@ -5,7 +5,8 @@
 - Approve the rules contract (`game-rules.md`) and settle what's left in `open-decisions.md`.
 - Generate and lock the **Thrower View** still in Kling (text-to-image first; don't spend on video yet).
 - Lock the matching Far Board Cam and Neighbor Cut stills from the same setting.
-- Generate the 5 crowd behavior clips (idle, lock-in, track, hype, settle).
+- Side-by-side test: the same Plate 1 plus one background prompt in Kling, Veo 3.1 and Seedance 2.0. Pick per clip type.
+- Generate 3-4 random background life takes plus the cornhole nearby-reaction take, and an ambient audio bed with random one-shots.
 
 ## Phase 2: Scoring Backend
 

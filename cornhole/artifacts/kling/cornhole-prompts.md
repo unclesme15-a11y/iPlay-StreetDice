@@ -13,7 +13,7 @@ If Kling softens or refuses a prompt, keep the descriptions of the women's bodie
 Your own board has to be visible right in front of you in the lower part of the frame. Far-end players throw at it, and there's no camera cut for that board.
 
 ```text
-First-person point of view standing in a cornhole pitcher's box on flat trimmed grass, eye level about 5 feet, a regulation wooden cornhole board with a round hole on the ground directly in front of the viewer filling the lower left part of the frame, looking straight down a clear 27 foot lane at a matching far cornhole board, wide open green city park at a summertime hood BBQ cookout, bright afternoon sun, grills smoking, pop-up tents, folding tables and coolers in the background, a big lively crowd in the distance behind and to the sides of the lane, mostly curvy thick-figured adult Black women, with Latina and white women too, in summer cookout outfits like sundresses, shorts and tank tops, a few men mixed in, many people holding phones, some texting, some taking selfies, some recording, background crowd slightly soft focus, no people between the boards, no logos, no text, realistic photo, natural lighting, 9:16 vertical
+First-person point of view standing in a cornhole pitcher's box on flat trimmed grass, eye level about 5 feet, a regulation wooden cornhole board with a round hole on the ground directly in front of the viewer filling the lower left part of the frame, looking straight down a clear 27 foot lane at a matching far cornhole board, wide open green city park at a summertime hood BBQ cookout, bright afternoon sun, grills smoking, pop-up tents, folding tables and coolers in the background, a big relaxed crowd in the distance behind and to the sides of the lane, mostly curvy thick-figured adult Black women, with Latina and white women and some men mixed in, in summer cookout outfits, people talking in small groups and eating, a few little kids playing far off in the background, candid and natural, nobody posing, background slightly soft focus, no people between the boards, no logos, no text, realistic photo, natural lighting, 9:16 vertical
 ```
 
 ### Far Board Cam (Plate 2)
@@ -21,30 +21,40 @@ First-person point of view standing in a cornhole pitcher's box on flat trimmed 
 Used only for bags thrown at the far board.
 
 ```text
-Low close-up camera angle beside a regulation wooden cornhole board with a round hole, same summertime park BBQ cookout on trimmed grass, board fills the lower half of the frame, clean empty board surface, cookout tents and a crowd of mostly curvy adult Black and Latina women soft and blurred in the background, several of them holding phones up recording toward the board, no bags, no people on the board, no logos, no text, realistic photo, 9:16 vertical
+Low close-up camera angle beside a regulation wooden cornhole board with a round hole, same summertime park BBQ cookout on trimmed grass, board fills the lower half of the frame, clean empty board surface, cookout tents and a crowd of mostly curvy adult Black and Latina women soft and blurred in the background, people chatting in small groups, kids playing far off, no bags, no people on the board, no logos, no text, realistic photo, 9:16 vertical
 ```
 
 ### Neighbor Cut (Plate 3)
 
 ```text
-Side angle from a cornhole pitcher's box looking across the near cornhole board at the opposite pitcher's box on the other side of it, empty box, flat trimmed grass, same summertime park BBQ cookout behind, crowd of mostly curvy adult women in the soft background with phones out, no logos, no text, realistic photo, 9:16 vertical
+Side angle from a cornhole pitcher's box looking across the near cornhole board at the opposite pitcher's box on the other side of it, empty box, flat trimmed grass, same summertime park BBQ cookout behind, crowd of mostly curvy adult women chatting in the soft background, no logos, no text, realistic photo, 9:16 vertical
 ```
 
-## 1b. Crowd Behavior Clips (Image-To-Video From Plate 1)
+## 1b. Background Life Takes (Image-To-Video From Plate 1)
 
-These play behind the game and are timed to the throws, so it looks like the crowd is following the bag. Leave the lane and both boards completely empty in all of them.
+Keep these prompts **short and loose**. Describe the vibe, add one or two small details, and let Kling fill in the rest. Long lists of actions make everything happen at once, and that looks staged.
 
-Always include: **"camera completely locked off, boards and lane do not change, nobody walks into the lane"**.
+Always end with: **"camera completely locked off, boards and lane stay empty and unchanged, candid documentary feel, nobody looks at the camera"**.
 
-| Clip | Length | Prompt add-on (goes after the Plate 1 description) |
-|------|--------|-----------------------------------------------------|
-| `crowd_idle` | 6-8 s loop | the crowd relaxes and socializes, several people glance down at their phones texting then look back up, two women take a selfie together fixing their hair, one woman records herself talking to her phone for a reel, people holding plates and cups, laughing, light dancing |
-| `crowd_lock_in` | 2 s | several people in the crowd stop what they are doing and raise their phones toward the cornhole lane to start recording |
-| `crowd_track` | 2-3 s | most of the crowd holds phones up recording, their heads and phones slowly pan from the near side of the lane toward the far cornhole board as if following a bag through the air |
-| `crowd_hype` | 3 s | the crowd erupts cheering, phones still up recording, a couple of women flip their phones around to film their own excited reactions, people jumping and pointing at the far board |
-| `crowd_settle` | 3 s | the crowd reacts with a small groan, then people lower their phones and go back to texting, talking and eating |
+Make 3-4 takes of `bg_life`, changing just the small details each time:
 
-Make 2-3 takes of `crowd_idle` and pick the most natural one. Kling does better with busy crowds when each action is spelled out, like above.
+```text
+The cookout carries on naturally in the background, people talking and laughing in small groups, a few little kids chasing each other far off near the trees, someone walks past the tents carrying a cooler, camera completely locked off, boards and lane stay empty and unchanged, candid documentary feel, nobody looks at the camera, 10 seconds
+```
+
+Swap-in details for the other takes (pick one or two per take, never all):
+- a woman laughs and touches her friend's arm
+- a man flips burgers at a grill in the far background
+- a kid rides a scooter across the far background
+- a couple strolls by holding plates of food
+- one woman quickly checks her phone, then puts it away
+- two friends take a quick selfie, then go back to talking
+
+### Nearby Reaction (Cornhole Only)
+
+```text
+The few people standing closest to the far cornhole board react to a great shot, one claps, one says "ayy" and points, the rest of the cookout keeps going about their business, camera completely locked off, boards and lane stay empty and unchanged, candid documentary feel, 3 seconds
+```
 
 ## 2. Character Clip Set (Per Video Opponent)
 
@@ -64,7 +74,7 @@ Full-body photo of a 34 year old curvy Black woman with long braids pulled up, w
 
 | Clip | Length | Plate it starts from | Notes |
 |------|--------|----------------------|-------|
-| `idle` | 4-5 s loop | Plate 1 (far end) | Standing in the box, bouncing a bag, looking toward camera. Some takes: a quick glance down at their phone, then pocket it. |
+| `idle` | 4-5 s loop | Plate 1 (far end) | Standing in the box, bouncing a bag, looking toward camera. Now and then a take where they glance at their phone, but not in most. |
 | `stepup` | 2 s | Plate 1 | Squares up, lifts the bag. |
 | `throw` | 3 s | Plate 1 | Underhand throw toward camera. The bag must leave frame or be hidden right at release. |
 | `react_good` | 2-3 s | Plate 1 | Fist pump, points, nods. |
