@@ -333,3 +333,13 @@ as a one-line lead-in directly above the button that links to it.
 Scroll content shortened from 580 to 470 to match the now-shorter text
 (labels went from 4 lines to 2), so there's no dead scroll space at the
 bottom.
+
+
+## Round 3 fix — 2026-09-24
+
+**S12 Global Settings -- "Offline demo | Play money" label removed.**
+Credits re-centered in the bottom band now that it's the only thing
+left in that row (425-675 of the 1100-wide canvas, dead center of the
+70-1030 band), instead of sitting left-pinned with empty space where the
+label used to be. Re-verified: Credits sits fully inside the band, no
+overlaps.

@@ -637,11 +637,10 @@ public sealed partial class StreetDiceGreyboxController
         // same effectsVolume field) -- Global Settings is reached before a table exists,
         // so a sound slider here was controlling a mix the player couldn't hear yet.
         // Tutorial moved to its own control on the die menu. One row left in this band.
-        // Credits moved to the left, "Offline demo" to the right -- swapped from
-        // the previous layout.
-        if (DrawMetalButton(new Rect(x, 512, 250, 44), "Credits")) showCredits = true;
-        var demoLabelStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight };
-        GUI.Label(new Rect(x + 280, 522, 650, 28), "Offline demo | Play money", demoLabelStyle);
+        // "Offline demo | Play money" removed. Credits re-centered in the band now
+        // that it's the only thing left in this row, instead of sitting left-pinned
+        // with empty space where the label used to be.
+        if (DrawMetalButton(new Rect(x + 325, 512, 250, 44), "Credits")) showCredits = true;
     }
 
     private void SetTutorialMode(bool enabled)
