@@ -277,12 +277,59 @@ the die itself; nothing off-canvas.
 
 ## Group 2 — In-game loop
 
-Not yet reviewed. Source: `artifacts/unity-smoke/readiness/`,
-`betting/`, `sale/`, `add-ons/`.
+Started 2026-09-24. Source: `artifacts/unity-smoke/readiness/`,
+`betting/`, `sale/`, `add-ons/` (skipping resolution duplicates,
+per-denomination lock variants, and the physics-roll motion frame
+sequences -- one representative capture per distinct screen/state).
+
+### A real pattern, not yet a verdict
+
+The whole in-game HUD uses its own button language -- small blue-outlined
+rounded-square icon buttons (back arrow, CRAP, point number, DOUBLE,
+PAIR 4) -- separate from the menu system's metal-plate Style A. That's
+not automatically wrong the way Group 1's mix was: a live table needs
+compact controls that don't block the dice, where a full menu screen
+doesn't. The `BET` / choose-opponent panel is the exception and already
+uses full Style A plates.
+
+What *is* a real inconsistency: **picking a dollar amount looks
+different in different places.**
+- On the point-number bet screen (S20), amounts are photographed dollar
+  bills -- $1/$5/$10/$20 -- the nicest, most thematic treatment in the
+  game.
+- On the dice-sale screen (S28, S32), the same four amounts are flat
+  dark-grey boxes with plain white text -- no photo, no plate, no glow.
+- On the dice-sale bid pad (S31), amounts are typed on a third
+  treatment again -- thin-outlined boxes with plain digits, a phone
+  keypad.
+
+Same action, three looks. Worth a call once you've seen them side by
+side.
+
+| ID | Screen | Notes | Verdict |
+| --- | --- | --- | --- |
+| S16 | In-game HUD (baseline) | BET icon top-left, You/Shooter + balance + mic, 4 opponents, gear top-right, money + dice on the ground. | open |
+| S17 | Options drawer (in-game) | Throw Style, Throwing Hand, Tutorial Mode, Voice & Sound, Rules, Leave Game. Full Style A. | open |
+| S18 | Voice & Sound (drawer sub-page) | Mute Mic, Dice & Impact Volume, Dice Calling -- all greyed, offline demo. Style A. | open |
+| S19 | Bet: choose opponent | "BET" + 4 opponent plates. Style A -- the one HUD screen that matches the menu style. | open |
+| S20 | Bet: pick amount | Point number painted on the door (Style B, correct). Photographed $1/$5/$10/$20 bills. Blue icon buttons (back/CRAP) either side. | open |
+| S21 | Wagers placed (4 locks) | Lock icons per opponent reading "CRAP 2/3/12 $5", radial opponent markers, hamburger icon top-left. | open |
+| S22 | Point bet locked, with Double/Pair teaser | "COME OUT" painted on the door behind a live "CRAP 10" bet. Blue icon buttons. | open |
+| S23 | Side bet: Double / Pair 4 | Same blue-icon-button language as S22. | open |
+| S24 | Side bet confirmed (paired number) | Paired-number lock placed at $5; other opponents' controls greyed until it resolves. | open |
+| S25 | Fade gesture in progress (Plant) | Picture-in-picture inset of a hand pressed to the pavement, FADE ring still visible. | open |
+| S26 | Point number HUD badge | Small black rounded badge, plain sans digit -- different treatment than the big painted number in S20/S22. | open |
+| S27 | Come-out / payout moment | "COME OUT" painted on the door, bills + dice on the ground, balance updated. | open |
+| S28 | Hot dice + Shoot/Sell | Flame meter icon (full), flat grey $1/$5/$10/$20 boxes, Shoot / Sell buttons, red hot dice. | open |
+| S29 | Leave game confirmation | Matches S11's exit dialog exactly -- Style A, consistent. | open |
+| S30 | Dice sale: waiting for bidder | "WAITING FOR BIDDER" painted on the door, live bid amounts shown below it. | open |
+| S31 | Dice sale: bid pad | "DICE FOR SALE" painted on the door, numeric keypad (1-9, C/0/back), BID button. | open |
+| S32 | Dice sale: purchase complete | "You bought the dice for $12" painted on the door, same flat grey chip row as S28. | open |
 
 ## Group 3 — Wagers, fade, hot dice, dice sale
 
-Not yet reviewed.
+Folded into Group 2 above -- the screenshots didn't separate cleanly by
+that line, so it made more sense to review them together.
 
 
 ## Round 2 fixes — 2026-09-24
