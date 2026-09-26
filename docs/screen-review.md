@@ -390,3 +390,97 @@ left in that row (425-675 of the 1100-wide canvas, dead center of the
 70-1030 band), instead of sitting left-pinned with empty space where the
 label used to be. Re-verified: Credits sits fully inside the band, no
 overlaps.
+
+
+## Group 2, round 1 -- 2026-09-26
+
+User feedback on the initial Group 2 batch, plus a full spec for the
+corner-BET wager flow (push BET top-left -> per-opponent digital dice ->
+Hit/Crap -> point/paired number -> lock appears -> pick amount -> confirm).
+
+### The wager/lock system was already almost entirely built
+
+Traced it through `StreetDiceWagerHud.cs` before changing anything. Nearly
+everything described was already live:
+- `DrawBettingToggle` -- the corner BET icon, opens the overlay.
+- `DrawOpponentBetDice` -- three "digital display" dice per opponent
+  (back arrow, then two choices), stage-based: Hit/Crap, then point/paired
+  number.
+- `DrawAmountLock` -- the ground padlock, already cross-fades from the
+  open icon to the closed icon on accept.
+- **The red-to-green glow "gpt missed" was already built.** Checked the
+  actual source art (`wager-locks-keyed.png`): the open-lock crop is
+  red-glow, the closed-lock crop is green-glow, and `DrawAmountLock`
+  already cross-fades between them over 0.18s when a wager is accepted.
+  Nothing to add here.
+- The "double tap to confirm" is a tap-then-confirm-within-2-seconds
+  pattern (`armedOfferId`), not a literal double tap, but serves the same
+  purpose already.
+
+### What was actually fixed
+
+- **"BET" -> "HIT"**: the stage-1 button read "BET" on screen while the
+  enum underneath was already `WagerOutcome.Hit`, and the lock that
+  followed already read "HIT". Just relabeled to match.
+- **Lock text parity**: Crap wagers showed a "CRAP" title above the
+  number; Hit wagers showed only the bare number, no title at all. Both
+  now get their word.
+- **Lock size**: enlarged ~30% on both the draft lock (84x99 -> 110x130)
+  and the ground lock (65x76 -> 85x99) -- too small to read before.
+  Adjusted the bill row and page-arrow positions that sit next to them
+  so nothing overlaps at the new size.
+- **Ground marker -> real bill**: the "amount confirmed" marker next to
+  a ground lock used to be a small digital-display cube with a "$X"
+  TextMesh on it -- the same look as the still-choosing bet-picker dice.
+  Replaced with a single upright quad textured with the actual bill
+  photo (same asset `DrawBetBill` uses to pick the amount), billboarded
+  toward the camera. Matches "that's how a bet proposal looks, it's a
+  picture of that."
+
+### Dollar amounts and door text, unified
+
+- **Bills for picking an amount, everywhere except the sale bid.** The
+  Shoot/Sell amount row (was a raw `GUI.Toolbar` with "$1"/"$5"/"$10"/
+  "$20" text tabs) now uses the same photographed-bill buttons as the
+  bet screen, at a smaller HUD-appropriate size, with the selected one
+  underlined in cyan.
+- **Dice-sale bidding stays a number keypad** (per instruction) --
+  arbitrary bid amounts don't fit fixed denominations.
+- **"COME OUT" styling now shared.** "WAITING FOR BIDDER" / "DICE FOR
+  SALE" / "[name] bought the dice for $X" were a small plain cyan
+  `GUI.Label` -- default skin font, no animation, a completely separate
+  implementation from `DrawDoorGhostNumber` (the graffiti-font, painted-
+  on-the-door treatment "COME OUT" uses). All three now route through
+  `DrawDoorGhostNumber`. Its font-scale was hardcoded to recognize the
+  literal string "COME OUT"; generalized to scale by text length instead
+  so longer phrases don't render at full size (verified it still
+  resolves to the exact same size for "COME OUT" and for countdown
+  digits as before).
+
+### Raw Unity-default buttons removed from the live HUD
+
+Swept every `GUI.Button` call with a plain text label across the
+gameplay files. Fixed the ones actually reachable during play:
+Shoot / Sell / Run Same / Double Up, and the online lobby's "COPY CODE"
+button -- all converted to `DrawMetalButton`.
+
+### Dead code found, not touched
+
+Two more pieces of debug/superseded scaffolding, same situation as
+`DieMenu.cs` (see S4 investigation above) -- built, never wired in:
+- `DrawWagerSeat` / `DrawWagerComposer` -- an older tap-the-opponent-die
+  wager composer, fully separate from the corner-BET-button flow that's
+  actually live. Never called. Still has a raw `GUI.Button("$" + amount)`
+  in it, not worth fixing since nothing reaches it.
+- `DrawBottomControls` and everything it calls (`DrawDeterministicControls`,
+  `DrawDiceSkinControls`, `DrawHandSkinControls`, `DiceSkinButton`) plus
+  `DrawPlayerOverlays` -- a developer debug panel (forced dice rolls, hand
+  skin swatches, "Bet Hit"/"Bet Miss"/"Fade/Catch" test buttons). Never
+  called from anywhere in the live render path.
+
+### Still open
+
+S16 (in-game HUD baseline), S18 (Voice & Sound drawer page), and S29
+(leave confirmation) were flagged for removal in the original batch --
+unclear why, and all three looked correct on inspection. Needs your
+read on what specifically should change.

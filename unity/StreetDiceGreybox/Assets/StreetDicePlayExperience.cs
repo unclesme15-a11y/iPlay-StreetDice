@@ -34,7 +34,6 @@ public sealed partial class StreetDiceGreyboxController
     private readonly List<CashBet> cashBets = new();
     private readonly List<GameObject> moneyPiles = new();
     private static readonly int[] WagerAmounts = { 1, 5, 10, 20 };
-    private static readonly string[] WagerLabels = { "$1", "$5", "$10", "$20" };
     private static readonly Vector2[] OpponentMoneyViewports =
     {
         new(0.14f, 0.275f), new(0.15f, 0.13f),
@@ -462,7 +461,7 @@ public sealed partial class StreetDiceGreyboxController
             if (realOnlineTable && phase == "Lobby" && !string.IsNullOrEmpty(gameId))
             {
                 GUI.Label(new Rect(w / 2f - 240f, 14f, 480f, 26f), "TABLE  " + gameId);
-                if (GUI.Button(new Rect(w / 2f - 58f, 42f, 116f, 30f), "COPY CODE"))
+                if (DrawMetalButton(new Rect(w / 2f - 58f, 42f, 116f, 30f), "COPY CODE"))
                     GUIUtility.systemCopyBuffer = gameId;
             }
             if (tutorialMode)
@@ -481,24 +480,26 @@ public sealed partial class StreetDiceGreyboxController
                 DrawHotMeter(new Rect(settingsControl.x - 56f, settingsControl.y, 48f, 124f));
             if (!rolling && !SaleOpen && awaitingShootChoice && shooterId == SelfId)
             {
-                int choice = GUI.Toolbar(new Rect(w / 2 - 146, h - 148, 292, 36), Array.IndexOf(WagerAmounts, shotAmount), WagerLabels);
-                if (choice >= 0) SelectMainWager(WagerAmounts[choice]);
+                // Was a raw GUI.Toolbar with "$1"/"$5"/"$10"/"$20" text tabs -- the
+                // same photographed bills used everywhere else you pick an amount,
+                // just smaller, since this sits over the live table, not a menu.
+                DrawShotAmountRow(new Rect(w / 2 - 140f, h - 184f, 280f, 70f));
                 GUI.enabled = !drawerOpen && CanCover(shotAmount) &&
                     (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 2);
-                if (GUI.Button(new Rect(w / 2 - 146, h - 104, 140, 46), "Shoot")) CommitShoot();
+                if (DrawMetalButton(new Rect(w / 2 - 146, h - 104, 140, 46), "Shoot")) CommitShoot();
                 GUI.enabled = !drawerOpen;
                 GUI.enabled = !drawerOpen && (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 3);
-                if (GUI.Button(new Rect(w / 2 + 6, h - 104, 140, 46), "Sell")) SellCurrentDice();
+                if (DrawMetalButton(new Rect(w / 2 + 6, h - 104, 140, 46), "Sell")) SellCurrentDice();
             }
             else if (!rolling && phase == "ShooterDecision" && shooterId == SelfId)
             {
                 GUI.enabled = !drawerOpen && CanCover(shotAmount);
-                if (GUI.Button(new Rect(w / 2 - 210, h - 104, 132, 46), "Run Same")) StartCoroutine(RunSame());
+                if (DrawMetalButton(new Rect(w / 2 - 210, h - 104, 132, 46), "Run Same")) StartCoroutine(RunSame());
                 GUI.enabled = !drawerOpen && lastResolvedShotWasWin && shotAmount <= int.MaxValue / 2 && CanCover(shotAmount * 2);
-                if (GUI.Button(new Rect(w / 2 - 70, h - 104, 132, 46), "Double Up")) StartCoroutine(DoubleUp());
+                if (DrawMetalButton(new Rect(w / 2 - 70, h - 104, 132, 46), "Double Up")) StartCoroutine(DoubleUp());
                 GUI.enabled = !drawerOpen;
                 GUI.enabled = !drawerOpen && (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 3);
-                if (GUI.Button(new Rect(w / 2 + 70, h - 104, 132, 46), "Sell")) SellCurrentDice();
+                if (DrawMetalButton(new Rect(w / 2 + 70, h - 104, 132, 46), "Sell")) SellCurrentDice();
             }
             GUI.enabled = !confirmLeave;
             if (drawerAmount > 0) DrawDrawer();
@@ -702,7 +703,14 @@ public sealed partial class StreetDiceGreyboxController
     {
         float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress));
         float alpha = Mathf.Lerp(0.14f, 0.68f, t) * color.a;
-        float fontSize = Mathf.Lerp(162f, 190f, t) * (text == "COME OUT" ? 0.52f : 1f);
+        // Was hardcoded to text == "COME OUT" specifically; generalized so any
+        // longer phrase painted on the door (sale headlines, "bought the dice
+        // for $X") scales down the same way instead of rendering at full size.
+        // Single/double-digit countdown numbers (length <= 2) keep the full
+        // 162-190px size unchanged; "COME OUT" itself still resolves to exactly
+        // 0.52 as before.
+        float lengthScale = text.Length <= 2 ? 1f : Mathf.Clamp(8f / text.Length, 0.22f, 0.52f);
+        float fontSize = Mathf.Lerp(162f, 190f, t) * lengthScale;
         float centerY = Mathf.Lerp(UiHeight * 0.29f, UiHeight * 0.31f, t);
         var rect = new Rect(35, centerY - 130f, UiWidth - 70, 260f);
         if (doorGraffitiFont == null) doorGraffitiFont = Resources.Load<Font>("UI/SedgwickAveDisplay-Regular");
@@ -1039,6 +1047,18 @@ public sealed partial class StreetDiceGreyboxController
     {
         if (!awaitingShootChoice || shotCommitted || rolling || point != "-" || Array.IndexOf(WagerAmounts, amount) < 0) return;
         shotAmount = amount;
+    }
+
+    private void DrawShotAmountRow(Rect area)
+    {
+        float gap = 8f, cellWidth = (area.width - gap * (WagerAmounts.Length - 1)) / WagerAmounts.Length;
+        for (int i = 0; i < WagerAmounts.Length; i++)
+        {
+            int amount = WagerAmounts[i];
+            var cell = new Rect(area.x + i * (cellWidth + gap), area.y, cellWidth, area.height);
+            if (DrawBetBill(cell, amount)) SelectMainWager(amount);
+            if (shotAmount == amount) DrawSelectedPlateEdge(cell);
+        }
     }
 
     private void PassLocalDice()

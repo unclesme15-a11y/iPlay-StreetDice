@@ -180,22 +180,21 @@ public sealed partial class StreetDiceGreyboxController
 
     private void DrawDiceSale(float width)
     {
+        // The sale headline and "bought the dice" announcement used to be a
+        // plain cyan GUI.Label -- default skin font, small, no animation. "COME
+        // OUT" paints onto the door itself. Both now use the same treatment.
         if (!SaleOpen)
         {
             if (Time.unscaledTime < saleAnnouncementUntil)
-            {
-                var label = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 27 };
-                label.normal.textColor = new Color(0.72f, 0.96f, 1f);
-                GUI.Label(new Rect(width / 2f - 260f, 88f, 520f, 46f), saleAnnouncement, label);
-            }
+                DrawDoorGhostNumber(saleAnnouncement, 1f, new Color(0.92f, 0.95f, 0.92f));
             return;
         }
         float remaining = localDemo ? Mathf.Max(0, localSaleClosesAt - Time.unscaledTime) :
             Mathf.Max(0, (float)(onlineSaleRemainingMilliseconds / 1000d));
+        DrawDoorGhostNumber(activeSale.sellerId == SelfId ? "WAITING FOR BIDDER" : "DICE FOR SALE",
+            1f, new Color(0.92f, 0.95f, 0.92f));
         var headline = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 29 };
         headline.normal.textColor = new Color(0.7f, 0.96f, 1f);
-        GUI.Label(new Rect(width / 2f - 260f, 101f, 520f, 44f),
-            activeSale.sellerId == SelfId ? "WAITING FOR BIDDER" : "DICE FOR SALE", headline);
         GUI.Label(new Rect(width / 2f - 170f, 148f, 340f, 32f),
             "$" + HighestSaleBid + "    " + Mathf.CeilToInt(remaining) + "s", headline);
         if (activeSale.sellerId == SelfId) return;

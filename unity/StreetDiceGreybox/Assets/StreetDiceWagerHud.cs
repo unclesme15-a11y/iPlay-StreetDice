@@ -22,7 +22,6 @@ public sealed partial class StreetDiceGreyboxController
     private int armedOfferId;
     private float armedOfferAt;
     private readonly Dictionary<int, GameObject> groundAmountDice = new Dictionary<int, GameObject>();
-    private Material groundAmountBodyMaterial, groundAmountFaceMaterial;
     private RenderTexture wagerOpenIcon, wagerClosedIcon;
 
     private void ResetWagerDraft()
@@ -101,8 +100,10 @@ public sealed partial class StreetDiceGreyboxController
         }
         if (stage == 1)
         {
+            // Labelled "BET" before -- the enum underneath is already Hit, and the
+            // lock that follows already reads "HIT". This just matches them.
             GUI.enabled = interact && BettingWindowOpen && id != shooterId && catcherId != SelfId && pointNumber != 0;
-            if (DrawDigitalBetDie(new Rect(x + gap, y, size, size), "BET"))
+            if (DrawDigitalBetDie(new Rect(x + gap, y, size, size), "HIT"))
             { wagerTarget = id; draftOutcome = WagerOutcome.Hit; SetWagerStage(2); }
             GUI.enabled = interact && id != catcherId && shooterId != SelfId &&
                 (BettingWindowOpen || (id == shooterId && CanRequestPointAddOn));
@@ -140,7 +141,8 @@ public sealed partial class StreetDiceGreyboxController
         float center = UiWidth * 0.5f;
         float lockY = UiHeight * 0.38f;
         GUI.enabled = false;
-        DrawAmountLock(new Rect(center - 42f, lockY, 84f, 99f), 0, false, -1f,
+        // Enlarged ~30% (84x99 -> 110x130) -- too small to read comfortably before.
+        DrawAmountLock(new Rect(center - 55f, lockY, 110f, 130f), 0, false, -1f,
             draftOutcome, draftNumber);
         float billWidth = 124f, gap = 29f;
         float left = center - (billWidth * WagerAmounts.Length + gap * (WagerAmounts.Length - 1)) * 0.5f;
@@ -148,7 +150,9 @@ public sealed partial class StreetDiceGreyboxController
         {
             int amount = WagerAmounts[i];
             GUI.enabled = interact && WagerFunds(SelfId) - ActiveWagerExposure(SelfId) >= amount;
-            if (DrawBetBill(new Rect(left + i * (billWidth + gap), lockY + 128f, billWidth, 82f), amount))
+            // Pushed down from +128 to +159 to clear the enlarged lock above (now
+            // 130 tall instead of 99), keeping the same ~29px gap.
+            if (DrawBetBill(new Rect(left + i * (billWidth + gap), lockY + 159f, billWidth, 82f), amount))
             {
                 if (BettingWindowOpen)
                     OfferWager(SelfId, wagerTarget, draftOutcome, draftNumber, amount);
@@ -335,18 +339,13 @@ public sealed partial class StreetDiceGreyboxController
             }
             amountDie.SetActive(true);
             amountDie.transform.position = GroundOfferDiePosition(seat);
+            // One flat bill now instead of a cube-plus-face-plus-text stack, so
+            // it's just one billboard facing the camera -- no separate child
+            // offsets to keep in sync with it any more.
             if (Camera.main != null)
             {
                 Vector3 towardCamera = (Camera.main.transform.position - amountDie.transform.position).normalized;
-                amountDie.transform.rotation = Quaternion.LookRotation(
-                    -towardCamera, Vector3.up) *
-                    Quaternion.Euler(0f, 15f, 0f);
-                Transform face = amountDie.transform.Find("Upright digital amount face");
-                face.position = amountDie.transform.position + towardCamera * 0.142f;
-                face.rotation = Quaternion.LookRotation(towardCamera, Vector3.up);
-                Transform amountText = amountDie.transform.Find("Digital amount $" + offer.Amount);
-                amountText.position = amountDie.transform.position + towardCamera * 0.147f;
-                amountText.rotation = Quaternion.LookRotation(-towardCamera, Vector3.up);
+                amountDie.transform.rotation = Quaternion.LookRotation(-towardCamera, Vector3.up);
             }
         }
         var stale = new List<int>();
@@ -369,65 +368,48 @@ public sealed partial class StreetDiceGreyboxController
         groundAmountDice.Clear();
     }
 
+    // This used to be a small digital-display cube with a "$X" TextMesh on it --
+    // the same digital-screen look as the bet-picker dice. That made sense while
+    // you were still choosing; once the amount is locked in, it's a real prop
+    // now: the actual bill you'd hold up, standing on its edge by the lock, the
+    // same photo used to pick it in the first place. "That's how a bet proposal
+    // looks. It's a picture of that."
+    private readonly Dictionary<int, Texture2D> groundBillTextures = new Dictionary<int, Texture2D>();
+
     private GameObject MakeGroundAmountDie(int amount)
     {
-        if (groundAmountBodyMaterial == null)
+        if (!groundBillTextures.TryGetValue(amount, out Texture2D billTexture))
         {
-            groundAmountBodyMaterial = new Material(Shader.Find("Unlit/Color"));
-            groundAmountBodyMaterial.color = new Color(0.025f, 0.09f, 0.14f);
+            billTexture = Resources.Load<Texture2D>(amount == 20 ? "Money/iplay-prop-note" : "Money/iplay-note-" + amount);
+            groundBillTextures[amount] = billTexture;
         }
-        if (groundAmountFaceMaterial == null)
-        {
-            groundAmountFaceMaterial = new Material(Shader.Find("Sprites/Default"));
-            groundAmountFaceMaterial.mainTexture = Resources.Load<Texture2D>("UI/digital-display-die-v1");
-        }
-        var root = new GameObject("Ground digital amount die $" + amount);
-        var body = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        body.name = "Low digital die body";
-        body.transform.SetParent(root.transform, false);
-        body.transform.localScale = new Vector3(0.22f, 0.22f, 0.22f);
-        body.GetComponent<Collider>().enabled = false;
-        body.GetComponent<MeshRenderer>().sharedMaterial = groundAmountBodyMaterial;
-        var face = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        face.name = "Upright digital amount face";
-        face.transform.SetParent(root.transform, false);
-        face.transform.localPosition = new Vector3(0f, 0f, -0.13f);
-        face.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-        face.transform.localScale = new Vector3(0.205f, 0.205f, 1f);
-        var faceMesh = Instantiate(face.GetComponent<MeshFilter>().sharedMesh);
-        var uv = faceMesh.uv;
-        for (int i = 0; i < uv.Length; i++)
-            uv[i] = new Vector2(Mathf.Lerp(0.18f, 0.82f, uv[i].x), Mathf.Lerp(0.20f, 0.82f, uv[i].y));
-        faceMesh.uv = uv;
-        face.GetComponent<MeshFilter>().sharedMesh = faceMesh;
-        face.GetComponent<Collider>().enabled = false;
-        face.GetComponent<MeshRenderer>().sharedMaterial = groundAmountFaceMaterial;
-        if (digitalBetFont == null) digitalBetFont = Resources.Load<Font>("UI/BarlowCondensed-SemiBold");
-        var textObject = new GameObject("Digital amount $" + amount);
-        textObject.transform.SetParent(root.transform, false);
-        textObject.transform.localPosition = new Vector3(0f, 0f, -0.135f);
-        var label = textObject.AddComponent<TextMesh>();
-        label.text = "$" + amount;
-        label.font = digitalBetFont;
-        label.fontSize = 96;
-        label.characterSize = 0.012f;
-        label.anchor = TextAnchor.MiddleCenter;
-        label.alignment = TextAlignment.Center;
-        label.color = new Color(0.72f, 0.97f, 1f);
-        textObject.GetComponent<MeshRenderer>().sharedMaterial = digitalBetFont.material;
+        var root = new GameObject("Standing bill $" + amount);
+        var bill = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        bill.name = "Upright bill face";
+        bill.transform.SetParent(root.transform, false);
+        // Real bills are landscape (~2.35:1) -- keep that ratio so the note
+        // reads as the same photo used on the picker, just standing on edge.
+        bill.transform.localScale = new Vector3(0.235f, 0.1f, 1f);
+        bill.GetComponent<Collider>().enabled = false;
+        var material = new Material(Shader.Find("Sprites/Default")) { mainTexture = billTexture };
+        bill.GetComponent<MeshRenderer>().sharedMaterial = material;
         return root;
     }
 
     private Rect GroundLockRect(WagerOffer offer)
     {
+        // Enlarged ~30% (65x76 -> 85x99) to match the draft lock -- too small to
+        // read the HIT/CRAP + number text on it before.
         Vector2 anchor = GroundWagerAnchor(offer.From);
-        return new Rect(anchor.x - 32f, anchor.y - 92f, 65f, 76f);
+        return new Rect(anchor.x - 42f, anchor.y - 100f, 85f, 99f);
     }
 
     private Rect GroundOfferPagerRect(string recipient)
     {
+        // Moved up from -119 to -127 to clear the enlarged lock's new top edge
+        // (-100) with a 5px gap instead of a 3px overlap.
         Vector2 anchor = GroundWagerAnchor(recipient);
-        return new Rect(anchor.x - 39f, anchor.y - 119f, 79f, 22f);
+        return new Rect(anchor.x - 39f, anchor.y - 127f, 79f, 22f);
     }
 
     private void DrawGroundWagerLocks(bool interact)
@@ -651,12 +633,18 @@ public sealed partial class StreetDiceGreyboxController
             fontStyle = FontStyle.Bold, fontSize = 13 };
         bool crap = outcome == WagerOutcome.Crap;
         var title = new Rect(rect.x, rect.y + rect.height * 0.41f, rect.width, 16);
-        var target = new Rect(rect.x, rect.y + rect.height * (crap ? 0.60f : 0.54f), rect.width, 20);
+        // Hit now gets a title line too (below), so its number sits at the same
+        // height as Crap's instead of higher up where the missing title used to
+        // leave room.
+        var target = new Rect(rect.x, rect.y + rect.height * 0.60f, rect.width, 20);
         string targetText = crap && number == 0 ? "2/3/12" : number.ToString();
+        // Crap wagers used to get a "CRAP" title above the number; Hit wagers got
+        // no title at all, just the bare number -- the lock read differently
+        // depending which side you bet. Both sides now get their word.
         style.normal.textColor = Color.black;
         if (outcome.HasValue)
         {
-            if (crap) GUI.Label(title, "CRAP", style);
+            GUI.Label(title, crap ? "CRAP" : "HIT", style);
             if (crap || number != 0)
             {
                 style.fontSize = crap ? number == 0 ? 12 : 18 : 22;
@@ -667,7 +655,7 @@ public sealed partial class StreetDiceGreyboxController
         if (outcome.HasValue)
         {
             style.fontSize = 13;
-            if (crap) GUI.Label(title, "CRAP", style);
+            GUI.Label(title, crap ? "CRAP" : "HIT", style);
             if (crap || number != 0)
             {
                 style.fontSize = crap ? number == 0 ? 12 : 18 : 22;
