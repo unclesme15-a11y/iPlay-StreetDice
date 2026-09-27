@@ -781,3 +781,19 @@ separate own-level-3 path for a hustled note specifically -- that's a
 distinct, explicitly-stated exception for that one flex mechanic, not
 the general table cap. 132/132 tests pass; live-verified the reverted
 default case with `dotnet run` + `curl`.
+
+### Same correction, extended to the $50/$100 hustle rule
+
+Asked to apply the same host-only correction to the prestige-note hustle
+logic. `PrestigeNoteUsableBy` had kept a personal-level-3 exception ("or
+they level up themselves") alongside the host check. Removed it --
+`PrestigeNoteUsableBy` is now just "does this account hold the note, and
+is the table's host Level 3+," nothing else. Worth being upfront about
+the consequence: once bill unlock is purely host-driven, a hustled note
+never grants its holder anything a table's other players don't already
+get once the host clears Level 3 -- the note is a trophy/collectible,
+not a live gameplay edge, since there's no scenario left where holding
+one lets you do something a non-holder at the same table can't. Added a
+test (`HoldingAHustledNote_DoesNotByItselfGrantAnythingAHostAlreadyUnlocksForEveryone`)
+that makes that consequence explicit rather than leaving it implicit.
+133/133 tests pass.

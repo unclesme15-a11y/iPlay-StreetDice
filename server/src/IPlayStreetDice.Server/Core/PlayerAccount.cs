@@ -25,10 +25,11 @@ public sealed class PlayerAccount
     public int Level => RankLadder.LevelForWins(Wins);
 
     /// <summary>Prestige notes ($50/$100) this account has "hustled" as a
-    /// flex -- won off a higher-ranked player somehow -- but can't actually
-    /// use at the table unless the account itself is Level 3+ or is playing
-    /// under a Level 3+ host. Nothing in this session yet decides how a
-    /// note lands in here; this is just the holding data other systems can
-    /// populate once that's designed.</summary>
+    /// flex -- won off a higher-ranked player somehow -- but only ever
+    /// actually show up at a table whose host is Level 3+ (see
+    /// StreetDiceTableStore.PrestigeNoteUsableBy in Program.cs), same as
+    /// everyone else's $50/$100 access there. Nothing in this session yet
+    /// decides how a note lands in here; this is just the holding data
+    /// other systems can populate once that's designed.</summary>
     public HashSet<int> HustledPrestigeNotes { get; } = new();
 }

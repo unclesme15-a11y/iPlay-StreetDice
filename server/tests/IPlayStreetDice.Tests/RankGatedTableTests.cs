@@ -101,14 +101,14 @@ public class RankGatedTableTests
     }
 
     [Fact]
-    public void HustledNote_UnusableUnderALowLevelHostUntilYouLevelUpYourself()
+    public void HustledNote_StaysUnusableUnderALowLevelHostEvenAfterTheHolderLevelsUpThemselves()
     {
         var accounts = new PlayerAccountStore();
         var store = new StreetDiceTableStore(accounts);
         var engine = store.CreateGame();
         var gameId = engine.State.GameId;
 
-        store.JoinRealPlayer(gameId, "Host"); // Level 1, unlinked
+        store.JoinRealPlayer(gameId, "Host"); // Level 1, unlinked -- stays host
         var guest = store.JoinRealPlayer(gameId, "Dice");
         var guestAccount = accounts.Register("Dice", "another-pw1");
         guestAccount.HustledPrestigeNotes.Add(50);
@@ -116,7 +116,38 @@ public class RankGatedTableTests
 
         Assert.False(store.PrestigeNoteUsableBy(gameId, guest.Player.Id, 50));
 
-        for (var i = 0; i < 15; i++) accounts.RecordWin(guestAccount.Id); // guest levels up to 3 themselves
-        Assert.True(store.PrestigeNoteUsableBy(gameId, guest.Player.Id, 50));
+        // "I want it all to be around the host" -- there's no separate personal-level path
+        // here either, so leveling up yourself doesn't unlock a hustled note under a host
+        // who's still under Level 3.
+        for (var i = 0; i < 15; i++) accounts.RecordWin(guestAccount.Id); // guest reaches Level 3 themselves
+        Assert.False(store.PrestigeNoteUsableBy(gameId, guest.Player.Id, 50));
+    }
+
+    [Fact]
+    public void HoldingAHustledNote_DoesNotByItselfGrantAnythingAHostAlreadyUnlocksForEveryone()
+    {
+        var accounts = new PlayerAccountStore();
+        var store = new StreetDiceTableStore(accounts);
+        var engine = store.CreateGame();
+        var gameId = engine.State.GameId;
+
+        var host = store.JoinRealPlayer(gameId, "Bell");
+        var hostAccount = accounts.Register("Bell", "hustle123");
+        for (var i = 0; i < 15; i++) accounts.RecordWin(hostAccount.Id); // -> Level 3
+        store.LinkAccount(gameId, host.Player.Id, hostAccount.Id);
+
+        var guestWithNote = store.JoinRealPlayer(gameId, "Dice");
+        var guestWithNoteAccount = accounts.Register("Dice", "another-pw1");
+        guestWithNoteAccount.HustledPrestigeNotes.Add(100);
+        store.LinkAccount(gameId, guestWithNote.Player.Id, guestWithNoteAccount.Id);
+
+        var guestWithoutNote = store.JoinRealPlayer(gameId, "Ray");
+        var guestWithoutNoteAccount = accounts.Register("Ray", "another-pw2");
+        store.LinkAccount(gameId, guestWithoutNote.Player.Id, guestWithoutNoteAccount.Id);
+
+        // Under a Level 3+ host, $50/$100 is unlocked for the whole table regardless of who
+        // hustled what -- the note is a trophy, not an exclusive unlock.
+        Assert.True(store.PrestigeBillsUnlocked(gameId));
+        Assert.True(store.PrestigeNoteUsableBy(gameId, guestWithNote.Player.Id, 100));
     }
 }

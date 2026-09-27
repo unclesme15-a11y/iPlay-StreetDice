@@ -489,26 +489,24 @@ public sealed class StreetDiceTableStore
 
     public int EffectiveBetCap(string gameId) => RankLadder.MaxBetForLevel(HostLevel(gameId));
 
-    /// <summary>Whether the $50/$100 note art is usable at this table, in general. A hustled
-    /// prestige note specifically also has its own per-player check -- see
-    /// PrestigeNoteUsableBy -- since "they level up themselves" was called out as its own path
-    /// to using one, distinct from whatever the host provides.</summary>
+    /// <summary>Whether the $50/$100 note art is usable at this table -- purely the host's
+    /// level, same as EffectiveBetCap. Applies to a hustled prestige note too (see
+    /// PrestigeNoteUsableBy): "I want it all to be around the host" means there's no separate
+    /// personal-level path here either, even for a note someone hustled off a higher rank.</summary>
     public bool PrestigeBillsUnlocked(string gameId) => RankLadder.PrestigeBillsUnlockedAtLevel(HostLevel(gameId));
 
-    /// <summary>"It's ok if it's a lower rank that ends up with a $50 or $100. That's a flex
-    /// because they hustled it from a higher rank... they wouldn't be able to use it unless
-    /// they are in a party with a level 3+ host or they level up themselves." Nothing yet
-    /// decides how a note lands in PlayerAccount.HustledPrestigeNotes -- this only answers
-    /// whether one they already hold is currently usable.</summary>
+    /// <summary>"It's ok if it's a lower rank that ends up with a $50 or $100, that's a flex
+    /// because they hustled it from a higher rank." A held note is only ever usable at a table
+    /// whose host is Level 3+ -- the flex is having the note at all; showing it off still
+    /// depends entirely on the host, like everything else about the table. Nothing yet decides
+    /// how a note lands in PlayerAccount.HustledPrestigeNotes -- this only answers whether one
+    /// already held is currently usable.</summary>
     public bool PrestigeNoteUsableBy(string gameId, string playerId, int denomination)
     {
         if (!_accountLinks.TryGetValue(SessionKey(gameId, playerId), out var accountId)
             || !_accounts.TryGet(accountId, out var account)
             || !account.HustledPrestigeNotes.Contains(denomination)) return false;
-        // The one place a player's OWN level matters on its own, separate from the table
-        // being entirely host-driven everywhere else: a personal level-3 flex still works
-        // even under a host who hasn't hit Level 3.
-        return PrestigeBillsUnlocked(gameId) || RankLadder.PrestigeBillsUnlockedAtLevel(account.Level);
+        return PrestigeBillsUnlocked(gameId);
     }
 
     public RealPlayerJoin JoinRealPlayer(string gameId, string playerName, DateTimeOffset? now = null)
