@@ -8,6 +8,20 @@ public sealed class StreetDiceGameState
     public List<SideBet> SideBets { get; } = new();
     public string? ShooterId { get; set; }
     public string? CatcherId { get; set; }
+    // The first real player to join a table becomes its host (same pattern as
+    // ShooterId's default -- see StreetDiceTableStore.JoinRealPlayer). Nothing
+    // else in this game had a "host" concept before the music controls below.
+    public string? HostId { get; set; }
+    // Host-controlled "now playing" state, piggybacking the same real-time
+    // poll every client already uses for dice/wager sync (GET
+    // /api/street-dice/{gameId}) -- no separate sync channel needed. This is
+    // metadata only (which track, playhead position, playing/paused): the
+    // actual audio plays locally on each guest's own device, through their
+    // own Spotify app. The server never touches audio.
+    public string? MusicTrackUri { get; set; }
+    public double MusicPositionMilliseconds { get; set; }
+    public bool MusicIsPlaying { get; set; }
+    public long MusicUpdatedAtUnixMilliseconds { get; set; }
     public int ShotAmount { get; set; }
     public int? Point { get; set; }
     public int FadeCount { get; set; }

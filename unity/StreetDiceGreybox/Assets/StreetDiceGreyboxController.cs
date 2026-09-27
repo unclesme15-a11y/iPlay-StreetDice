@@ -74,6 +74,16 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
     private string catcherToken = "";
     private string shooterId = "p1";
     private string catcherId = "p2";
+    // Unlike shooterId/catcherId, this never rotates for the life of the
+    // table -- set once server-side, first real joiner (mirrors ShooterId's
+    // own default). "Host" didn't exist as a concept before the music
+    // controls needed someone to own them.
+    private string hostId = "";
+    private bool IsHost => !localDemo && !string.IsNullOrEmpty(hostId) && hostId == SelfId;
+    // Mirrors the state's music fields for the Music drawer page to read
+    // without reaching into StateDto directly.
+    private string lastMusicTrackUri = "";
+    private bool lastMusicIsPlaying;
     private string phase = "Demo";
     private string result = "Tap Demo Table to start a local playable table.";
     private string point = "-";
@@ -233,6 +243,9 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         UpdateHotSmoke(dieA);
         UpdateHotSmoke(dieB);
         UpdateHotSmoke(dieC);
+        UpdateHotDiceGlowPulse(dieA);
+        UpdateHotDiceGlowPulse(dieB);
+        UpdateHotDiceGlowPulse(dieC);
 
         for (var i = 0; i < mics.Length; i++)
         {
@@ -250,15 +263,22 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
             trail = emitter.AddComponent<TrailRenderer>();
             trail.time = 0.42f;
             trail.minVertexDistance = 0.015f;
-            trail.widthCurve = AnimationCurve.Linear(0f, 0.018f, 1f, 0f);
+            // Widened from 0.018 -- was thin enough to read as a grey smudge
+            // rather than a trail.
+            trail.widthCurve = AnimationCurve.Linear(0f, 0.026f, 1f, 0f);
             trail.material = new Material(Shader.Find("Sprites/Default"));
             trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             trail.receiveShadows = false;
+            // Was flat grey smoke (alpha peaked at 0.17 -- easy to miss entirely).
+            // Now a real ember trail: bright hot-orange core cooling through red
+            // to a dark ember as it fades, alpha bumped enough to actually
+            // register without turning into a solid streak.
             var smoke = new Gradient();
             smoke.SetKeys(
-                new[] { new GradientColorKey(new Color(0.68f, 0.70f, 0.70f), 0f),
-                    new GradientColorKey(new Color(0.50f, 0.52f, 0.52f), 1f) },
-                new[] { new GradientAlphaKey(0.17f, 0f), new GradientAlphaKey(0.09f, 0.5f),
+                new[] { new GradientColorKey(new Color(1f, 0.75f, 0.25f), 0f),
+                    new GradientColorKey(new Color(1f, 0.30f, 0.05f), 0.45f),
+                    new GradientColorKey(new Color(0.35f, 0.16f, 0.10f), 1f) },
+                new[] { new GradientAlphaKey(0.55f, 0f), new GradientAlphaKey(0.30f, 0.5f),
                     new GradientAlphaKey(0f, 1f) });
             trail.colorGradient = smoke;
             trail.emitting = false;
@@ -2666,7 +2686,11 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
     {
         bool hotActive = (rolling ? hotForCurrentThrow : streak >= HotDiceThreshold)
             && hotDiceVisuals.TryGetValue(die, out _);
-        if (hotDiceVisuals.TryGetValue(die, out var hot)) hot.SetActive(hotActive);
+        if (hotDiceVisuals.TryGetValue(die, out var hot))
+        {
+            hot.SetActive(hotActive);
+            if (hotActive) ApplyHotDiceGlow(hot);
+        }
         bool regularActive = !hotActive && regularDiceVisuals.TryGetValue(die, out _);
         if (regularDiceVisuals.TryGetValue(die, out var regular)) regular.SetActive(regularActive);
         foreach (var renderer in die.GetComponentsInChildren<Renderer>(true))
@@ -2678,6 +2702,49 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         }
         if (regularActive) ApplyRegularDieColor(regular, color);
         else if (!hotActive) ApplyDieColor(die, color);
+    }
+
+    // Three enhancements on top of the existing hot-dice reference look
+    // (hot-dice-faces.png -- the red body with darker-red shaded pips, baked
+    // into the imported model's own texture, untouched here): a dedicated
+    // light that switches on with hot state (see ApplyDiceColor/
+    // hotDiceGlowLight), a warm emissive glow on the die itself using that
+    // same reference texture as the emission source so the model's own baked
+    // detail glows unevenly instead of the whole die lighting up as one flat
+    // block, and a re-colored, more visible smoke trail (see UpdateHotSmoke).
+    //
+    // The glTF import pipeline (com.unity.cloud.gltfast) uses glTF-spec
+    // property names (emissiveFactor/emissiveTexture), not Unity Standard
+    // shader names (_EmissionColor/_EmissionMap) -- this checks for both and
+    // no-ops on whichever doesn't exist, since the exact shader can't be
+    // confirmed without the Editor. Verify the glow actually renders on the
+    // real hot-dice model before calling this "done" -- if neither property
+    // name matches, this silently does nothing and only the light/smoke
+    // changes will show.
+    private static void ApplyHotDiceGlow(GameObject hot)
+    {
+        float pulse = 1f + Mathf.Sin(Time.unscaledTime * 3.1f) * 0.28f;
+        var glow = new Color(1f, 0.42f, 0.08f) * pulse;
+        foreach (var renderer in hot.GetComponentsInChildren<Renderer>(true))
+        {
+            foreach (var material in renderer.materials)
+            {
+                if (material.HasProperty("emissiveFactor")) material.SetColor("emissiveFactor", glow);
+                else if (material.HasProperty("_EmissionColor")) material.SetColor("_EmissionColor", glow);
+                else continue;
+                if (material.HasProperty("emissiveTexture") && material.HasProperty("baseColorTexture"))
+                    material.SetTexture("emissiveTexture", material.GetTexture("baseColorTexture"));
+                else if (material.HasProperty("_EmissionMap") && material.HasProperty("_MainTex"))
+                    material.SetTexture("_EmissionMap", material.GetTexture("_MainTex"));
+                material.EnableKeyword("_EMISSION");
+            }
+        }
+    }
+
+    private void UpdateHotDiceGlowPulse(GameObject die)
+    {
+        if (die == null || !hotDiceVisuals.TryGetValue(die, out var hot) || hot == null || !hot.activeSelf) return;
+        ApplyHotDiceGlow(hot);
     }
 
     private static void ApplyRegularDieColor(GameObject regular, Color color)
@@ -2957,7 +3024,11 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         phase = state.phase;
         shooterId = state.shooterId;
         catcherId = state.catcherId;
+        hostId = state.hostId;
         if (shooterId != previousShooterId) ResetDiceToShooter();
+        FollowHostMusic(state);
+        lastMusicTrackUri = state.musicTrackUri;
+        lastMusicIsPlaying = state.musicIsPlaying;
         point = state.point == 0 ? "-" : state.point.ToString();
         activePointGroup = point == "-" ? "-" : PointGroupLabel(state.point);
         streak = state.streak;
@@ -3116,6 +3187,11 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         public string phase = "";
         public string shooterId = "";
         public string catcherId = "";
+        public string hostId = "";
+        public string musicTrackUri = "";
+        public double musicPositionMilliseconds;
+        public bool musicIsPlaying;
+        public long musicUpdatedAtUnixMilliseconds;
         public int point;
         public float streak;
         public int shotAmount;

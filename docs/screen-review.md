@@ -545,3 +545,90 @@ Removed across the whole stack:
 S30/S31/S32 (dice-sale screens from the Group 2 catalog) no longer exist.
 Shoot/Pass uses the same `DrawMetalButton` styling as everything else in
 the HUD -- never the raw default Unity look.
+
+## Group 2, round 3 -- 2026-09-27
+
+### Hot dice: all 3 editions combined
+
+Built off the existing red-body/darker-red-pip reference art
+(`hot-dice-faces.png`, unchanged) rather than a new color -- three
+layered effects that were built separately across this round now all run
+together whenever a die is hot:
+
+1. **Glow light** -- `Hot Dice Glow Light`, a warm-orange point light
+   that switches on to 1.6 intensity only while hot (see round 2's pip-
+   contrast fix above).
+2. **Emissive pulse on the die itself** -- `ApplyHotDiceGlow`, a sine-wave
+   pulse on the material's emission, reusing the base color texture as
+   the emission source so the red pips glow along with the body rather
+   than washing out to a flat color. Defensively tries both glTF
+   (`emissiveFactor`/`emissiveTexture`) and Unity Standard
+   (`_EmissionColor`/`_EmissionMap`) property names, since this project's
+   dice import through `com.unity.cloud.gltfast` and the exact shader
+   this lands on couldn't be confirmed without a live Editor.
+3. **Ember-colored fire trail** -- `UpdateHotSmoke`'s `TrailRenderer`
+   gradient changed from grey smoke to warm amber-to-ember-to-dark-red,
+   and widened (0.026 peak vs. the old value) so it reads clearly without
+   overwhelming the dice themselves -- "noticeably visible but not too
+   much," per instruction.
+
+This is distinct from the separate Level 4 rank-reward red die discussed
+in this round's rank-system conversation, which is a different, lighter
+shade with white pips (existing auto-contrast logic) specifically so it
+never gets confused with a die that's hot.
+
+### Spotify host-controls-it
+
+New capability: the host's Spotify drives what plays for the whole
+table, following the shape the user asked for -- Spotify-only, everyone
+logged into their own account, sync "close" not sample-accurate.
+
+- **Server**: added `HostId` to game state (first real joiner becomes
+  host, same rule as `ShooterId`) and
+  `POST /api/street-dice/{gameId}/music` (host-only -- 403s anyone else),
+  carrying track URI / position / playing state / a server timestamp.
+  Rides the existing `GET /api/street-dice/{gameId}` poll -- no new sync
+  channel. New `TableHostTests.cs` (2 tests); 101/101 passing overall.
+  Live-verified with `dotnet run` + `curl`: host posts succeed and
+  propagate to the guest's next poll, guest posts get 403.
+- **Client**: `StreetDiceSpotify.cs` -- an `ISpotifyPlaybackBridge`
+  interface (`Connect`/`Play`/`Pause`/`Resume`/`SeekTo`/`SkipNext`/
+  `SkipPrevious`, plus a `PlayerStateChanged` event so a host picking a
+  song from inside Spotify itself, not just this game's buttons, still
+  broadcasts to the table), a `NullSpotifyPlaybackBridge` fallback for
+  the Editor/unsupported platforms, and platform bridges
+  (`SpotifyAndroidBridge.cs`, `SpotifyIOSBridge.cs`) that call into a
+  native companion library this project doesn't yet include (see
+  `docs/spotify-integration-setup.md` for the reference Kotlin/Obj-C++ to
+  drop in). `FollowHostMusic` runs on every guest's poll and applies
+  whatever the host's state says, compensating for however long the
+  update has been sitting on the server so a guest joining mid-song
+  doesn't restart it at 0.
+- **UI**: new "Music" page in the in-game drawer (Options → Music).
+  Everyone gets Connect + a "Now Playing" line; the host additionally
+  gets Prev/Play-Pause/Next. Guests see a note that the host controls it.
+  Uses the same `DrawMetalButton`/`DrawOpaquePanel` styling as the rest
+  of the drawer.
+
+**What's verified vs. not**: the server plumbing and the C# orchestration
+logic are real and either live-tested (server) or straightforwardly
+correct C# (client). The actual Spotify App Remote SDK calls in
+`SpotifyAndroidBridge.cs`/`SpotifyIOSBridge.cs`, and the native
+Kotlin/Objective-C++ wrapper code in `docs/spotify-integration-setup.md`,
+are written to Spotify's documented SDK shape from training knowledge but
+**could not be compiled or run** -- there's no Android/Xcode toolchain,
+no Spotify Developer account, and no real device in this sandbox, and
+App Remote doesn't run in the Unity Editor or iOS Simulator regardless.
+`SpotifyClientId` in `StreetDiceSpotify.cs` is still blank -- nothing
+connects until that's filled in from a real Spotify Dashboard app.
+
+Answers to the three direct questions:
+- **Does Spotify need to be open on the phone?** Not visibly open --
+  installed and logged in is enough; App Remote wakes it in the
+  background.
+- **Is the login from the app?** Yes, Spotify's own official OAuth
+  screen; this game never sees a password.
+- **Can the controls be on my app?** Yes -- that's what the new Music
+  drawer page is. What can't happen (Spotify's ToS forbids it) is piping
+  the host's actual audio to other phones; each guest's own Spotify plays
+  it locally, kept in sync by the small metadata broadcast above.

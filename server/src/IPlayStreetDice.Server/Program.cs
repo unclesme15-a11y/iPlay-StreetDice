@@ -48,6 +48,28 @@ app.MapPost("/api/street-dice/{gameId}/pass", (string gameId, PlayerActionReques
     return Results.Ok(new { state = engine.State });
 });
 
+app.MapPost("/api/street-dice/{gameId}/music", (string gameId, MusicControlRequest request, StreetDiceTableStore store) =>
+{
+    // Host-only: only the player who created the table can change what's
+    // "now playing" for the table. Everyone else's client picks this up
+    // passively through the existing state poll and plays it on their own
+    // device's own Spotify -- this endpoint never touches audio itself, just
+    // the tiny bit of state (track, position, playing/paused) needed for
+    // each guest to stay roughly in step with the host.
+    if (!store.TryGet(gameId, out var engine)) return Results.NotFound();
+    if (!store.ValidatePlayerSession(gameId, request.PlayerId, request.PlayerSessionToken)) return Results.Unauthorized();
+    if (!string.Equals(engine.State.HostId, request.PlayerId, StringComparison.OrdinalIgnoreCase))
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+    lock (engine)
+    {
+        engine.State.MusicTrackUri = request.TrackUri;
+        engine.State.MusicPositionMilliseconds = request.PositionMilliseconds;
+        engine.State.MusicIsPlaying = request.IsPlaying;
+        engine.State.MusicUpdatedAtUnixMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    }
+    return Results.Ok(new { state = engine.State });
+});
+
 app.MapPost("/api/street-dice/{gameId}/leave", (string gameId, PlayerActionRequest request, StreetDiceTableStore store) =>
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound();
@@ -363,6 +385,7 @@ public sealed class StreetDiceTableStore
             ?? throw new InvalidOperationException("Table is full.");
         var player = engine.AddPlayer(playerId, playerName.Trim());
         engine.State.ShooterId ??= playerId;
+        engine.State.HostId ??= playerId;
         var token = CreateOrReplacePlayerSession(gameId, playerId);
         _lastSeen[SessionKey(gameId, playerId)] = now ?? DateTimeOffset.UtcNow;
         return new RealPlayerJoin(player, token, engine.State);
@@ -505,6 +528,8 @@ public sealed class StreetDiceStatePersistenceService : IHostedService, IDisposa
 
 public sealed record JoinRequest(string PlayerName, string? PlayerId = null);
 public sealed record PlayerActionRequest(string PlayerId, string PlayerSessionToken);
+public sealed record MusicControlRequest(string PlayerId, string PlayerSessionToken, string? TrackUri,
+    double PositionMilliseconds, bool IsPlaying);
 public sealed record PeerWagerAddOnRequest(string BettorId, string PlayerSessionToken, int SourceOfferId, IPlay.Demo.WagerAddOnKind Kind, int Amount = 0);
 public sealed record DiceColorRequest(string PlayerId, string PlayerSessionToken, DiceColor Color);
 public sealed record OpenShotRequest(string ShooterId, string ShooterSessionToken, string CatcherId, int Amount);
