@@ -48,23 +48,6 @@ app.MapPost("/api/street-dice/{gameId}/pass", (string gameId, PlayerActionReques
     return Results.Ok(new { state = engine.State });
 });
 
-app.MapPost("/api/street-dice/{gameId}/sell", (string gameId, PlayerActionRequest request, StreetDiceTableStore store) =>
-{
-    if (!store.TryGet(gameId, out var engine)) return Results.NotFound();
-    if (!store.ValidatePlayerSession(gameId, request.PlayerId, request.PlayerSessionToken)) return Results.Unauthorized();
-    var now = DateTimeOffset.UtcNow;
-    var sale = engine.SellDice(request.PlayerId, now);
-    return Results.Ok(new { sale, remainingMilliseconds = 5000, state = engine.State });
-});
-
-app.MapPost("/api/street-dice/{gameId}/sell/bid", (string gameId, DiceSaleBidRequest request, StreetDiceTableStore store) =>
-{
-    if (!store.TryGet(gameId, out var engine)) return Results.NotFound();
-    if (!store.ValidatePlayerSession(gameId, request.PlayerId, request.PlayerSessionToken)) return Results.Unauthorized();
-    var bid = engine.BidForDice(request.PlayerId, request.Amount, DateTimeOffset.UtcNow);
-    return Results.Ok(new { bid, sale = engine.State.DiceSale, state = engine.State });
-});
-
 app.MapPost("/api/street-dice/{gameId}/leave", (string gameId, PlayerActionRequest request, StreetDiceTableStore store) =>
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound();
@@ -314,12 +297,8 @@ app.MapGet("/api/street-dice/{gameId}", (string gameId, int? afterRoll, StreetDi
     store.ExpireDisconnected(gameId, now);
     var committed = store.LastCommittedRoll(gameId);
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
-    engine.ResolveDiceSale(now);
-    var sale = engine.State.DiceSale;
-    double saleRemainingMilliseconds = sale is { IsOpen: true }
-        ? Math.Max(0, sale.EndsAtUnixMilliseconds - now.ToUnixTimeMilliseconds()) : 0;
     return Results.Ok(new { state = engine.State, pendingRoll = engine.CurrentPhysicalRoll(now),
-        wagers = engine.PeerWagers, bettingWindow = engine.CurrentBettingWindow(now), saleRemainingMilliseconds,
+        wagers = engine.PeerWagers, bettingWindow = engine.CurrentBettingWindow(now),
         lastCommittedRoll = committed?.Sequence > (afterRoll ?? 0) ? committed : null });
 });
 
@@ -526,7 +505,6 @@ public sealed class StreetDiceStatePersistenceService : IHostedService, IDisposa
 
 public sealed record JoinRequest(string PlayerName, string? PlayerId = null);
 public sealed record PlayerActionRequest(string PlayerId, string PlayerSessionToken);
-public sealed record DiceSaleBidRequest(string PlayerId, string PlayerSessionToken, int Amount);
 public sealed record PeerWagerAddOnRequest(string BettorId, string PlayerSessionToken, int SourceOfferId, IPlay.Demo.WagerAddOnKind Kind, int Amount = 0);
 public sealed record DiceColorRequest(string PlayerId, string PlayerSessionToken, DiceColor Color);
 public sealed record OpenShotRequest(string ShooterId, string ShooterSessionToken, string CatcherId, int Amount);

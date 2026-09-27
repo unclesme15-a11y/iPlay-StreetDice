@@ -37,16 +37,6 @@ public sealed partial class StreetDiceGameEngine
         try
         {
             throwResult = ServerDicePhysics.Simulate(gesture, 2, seed, launchSeed);
-            if (ProtectedSaleComeOut)
-            {
-                int attempt = 0;
-                while (throwResult.IsCounted && throwResult.Faces.Sum() is 2 or 3 or 12)
-                {
-                    if (++attempt > 128) throw new InvalidOperationException("Unable to prepare a protected come-out throw.");
-                    throwResult = ServerDicePhysics.Simulate(gesture, 2,
-                        unchecked(seed + attempt * 104729), launchSeed.HasValue ? unchecked(launchSeed.Value + attempt * 13007) : null);
-                }
-            }
         }
         catch { _peerWagers.Fade(BettingSeconds(now)); throw; }
         string rollId = Guid.NewGuid().ToString("N");

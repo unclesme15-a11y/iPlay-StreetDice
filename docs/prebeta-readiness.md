@@ -2,7 +2,7 @@
 
 The playable Street Dice code is prepared without building an APK. The online craps flow has a host/join menu, one seat and session token per player, role-specific controls, server-owned dice results, fixed-camera remote replay, paired wagers, and a 20-second reconnect window driven by heartbeats. Balances remain private to their owners. The rules screen includes a short fair-play note.
 
-Shoot/Sell is implemented with a five-second auction, forced $1 Catcher default, immediate private-wallet settlement, public sale price, seller main-bet exclusion, and adjusted clockwise queue. The disclosed default-buyer come-out protection is server-owned. Existing locked point bets can independently request Double Up and a paired-number add-on; each still requires Shooter acceptance.
+Shoot/Pass is implemented: passing hands the dice to the next player in the clockwise queue, no auction, no charge. The dice-sale auction that used to sit here (bidding, a forced $1 default buyer, come-out protection for that buyer) has been removed. Existing locked point bets can independently request Double Up and a paired-number add-on; each still requires Shooter acceptance.
 
 The ten-point hot meter, next-throw red dice, subtle smoke, bottom-left fire capsule, and COME OUT door cue are implemented. Heat scoring stays off the play screen. Red/orange are temporary hot-dice colors; permanent unlock requirements for the other colors still need a product decision.
 

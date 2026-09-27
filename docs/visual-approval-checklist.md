@@ -25,8 +25,7 @@ No APK build until the user has seen and approved current Unity captures or moti
 | Review item | Current evidence | Status |
 | --- | --- | --- |
 | Table waiting state, shareable code, player slots and mic indicators | Runtime table view | New capture needed |
-| Shooter's Shoot / Sell choice | Implemented in the live HUD | New approval capture still needed |
-| Sell: waiting for bidder, five-second countdown, bidder keypad, submitted/high bid, winner/default states, AI bids | `artifacts/unity-smoke/sale/01-seller-waiting.png`, `02-bid-pad.png`, `03-sale-complete.png` | Implemented; review needed |
+| Shooter's Shoot / Pass choice | Implemented in the live HUD | New approval capture still needed |
 | Main wager selection and role-specific betting controls | `artifacts/unity-smoke/readiness/phone-1280x720-bets.png` | Current capture; review needed |
 | Paired-number add-on / side-bet Double Up on an existing eligible locked bet | `artifacts/unity-smoke/add-ons/01-digital-add-ons.png` | Implemented as separate requests; review needed |
 | Offered, pending, accepted, declined and expired wager locks; wager amounts and outcome die fan | `artifacts/unity-smoke/readiness/online-incoming-crap-lock.png`, `online-accepted-crap-lock.png`, `wager-outcomes.png` | Current captures; review needed |
@@ -42,6 +41,6 @@ No APK build until the user has seen and approved current Unity captures or moti
 | Hot meter, red dice and subtle smoke | `artifacts/unity-smoke/readiness/hot-meter-half.png`, `hot-meter-full.png`, `hot-dice-smoke-in-flight.png` | Current captures; review needed |
 | Game drawer: Options, My Money & Bets, Voice & Sound, Rules | `artifacts/unity-smoke/readiness/drawer.png`, `voice-sound-switches.png` | Current captures; target style not reached |
 | Leave confirmation, connection loss/rejoin, full table, low funds and unavailable controls | `artifacts/unity-smoke/readiness/leave-confirmation.png` for leave only | Other states need captures |
-| Icon and control sheet: die menu, settings, exit, mic/activity, locks, Fade, sound/toggles and sell/bid controls | Scattered runtime captures | Consolidated review sheet needed |
+| Icon and control sheet: die menu, settings, exit, mic/activity, locks, Fade and sound/toggles | Scattered runtime captures | Consolidated review sheet needed |
 
 Capture at a representative phone resolution and at least one narrower layout. User approval of stills does not replace the later real-device usability test. No money-art redesign is included here.

@@ -66,8 +66,6 @@ public sealed partial class StreetDiceGameEngine
             throw new InvalidOperationException("Only the player holding the dice can open a shot.");
         if (shooter.HasLeft || catcher.HasLeft) throw new InvalidOperationException("Player has left.");
         if (shooter.Id == catcher.Id) throw new InvalidOperationException("Shooter must shoot against another player.");
-        if (State.DiceSale is { IsOpen: false } sale && sale.WinnerId == shooter.Id && sale.SellerId == catcher.Id)
-            throw new InvalidOperationException("The seller sits out the buyer's main bet.");
         EnsureMainStakeCovered(shooter, catcher, amount);
 
         State.ShooterId = shooter.Id;
@@ -152,7 +150,6 @@ public sealed partial class StreetDiceGameEngine
         }
         player.HasLeft = true;
         if (shooterLeaving) OfferNextPlayer(playerId);
-        if (shooterLeaving && State.DiceSale is { IsOpen: true } sale) sale.IsOpen = false;
         State.Log($"{player.Name} left the game.");
     }
 
@@ -218,8 +215,6 @@ public sealed partial class StreetDiceGameEngine
         {
             throw new InvalidOperationException("Roll is only available while a shot is live.");
         }
-        if (ProtectedSaleComeOut && roll.Total is 2 or 3 or 12)
-            throw new InvalidOperationException("The forced $1 buyer's come-out protection is active.");
         if (_peerWagers.Started && !_peerWagers.Rolling &&
             _peerWagers.Offers.Any(offer => offer.Status == WagerStatus.Accepted))
             _peerWagers.BeginRoll(BettingSeconds(now ?? DateTimeOffset.UtcNow));
@@ -302,9 +297,7 @@ public sealed partial class StreetDiceGameEngine
             return State.LastResolution;
         }
 
-        DiceRoll botRoll;
-        do { botRoll = new DiceRoll(random.Next(1, 7), random.Next(1, 7)); }
-        while (ProtectedSaleComeOut && botRoll.Total is 2 or 3 or 12);
+        var botRoll = new DiceRoll(random.Next(1, 7), random.Next(1, 7));
         return Roll(botRoll);
     }
 
@@ -322,7 +315,6 @@ public sealed partial class StreetDiceGameEngine
 
         State.Point = roll.Total;
         State.Phase = GamePhase.Point;
-        if (State.DiceSale != null) State.DiceSale.ComeOutProtectionActive = false;
         ResolveSideBets(SideBetType.ComeOutWin, false);
         ResolveSideBets(SideBetType.ComeOutLoss, false);
         var resolution = new RollResolution(RollResultType.PointEstablished, roll, State.Point, $"Point established: {State.Point}.");

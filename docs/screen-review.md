@@ -484,3 +484,64 @@ S16 (in-game HUD baseline), S18 (Voice & Sound drawer page), and S29
 (leave confirmation) were flagged for removal in the original batch --
 unclear why, and all three looked correct on inspection. Needs your
 read on what specifically should change.
+
+
+## Group 2, round 2 -- 2026-09-27
+
+### Hot dice pip contrast
+
+The red pips looked flat/same-red-as-body in game, not matching
+`hot-dice-faces.png`. Traced it: the material is untouched at runtime
+(confirmed by an existing automated check, "Imported hot material was
+overwritten", in `HotDiceAssetBuild.cs`) -- nothing recolors it. The
+difference is lighting. That reference image was rendered in
+`CaptureFaces()` under bright, even studio light (ambient 0.65, a 1.5-
+intensity directional light from every angle). The actual table uses one
+warm point light at 1.15 intensity for mood. A glossy material that gets
+its pip-vs-body contrast mostly from specular highlights reads flat under
+weaker, more diffuse light.
+
+Fix: added a dedicated `Hot Dice Glow Light` (warm-orange point light,
+starts at 0 intensity) that switches on to 1.6 only while the dice are
+actually hot (`ApplyDiceColor`, the same place that already tracks hot
+state). Doesn't touch the scene's overall mood -- the light is off the
+rest of the time.
+
+### Dice sale removed entirely
+
+Per instruction: losing the shot is now Shoot or Pass, no auction.
+Removed across the whole stack:
+
+- **Server**: deleted `Core/StreetDiceSales.cs` (`SellDice`, `BidForDice`,
+  `ResolveDiceSale`, the `DiceSale`/`DiceSaleBid` types, and the
+  `ProtectedSaleComeOut` come-out-protection rule and its three call
+  sites) and `tests/DiceSaleTests.cs` (4 tests). Removed the `/sell` and
+  `/sell/bid` endpoints and the `DiceSale` field from game state. Kept
+  `/pass` -- it already existed, fully implemented, just never wired to
+  a button. 99/99 tests pass (was 103; the 4 removed were sale-specific).
+- **Client**: `StreetDiceSell.cs` (230 lines of sale UI/logic) reduced to
+  just `localTurnOrder`, which is used elsewhere for seat cycling. The
+  Shoot/Sell buttons are now Shoot/Pass, calling the already-built
+  `PassLocalDice()` -- which itself was dead code until now, exactly like
+  `PassDice()` on the server. The bot AI's `DemoOpponentPolicy.Pass(...)`
+  check was, ironically, wired to call `SellCurrentDice()`; now it calls
+  `PassLocalDice()`, matching its own name.
+- Reworked the online shooter-change reset: it used to call
+  `ResetDiceToShooter()` only when a sale completed. Generalized to fire
+  whenever `shooterId` actually changes between polls, which covers Pass
+  and is arguably more correct than the old version (a normal seven-out
+  handoff wasn't triggering it either).
+- Reverted `DrawDoorGhostNumber`'s length-based font scaling back to the
+  simple `text == "COME OUT"` check -- that generalization existed only
+  to size the sale headlines, which no longer exist.
+- Deleted the `CaptureSale()` editor routine and its
+  `artifacts/unity-smoke/sale/` screenshots (S30-S32 no longer exist).
+- Updated the in-game Rules page text, `docs/game-rules.md`,
+  `docs/prebeta-readiness.md`, `docs/visual-approval-checklist.md`, and
+  `README.md` (dropped from 103 to 99 tests). `docs/post-production-handoff.md`
+  gets a dated note instead of a rewrite -- it's a historical record of
+  what Codex built, not current-state documentation.
+
+S30/S31/S32 (dice-sale screens from the Group 2 catalog) no longer exist.
+Shoot/Pass uses the same `DrawMetalButton` styling as everything else in
+the HUD -- never the raw default Unity look.

@@ -182,7 +182,7 @@ public sealed partial class StreetDiceGreyboxController
         nextOnlineHeartbeatAt = 0f;
         onlineHeartbeatInFlight = false;
         ClearMoneyTransfers();
-        ResetDiceSale();
+        ResetTurnOrder();
         mainOptions = false;
         drawerOpen = confirmLeave = shakeHeld = false;
         awaitingShootChoice = true;
@@ -216,7 +216,6 @@ public sealed partial class StreetDiceGreyboxController
         audioSource.volume = effectsVolume;
         UpdateStartupExperience();
         UpdateWagerOffers();
-        UpdateDiceSale();
         RefreshGroundMoney();
         UpdateGroundOfferBills();
         if (mainOptions) return;
@@ -254,12 +253,12 @@ public sealed partial class StreetDiceGreyboxController
             nextBotAt = Time.time + 4f;
             if (awaitingShootChoice)
             {
-                if (!CanCover(shotAmount) || IPlay.Demo.DemoOpponentPolicy.Pass(BotProfile(shooterId), Balance(shooterId), shotAmount, random.NextDouble())) SellCurrentDice();
-                else { CommitShoot(); if (!shotCommitted) SellCurrentDice(); }
+                if (!CanCover(shotAmount) || IPlay.Demo.DemoOpponentPolicy.Pass(BotProfile(shooterId), Balance(shooterId), shotAmount, random.NextDouble())) PassLocalDice();
+                else { CommitShoot(); if (!shotCommitted) PassLocalDice(); }
             }
             else if (phase == "ShooterDecision")
             {
-                if (!CanCover(shotAmount) || IPlay.Demo.DemoOpponentPolicy.Pass(BotProfile(shooterId), Balance(shooterId), shotAmount, random.NextDouble())) SellCurrentDice();
+                if (!CanCover(shotAmount) || IPlay.Demo.DemoOpponentPolicy.Pass(BotProfile(shooterId), Balance(shooterId), shotAmount, random.NextDouble())) PassLocalDice();
                 else if (lastResolvedShotWasWin && shotAmount <= int.MaxValue / 2 && CanCover(shotAmount * 2) &&
                     IPlay.Demo.DemoOpponentPolicy.DoubleUp(BotProfile(shooterId), Balance(shooterId), shotAmount, random.NextDouble())) StartCoroutine(DoubleUp());
                 else StartCoroutine(RunSame());
@@ -475,10 +474,13 @@ public sealed partial class StreetDiceGreyboxController
             if (SkyDisplayActive) DrawSkyCamDisplay(w);
             DrawBettingTimer();
             if (wagerOverlayOpen) DrawBettingOverlay();
-            DrawDiceSale(w);
             if (gameMode == GameMode.Craps && shooterId == SelfId)
                 DrawHotMeter(new Rect(settingsControl.x - 56f, settingsControl.y, 48f, 124f));
-            if (!rolling && !SaleOpen && awaitingShootChoice && shooterId == SelfId)
+            // Dice-sale auction removed -- losing the shot is just Shoot or Pass
+            // now. Pass hands the dice to the next player, no bidding, no money
+            // changing hands, so it only needs another player to hand them to
+            // (same >= 2 threshold as Shoot), not the >= 3 an auction needed.
+            if (!rolling && awaitingShootChoice && shooterId == SelfId)
             {
                 // Was a raw GUI.Toolbar with "$1"/"$5"/"$10"/"$20" text tabs -- the
                 // same photographed bills used everywhere else you pick an amount,
@@ -487,9 +489,8 @@ public sealed partial class StreetDiceGreyboxController
                 GUI.enabled = !drawerOpen && CanCover(shotAmount) &&
                     (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 2);
                 if (DrawMetalButton(new Rect(w / 2 - 146, h - 104, 140, 46), "Shoot")) CommitShoot();
-                GUI.enabled = !drawerOpen;
-                GUI.enabled = !drawerOpen && (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 3);
-                if (DrawMetalButton(new Rect(w / 2 + 6, h - 104, 140, 46), "Sell")) SellCurrentDice();
+                GUI.enabled = !drawerOpen && (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 2);
+                if (DrawMetalButton(new Rect(w / 2 + 6, h - 104, 140, 46), "Pass")) PassLocalDice();
             }
             else if (!rolling && phase == "ShooterDecision" && shooterId == SelfId)
             {
@@ -497,9 +498,8 @@ public sealed partial class StreetDiceGreyboxController
                 if (DrawMetalButton(new Rect(w / 2 - 210, h - 104, 132, 46), "Run Same")) StartCoroutine(RunSame());
                 GUI.enabled = !drawerOpen && lastResolvedShotWasWin && shotAmount <= int.MaxValue / 2 && CanCover(shotAmount * 2);
                 if (DrawMetalButton(new Rect(w / 2 - 70, h - 104, 132, 46), "Double Up")) StartCoroutine(DoubleUp());
-                GUI.enabled = !drawerOpen;
-                GUI.enabled = !drawerOpen && (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 3);
-                if (DrawMetalButton(new Rect(w / 2 + 70, h - 104, 132, 46), "Sell")) SellCurrentDice();
+                GUI.enabled = !drawerOpen && (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 2);
+                if (DrawMetalButton(new Rect(w / 2 + 70, h - 104, 132, 46), "Pass")) PassLocalDice();
             }
             GUI.enabled = !confirmLeave;
             if (drawerAmount > 0) DrawDrawer();
@@ -703,14 +703,10 @@ public sealed partial class StreetDiceGreyboxController
     {
         float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress));
         float alpha = Mathf.Lerp(0.14f, 0.68f, t) * color.a;
-        // Was hardcoded to text == "COME OUT" specifically; generalized so any
-        // longer phrase painted on the door (sale headlines, "bought the dice
-        // for $X") scales down the same way instead of rendering at full size.
-        // Single/double-digit countdown numbers (length <= 2) keep the full
-        // 162-190px size unchanged; "COME OUT" itself still resolves to exactly
-        // 0.52 as before.
-        float lengthScale = text.Length <= 2 ? 1f : Mathf.Clamp(8f / text.Length, 0.22f, 0.52f);
-        float fontSize = Mathf.Lerp(162f, 190f, t) * lengthScale;
+        // Reverted to the plain "COME OUT" check -- the length-based version
+        // existed only to size the dice-sale headlines, which are gone. The
+        // only callers left are "COME OUT" and countdown digits.
+        float fontSize = Mathf.Lerp(162f, 190f, t) * (text == "COME OUT" ? 0.52f : 1f);
         float centerY = Mathf.Lerp(UiHeight * 0.29f, UiHeight * 0.31f, t);
         var rect = new Rect(35, centerY - 130f, UiWidth - 70, 260f);
         if (doorGraffitiFont == null) doorGraffitiFont = Resources.Load<Font>("UI/SedgwickAveDisplay-Regular");
@@ -892,7 +888,7 @@ public sealed partial class StreetDiceGreyboxController
         else if (drawerPage == "Rules")
         {
             string rules = gameMode == GameMode.Craps
-                ? "COME OUT: 7/11 wins. 2/3/12 loses; shooter keeps the dice.\n\nPOINT: Hit your point to win. Only 7 outs.\n\nSELL: Five-second bids. The catcher buys for $1 if nobody bids. That forced buyer gets +1.5 heat and no 2/3/12 until the first point is set.\n\nFADE: Catcher stops a roll; shooter rolls again.\n\nBETS: Lock before the roll. Accepted point bets can request Double or Pair separately. Balances stay private; sale prices are public."
+                ? "COME OUT: 7/11 wins. 2/3/12 loses; shooter keeps the dice.\n\nPOINT: Hit your point to win. Only 7 outs.\n\nPASS: Don't want the dice? Hand them to the next player, no charge.\n\nFADE: Catcher stops a roll; shooter rolls again.\n\nBETS: Lock before the roll. Accepted point bets can request Double or Pair separately. Balances stay private."
                 : "CEE-LO: The banker rolls first. Players roll against the banker.\n\nYour bankroll stays private. The server decides the dice and pays each bet once.";
             GUI.Label(new Rect(4, 4, 284, 365), rules);
             if (DrawMetalButton(new Rect(4, 386, 284, 42), "Back")) drawerPage = "Options";
@@ -972,11 +968,9 @@ public sealed partial class StreetDiceGreyboxController
     }
     private string FundedCatcher(int amount)
     {
-        if (catcherId != shooterId && !(shooterId == localSoldBuyerId && catcherId == localSoldSellerId) &&
-            Balance(catcherId) >= amount) return catcherId;
+        if (catcherId != shooterId && Balance(catcherId) >= amount) return catcherId;
         foreach (var seat in localTurnOrder)
-            if (seat != shooterId && !(shooterId == localSoldBuyerId && seat == localSoldSellerId) &&
-                Balance(seat) >= amount) return seat;
+            if (seat != shooterId && Balance(seat) >= amount) return seat;
         return null;
     }
 
@@ -1002,13 +996,10 @@ public sealed partial class StreetDiceGreyboxController
         if (!localDemo)
         {
             if (shooterId != SelfId || !playerTokens.ContainsKey(SelfId)) return;
-            if (string.IsNullOrWhiteSpace(catcherId) || catcherId == shooterId ||
-                activeSale is { isOpen: false } sale && sale.winnerId == shooterId && sale.sellerId == catcherId)
+            if (string.IsNullOrWhiteSpace(catcherId) || catcherId == shooterId)
             {
                 foreach (var player in onlinePlayers)
-                    if (!player.hasLeft && player.id != shooterId &&
-                        !(activeSale is { isOpen: false } sold && sold.winnerId == shooterId && sold.sellerId == player.id))
-                    { catcherId = player.id; break; }
+                    if (!player.hasLeft && player.id != shooterId) { catcherId = player.id; break; }
             }
             awaitingShootChoice = false;
             StartCoroutine(OpenShot());

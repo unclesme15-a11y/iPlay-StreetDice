@@ -11,6 +11,14 @@ This sandbox has `dotnet` (installed via apt mid-session) but no Unity Editor,
 so server-side claims below are compiled/tested/HTTP-verified; Unity-side
 claims are reading-only.
 
+**2026-09-27 update**: the dice-sale auction described throughout this
+document (bidding, the forced $1 default buyer, that buyer's come-out
+protection) has been removed at the user's request. Losing the shot is now
+just Shoot or Pass -- Pass hands the dice to the next player, no charge, no
+auction. Every mention of "sale"/"sell" below describes what used to exist,
+not current behavior. See `docs/game-rules.md` for the current rule and
+`docs/screen-review.md` for the removal notes.
+
 ## 2026-09-20 merge: Codex's real feature work landed
 
 `main` had been stuck at an old commit because Codex's local work was too

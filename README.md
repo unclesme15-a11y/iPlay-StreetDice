@@ -51,10 +51,10 @@ Run verification:
 The backend is server-authoritative end to end: a full physical dice-roll
 lifecycle (`/roll/prepare` → `/roll/fade` → `/roll/commit`) where the server
 generates the randomness and simulates the physics, a peer-to-peer wager
-system, dice-sale auctions, a 20-second reconnect-grace window for dropped
-connections, real Vivox voice token signing, and state that survives a
-server restart or container redeploy (snapshotted to disk periodically and
-on shutdown). 103 tests currently pass (`dotnet test IPlayStreetDice.sln`).
+system, a 20-second reconnect-grace window for dropped connections, real
+Vivox voice token signing, and state that survives a server restart or
+container redeploy (snapshotted to disk periodically and on shutdown).
+99 tests currently pass (`dotnet test IPlayStreetDice.sln`).
 
 Unity greybox:
 

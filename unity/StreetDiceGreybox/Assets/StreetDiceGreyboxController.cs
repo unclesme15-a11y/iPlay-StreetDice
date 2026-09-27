@@ -110,6 +110,7 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
     private readonly Dictionary<GameObject, GameObject> hotDiceVisuals = new();
     private readonly Dictionary<GameObject, TrailRenderer> hotSmokeTrails = new();
     private bool hotForCurrentThrow;
+    private Light hotDiceGlowLight;
     private readonly Dictionary<GameObject, GameObject> regularDiceVisuals = new();
     private ServerPhysicalRollReplay serverReplay;
     private ServerPhysicalLaunch serverLaunch;
@@ -314,6 +315,23 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         diceLight.range = 3.8f;
         diceLight.transform.position = new Vector3(0f, 1.15f, -1.2f);
         diceLight.color = new Color(1f, 0.92f, 0.78f);
+
+        // The hot-dice reference render (hot-dice-faces.png) was shot under a
+        // bright, even studio light -- the pips read as a clearly shaded, glossy
+        // red sphere against the body. This table's lighting is deliberately dim
+        // and moody, and under that the same material's pip-vs-body contrast
+        // comes mostly from specular highlights, which barely show at 1.15
+        // intensity: the dots end up reading as flat, same red as the body.
+        // Rather than brighten the whole scene, this is a dedicated light that
+        // only switches on while the dice are actually hot (see ApplyDiceColor),
+        // so the material gets enough light to show the shading it already has.
+        var hotGlowObject = new GameObject("Hot Dice Glow Light");
+        hotDiceGlowLight = hotGlowObject.AddComponent<Light>();
+        hotDiceGlowLight.type = LightType.Point;
+        hotDiceGlowLight.intensity = 0f;
+        hotDiceGlowLight.range = 3.2f;
+        hotDiceGlowLight.transform.position = new Vector3(0f, 1.05f, -1.2f);
+        hotDiceGlowLight.color = new Color(1f, 0.55f, 0.32f);
     }
 
     private void CreateAudio()
@@ -1349,7 +1367,6 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         var nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % localTurnOrder.Count;
         shooterId = localTurnOrder[nextIndex];
         catcherId = previousShooter;
-        localSoldSellerId = localSoldBuyerId = "";
         point = "-";
         activePointGroup = "-";
         phase = gameMode == GameMode.CeeLo ? "CeeLo" : "ComeOut";
@@ -1489,12 +1506,9 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         }
 
         if (string.IsNullOrWhiteSpace(shooterId)) shooterId = "p1";
-        if (string.IsNullOrWhiteSpace(catcherId) || catcherId == shooterId ||
-            activeSale is { isOpen: false } sold && sold.winnerId == shooterId && sold.sellerId == catcherId)
+        if (string.IsNullOrWhiteSpace(catcherId) || catcherId == shooterId)
             foreach (var player in onlinePlayers)
-                if (!player.hasLeft && player.id != shooterId &&
-                    !(activeSale is { isOpen: false } sale && sale.winnerId == shooterId && sale.sellerId == player.id))
-                { catcherId = player.id; break; }
+                if (!player.hasLeft && player.id != shooterId) { catcherId = player.id; break; }
         var session = playerTokens.TryGetValue(shooterId, out var playerSession) ? playerSession : shooterToken;
         var request = new OpenShotDto
         {
@@ -1583,7 +1597,6 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         var snapshot = JsonUtility.FromJson<OnlineTableDto>(request.downloadHandler.text);
         if (snapshot?.state == null) yield break;
         bool hotBeforeRoll = streak >= HotDiceThreshold;
-        onlineSaleRemainingMilliseconds = snapshot.saleRemainingMilliseconds;
         UpdateState(snapshot.state);
         ApplyOnlineWagerSnapshot(snapshot.wagers, snapshot.bettingWindow);
         if (snapshot.lastCommittedRoll != null && snapshot.lastCommittedRoll.sequence > lastSeenCommittedRoll)
@@ -1865,16 +1878,6 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
             yield break;
         }
 
-        if (phase == "ComeOut" && activeSale is { comeOutProtectionActive: true } protectedSale &&
-            protectedSale.winnerId == shooterId)
-        {
-            while (a + b is 2 or 3 or 12)
-            {
-                a = random.Next(1, 7);
-                b = random.Next(1, 7);
-            }
-        }
-
         rollState = RollState.Rolling;
         die1 = a;
         die2 = b;
@@ -2032,7 +2035,6 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
             point = total.ToString();
             activePointGroup = PointGroupLabel(total);
             phase = "Point";
-            if (activeSale != null) activeSale.comeOutProtectionActive = false;
             rollState = RollState.FadeWindow;
             result = "Point established: " + point + ".";
             tutorialDetail = "Point " + point + " is set. Active side-bet group is " + activePointGroup + ". Only 7 loses during point phase.";
@@ -2646,8 +2648,9 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
 
     private void ApplyDiceColor()
     {
-        var color = (rolling ? hotForCurrentThrow : streak >= HotDiceThreshold)
-            ? new Color(1f, 0.23f, 0.02f) : selectedDiceColor;
+        bool hotActiveOverall = rolling ? hotForCurrentThrow : streak >= HotDiceThreshold;
+        var color = hotActiveOverall ? new Color(1f, 0.23f, 0.02f) : selectedDiceColor;
+        if (hotDiceGlowLight != null) hotDiceGlowLight.intensity = hotActiveOverall ? 1.6f : 0f;
         ApplyDieAppearance(dieA, color);
         ApplyDieAppearance(dieB, color);
         ApplyDieAppearance(dieC, color);
@@ -2946,22 +2949,15 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
     private void UpdateState(StateDto state)
     {
         if (state == null) return;
-        string previousSaleWinner = activeSale?.winnerId;
-        activeSale = state.diceSale;
-        if (activeSale is { isOpen: false } completed && !string.IsNullOrEmpty(completed.winnerId) &&
-            completed.winnerId != previousSaleWinner)
-        {
-            string buyerName = Array.Find(state.players ?? Array.Empty<PlayerDto>(), player => player.id == completed.winnerId)?.name
-                ?? completed.winnerId;
-            saleAnnouncement = buyerName + " bought the dice for $" + completed.winningAmount;
-            saleAnnouncementUntil = Time.unscaledTime + 4f;
-            nextOnlineWalletPollAt = 0f;
-        }
+        // Used to reset the physical dice objects only when a dice sale
+        // completed. That's gone; the general case is simpler and covers Pass
+        // too -- whenever the shooter actually changes hands, snap the dice to
+        // the new shooter.
+        string previousShooterId = shooterId;
         phase = state.phase;
         shooterId = state.shooterId;
         catcherId = state.catcherId;
-        if (activeSale is { isOpen: false } settled && settled.winnerId != previousSaleWinner)
-            ResetDiceToShooter();
+        if (shooterId != previousShooterId) ResetDiceToShooter();
         point = state.point == 0 ? "-" : state.point.ToString();
         activePointGroup = point == "-" ? "-" : PointGroupLabel(state.point);
         streak = state.streak;
@@ -3040,7 +3036,6 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
     [Serializable] private sealed class OnlineTableDto
     {
         public StateDto state;
-        public double saleRemainingMilliseconds;
         public PendingRollDto pendingRoll;
         public OnlineWagerDto[] wagers;
         public BettingWindowDto bettingWindow;
@@ -3125,7 +3120,6 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         public float streak;
         public int shotAmount;
         public bool lastResolvedShotWasWin;
-        public DiceSaleDto diceSale;
         public PlayerDto[] players = Array.Empty<PlayerDto>();
         public SideBetDto[] sideBets = Array.Empty<SideBetDto>();
         public ResolutionDto lastResolution = new ResolutionDto();

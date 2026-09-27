@@ -4,16 +4,10 @@ Working title: **iPlay Street Dice**
 
 Current product name: **iPlay Cee-lo & Craps**.
 
-## Shoot, Sell and Leaving
+## Shoot, Pass and Leaving
 
-- A player offered the dice chooses Shoot or Sell before committing a wager.
-- Sell is available only with at least three active players and never interrupts a point or unsettled wager.
-- A five-second public auction opens. Bids start at $1, have no fixed maximum, and cannot exceed the bidder's available balance.
-- The current Catcher holds a forced $1 default bid. If nobody outbids it, the Catcher buys the dice for $1 and begins with +1.5 heat.
-- As a disclosed iPlay sale perk, that forced-default buyer cannot roll 2/3/12 while establishing the first point. The protection ends as soon as the point is set; 7 remains possible on come-out and during the point phase.
-- The winner pays the seller immediately, becomes Shooter, and the sale price is public. Remaining balances stay private.
-- The seller sits out the buyer's main bet and moves to the back of the turn queue, but may watch, use voice chat, and place eligible side bets.
-- After the buyer seven-outs, the dice go to the next player from the original clockwise order rather than back to the seller.
+- A player offered the dice chooses Shoot or Pass before committing a wager.
+- Pass hands the dice straight to the next player in the active turn queue -- no auction, no charge, no forced buyer.
 - Leaving as shooter with a committed wager counts as a crap/forfeit loss, not a new random roll.
 - During a point, the main wager loses; point-hit bets lose and point/group-miss bets win, as on a point-phase loss. Already settled bets are not paid again.
 - Leaving as a side bettor forfeits that player's open bets without resetting another shooter's point.
@@ -43,7 +37,7 @@ After a point is established:
 - Shooter keeps rolling until the point is hit or a `7` is rolled.
 - Point hit: Shooter wins.
 - `7` before point: Shooter loses, craps out, and gives up the dice.
-- Clockwise handoff: the next player in the active turn queue becomes Shooter. The old Shooter becomes Catcher unless a Sell substitution excludes that seller from the buyer's main bet.
+- Clockwise handoff: the next player in the active turn queue becomes Shooter. The old Shooter becomes Catcher.
 
 ## Fade / Catch
 
@@ -218,7 +212,7 @@ At full streak:
 
 ## Fair Play
 
-Your bankroll is private. Other players see the bets you place and public dice-sale prices, not your remaining balance. The server decides counted dice results and settles each wager once; no player's phone can choose an outcome. The only designed outcome adjustment is the disclosed forced-$1 buyer protection described in Shoot, Sell and Leaving.
+Your bankroll is private. Other players see the bets you place, not your remaining balance. The server decides counted dice results and settles each wager once; no player's phone can choose an outcome.
 
 ## Dice Colors
 

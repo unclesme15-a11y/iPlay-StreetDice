@@ -57,16 +57,6 @@ public static class PlayReadinessVerification
         EditorApplication.isPlaying = true;
     }
 
-    public static void StartSaleCapture()
-    {
-        StreetDiceDemoBuild.PrepareAndroidWithoutBuilding();
-        gameView = EditorWindow.GetWindow(typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
-        gameView.position = new Rect(30, 30, 1280, 760);
-        gameView.Show();
-        SessionState.SetBool("StreetDice.CaptureSale", true);
-        EditorApplication.isPlaying = true;
-    }
-
     public static void StartAddOnCapture()
     {
         StreetDiceDemoBuild.PrepareAndroidWithoutBuilding();
@@ -153,12 +143,6 @@ public static class PlayReadinessVerification
             SessionState.SetBool("StreetDice.CaptureBetting", false);
             deadline = EditorApplication.timeSinceStartup + 45;
             routine = CaptureBetting();
-        }
-        if (SessionState.GetBool("StreetDice.CaptureSale", false))
-        {
-            SessionState.SetBool("StreetDice.CaptureSale", false);
-            deadline = EditorApplication.timeSinceStartup + 45;
-            routine = CaptureSale();
         }
         if (SessionState.GetBool("StreetDice.CaptureAddOns", false))
         {
@@ -662,39 +646,6 @@ public static class PlayReadinessVerification
         while (Time.realtimeSinceStartup < settledAt) yield return null;
         CaptureGameView(Path.Combine(output, "05-closed-ground-lock.png"));
         Debug.Log("BETTING PHOTO CAPTURE PASSED: opponent dice, bill selection and recipient ground lock");
-    }
-
-    private static IEnumerator CaptureSale()
-    {
-        yield return null;
-        var c = UnityEngine.Object.FindAnyObjectByType<StreetDiceGreyboxController>();
-        Check(c != null, "Runtime bootstrap missing");
-        string output = Path.GetFullPath("../../artifacts/unity-smoke/sale");
-        Directory.CreateDirectory(output);
-        Call(c, "StartLocalDemo");
-        Call(c, "SellCurrentDice");
-        Check((string)Get(c, "phase") == "SellingDice", "Seller did not open the auction");
-        yield return null;
-        CaptureGameView(Path.Combine(output, "01-seller-waiting.png"));
-
-        Call(c, "StartLocalDemo");
-        Call(c, "CycleDemoShooter");
-        Call(c, "SellCurrentDice");
-        Check((string)Get(c, "phase") == "SellingDice" && (string)Get(c, "shooterId") == "p3",
-            "Bot seller did not open the auction");
-        yield return null;
-        CaptureGameView(Path.Combine(output, "02-bid-pad.png"));
-        Set(c, "saleBidDigits", "12");
-        Call(c, "PlaceDiceSaleBid");
-        Set(c, "localSaleClosesAt", Time.unscaledTime - 0.01f);
-        Call(c, "ResolveLocalDiceSale");
-        Check((string)Get(c, "shooterId") == "p1", "Winning bidder did not receive the dice");
-        Check((string)Get(c, "catcherId") != "p3", "Seller was made the buyer's catcher");
-        Check((int)Call(c, "Balance", "p1") == 988, "Buyer was not charged at sale settlement");
-        Check((int)Call(c, "Balance", "p3") == 1012, "Seller was not paid at sale settlement");
-        yield return null;
-        CaptureGameView(Path.Combine(output, "03-sale-complete.png"));
-        Debug.Log("SELL VISUAL CAPTURE PASSED: seller, bidder, payment and catcher exclusion");
     }
 
     private static IEnumerator CaptureAddOns()
