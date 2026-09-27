@@ -39,7 +39,7 @@ public class RankGatedTableTests
     }
 
     [Fact]
-    public void AGuestsHighLevel_DoesNotRaiseTheGenericTableCapDisplay()
+    public void AGuestsHighLevel_NeverRaisesTheTableAboveTheHosts()
     {
         var accounts = new PlayerAccountStore();
         var store = new StreetDiceTableStore(accounts);
@@ -52,30 +52,31 @@ public class RankGatedTableTests
         for (var i = 0; i < 50; i++) accounts.RecordWin(guestAccount.Id); // -> Level 5
         store.LinkAccount(gameId, guest.Player.Id, guestAccount.Id);
 
-        // The generic, no-actor-specified view (e.g. a lobby screen before anyone's shooting)
-        // still shows the host's own level -- it has nobody's ID to look up a personal boost for.
         Assert.Equal(100, store.EffectiveBetCap(gameId));
         Assert.False(store.PrestigeBillsUnlocked(gameId));
     }
 
     [Fact]
-    public void AGuestsOwnHighLevel_RaisesTheirPersonalCapEvenUnderALowerHost()
+    public void AHostsLowLevel_CapsEverySeatEvenAGuestWhoOutranksThem()
     {
         var accounts = new PlayerAccountStore();
         var store = new StreetDiceTableStore(accounts);
         var engine = store.CreateGame();
         var gameId = engine.State.GameId;
 
-        store.JoinRealPlayer(gameId, "Host"); // Level 1, unlinked -- stays host
+        var host = store.JoinRealPlayer(gameId, "Host");
+        var hostAccount = accounts.Register("Host", "hustle123"); // stays Level 1
+        store.LinkAccount(gameId, host.Player.Id, hostAccount.Id);
+
         var guest = store.JoinRealPlayer(gameId, "Bell");
-        var guestAccount = accounts.Register("Bell", "hustle123");
+        var guestAccount = accounts.Register("Bell", "another-pw1");
         for (var i = 0; i < 50; i++) accounts.RecordWin(guestAccount.Id); // -> Level 5
         store.LinkAccount(gameId, guest.Player.Id, guestAccount.Id);
 
-        // A host never gets to take away what a guest already earned on their own account --
-        // "they will be able to bet more" is additive, never a downgrade.
-        Assert.Equal(1000, store.EffectiveBetCap(gameId, guest.Player.Id));
-        Assert.True(store.PrestigeBillsUnlocked(gameId, guest.Player.Id));
+        // "I want it all to be around the host" -- a Level 5 guest still plays at the
+        // Level 1 host's table cap. The table's rank is the host's rank, period.
+        Assert.Equal(100, store.EffectiveBetCap(gameId));
+        Assert.False(store.PrestigeBillsUnlocked(gameId));
     }
 
     [Fact]

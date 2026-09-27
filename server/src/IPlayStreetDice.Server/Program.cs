@@ -219,7 +219,7 @@ app.MapPost("/api/street-dice/{gameId}/shot", (string gameId, OpenShotRequest re
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.ShooterSessionToken)) return Results.Unauthorized();
-    var cap = store.EffectiveBetCap(gameId, request.ShooterId);
+    var cap = store.EffectiveBetCap(gameId);
     if (request.Amount > cap) return Results.Json(new { error = $"This table's bet cap is {cap}.", betCap = cap },
         statusCode: StatusCodes.Status400BadRequest);
     engine.OpenShot(request.ShooterId, request.CatcherId, request.Amount);
@@ -313,7 +313,7 @@ app.MapPost("/api/street-dice/{gameId}/decision/run-same", (string gameId, Shoot
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.PlayerSessionToken)) return Results.Unauthorized();
-    var cap = store.EffectiveBetCap(gameId, request.ShooterId);
+    var cap = store.EffectiveBetCap(gameId);
     if (engine.State.ShotAmount > cap) return Results.Json(new { error = $"This table's bet cap is {cap}.", betCap = cap },
         statusCode: StatusCodes.Status400BadRequest);
     engine.RunSame(request.ShooterId);
@@ -324,7 +324,7 @@ app.MapPost("/api/street-dice/{gameId}/decision/double-up", (string gameId, Shoo
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.PlayerSessionToken)) return Results.Unauthorized();
-    var cap = store.EffectiveBetCap(gameId, request.ShooterId);
+    var cap = store.EffectiveBetCap(gameId);
     if (engine.State.ShotAmount * 2 > cap) return Results.Json(new { error = $"This table's bet cap is {cap}.", betCap = cap },
         statusCode: StatusCodes.Status400BadRequest);
     engine.DoubleUp(request.ShooterId);
@@ -476,30 +476,24 @@ public sealed class StreetDiceTableStore
         return _accounts.TryGet(accountId, out var account) ? account.Level : 1;
     }
 
+    /// <summary>"I want it all to be around the host... if a host is a level 3 and everyone
+    /// else is a level 1, everyone will get level 3 benefits as long as you are at a level 3
+    /// table." The table's entire rank standing -- both the bet cap and the prestige-bill
+    /// unlock -- comes from the host, full stop. Not additive with anyone's own account level,
+    /// not a floor, not a ceiling -- just the host's level, for everyone seated.</summary>
     private int HostLevel(string gameId)
     {
         if (!_games.TryGetValue(gameId, out var engine) || engine.State.HostId is not { } hostId) return 1;
         return AccountLevel(gameId, hostId);
     }
 
-    /// <summary>"They will be able to bet more... because that is the high ranked player's dice
-    /// game if he/she is the host" -- a higher-ranked host lifts everyone at the table up to
-    /// their level, but never DOWN below what a player already earned on their own account. So
-    /// this is the higher of the acting player's own level and the host's, not the host's alone.
-    /// With no playerId (e.g. a generic table-status display before anyone's identified as the
-    /// actor), it's just the host's level.</summary>
-    private int EffectiveLevel(string gameId, string? playerId) =>
-        Math.Max(HostLevel(gameId), playerId is null ? 1 : AccountLevel(gameId, playerId));
-
-    public int EffectiveBetCap(string gameId, string? playerId = null) =>
-        RankLadder.MaxBetForLevel(EffectiveLevel(gameId, playerId));
+    public int EffectiveBetCap(string gameId) => RankLadder.MaxBetForLevel(HostLevel(gameId));
 
     /// <summary>Whether the $50/$100 note art is usable at this table, in general. A hustled
     /// prestige note specifically also has its own per-player check -- see
     /// PrestigeNoteUsableBy -- since "they level up themselves" was called out as its own path
     /// to using one, distinct from whatever the host provides.</summary>
-    public bool PrestigeBillsUnlocked(string gameId, string? playerId = null) =>
-        RankLadder.PrestigeBillsUnlockedAtLevel(EffectiveLevel(gameId, playerId));
+    public bool PrestigeBillsUnlocked(string gameId) => RankLadder.PrestigeBillsUnlockedAtLevel(HostLevel(gameId));
 
     /// <summary>"It's ok if it's a lower rank that ends up with a $50 or $100. That's a flex
     /// because they hustled it from a higher rank... they wouldn't be able to use it unless
@@ -511,7 +505,10 @@ public sealed class StreetDiceTableStore
         if (!_accountLinks.TryGetValue(SessionKey(gameId, playerId), out var accountId)
             || !_accounts.TryGet(accountId, out var account)
             || !account.HustledPrestigeNotes.Contains(denomination)) return false;
-        return PrestigeBillsUnlocked(gameId, playerId);
+        // The one place a player's OWN level matters on its own, separate from the table
+        // being entirely host-driven everywhere else: a personal level-3 flex still works
+        // even under a host who hasn't hit Level 3.
+        return PrestigeBillsUnlocked(gameId) || RankLadder.PrestigeBillsUnlockedAtLevel(account.Level);
     }
 
     public RealPlayerJoin JoinRealPlayer(string gameId, string playerName, DateTimeOffset? now = null)

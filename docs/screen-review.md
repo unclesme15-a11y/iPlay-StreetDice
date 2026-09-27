@@ -759,3 +759,25 @@ actual account system --
   password correctly returns 401 with a readable error body. 132/132
   tests still pass (no test-visible behavior changed server-side this
   round, just the response shape).
+
+## Group 2, round 6 -- 2026-09-27
+
+### Corrected: the table's rank is the host's rank, full stop
+
+Round 4 quietly changed the host-propagation rule to be additive --
+`max(host's level, that player's own level)` -- reasoning that "they
+will be able to bet more" implied a floor, never a downgrade. User
+corrected this: "I want it all to be around the host... if a host is a
+level 3 and everyone else is a level 1, everyone will get level 3
+benefits as long as you are at a level 3 table." That's not additive --
+the table's cap and prestige-bill unlock are simply the host's level,
+period, even for a guest who personally outranks the host. Reverted
+`EffectiveBetCap`/`PrestigeBillsUnlocked` to pure `HostLevel(gameId)`,
+dropped the now-wrong `playerId` parameter and the `EffectiveLevel`
+max-of-two helper, and swapped the test that had asserted the additive
+behavior for one asserting the corrected one (a Level 5 guest still
+plays at a Level 1 host's $100 cap). `PrestigeNoteUsableBy` keeps its own
+separate own-level-3 path for a hustled note specifically -- that's a
+distinct, explicitly-stated exception for that one flex mechanic, not
+the general table cap. 132/132 tests pass; live-verified the reverted
+default case with `dotnet run` + `curl`.
