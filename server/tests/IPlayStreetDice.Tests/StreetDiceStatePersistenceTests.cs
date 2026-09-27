@@ -9,7 +9,7 @@ public class StreetDiceStatePersistenceTests : IDisposable
     [Fact]
     public void GameStateSurvivesASaveAndRestoreCycle()
     {
-        var originalStore = new StreetDiceTableStore();
+        var originalStore = new StreetDiceTableStore(new PlayerAccountStore());
         var engine = originalStore.CreateGame();
         var gameId = engine.State.GameId;
 
@@ -25,7 +25,7 @@ public class StreetDiceStatePersistenceTests : IDisposable
 
         originalStore.PersistTo(_filePath);
 
-        var restoredStore = new StreetDiceTableStore();
+        var restoredStore = new StreetDiceTableStore(new PlayerAccountStore());
         restoredStore.RestoreFrom(_filePath);
 
         Assert.True(restoredStore.TryGet(gameId, out var restoredEngine));
@@ -55,7 +55,7 @@ public class StreetDiceStatePersistenceTests : IDisposable
     [Fact]
     public void RestoringFromAMissingFileIsANoOp()
     {
-        var store = new StreetDiceTableStore();
+        var store = new StreetDiceTableStore(new PlayerAccountStore());
         var missingPath = Path.Combine(Path.GetTempPath(), $"does-not-exist-{Guid.NewGuid():N}.json");
 
         store.RestoreFrom(missingPath);

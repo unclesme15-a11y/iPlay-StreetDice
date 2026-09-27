@@ -52,4 +52,5 @@ public sealed class PersistedStoreState
 {
     public List<GameSnapshot> Games { get; set; } = new();
     public Dictionary<string, string> PlayerSessions { get; set; } = new();
+    public Dictionary<string, string> AccountLinks { get; set; } = new();
 }

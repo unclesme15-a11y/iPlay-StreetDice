@@ -1,3 +1,5 @@
+using IPlayStreetDice.Server.Core;
+
 namespace IPlayStreetDice.Tests;
 
 public sealed class ReconnectGraceTests
@@ -50,7 +52,7 @@ public sealed class ReconnectGraceTests
 
     private static StreetDiceTableStore NewLiveTable(out string gameId)
     {
-        var store = new StreetDiceTableStore();
+        var store = new StreetDiceTableStore(new PlayerAccountStore());
         var engine = store.CreateGame();
         gameId = engine.State.GameId;
         engine.AddPlayer("p1", "Shooter");
@@ -62,7 +64,7 @@ public sealed class ReconnectGraceTests
     [Fact]
     public void RealPlayersReceiveDifferentSeatsAndCannotClaimAnotherSeatToken()
     {
-        var store = new StreetDiceTableStore();
+        var store = new StreetDiceTableStore(new PlayerAccountStore());
         var gameId = store.CreateGame().State.GameId;
         var host = store.JoinRealPlayer(gameId, "Host");
         var guest = store.JoinRealPlayer(gameId, "Guest");
@@ -78,7 +80,7 @@ public sealed class ReconnectGraceTests
     [Fact]
     public void MissedHeartbeatsAllowTwentySecondsBeforeForfeit()
     {
-        var store = new StreetDiceTableStore();
+        var store = new StreetDiceTableStore(new PlayerAccountStore());
         var gameId = store.CreateGame().State.GameId;
         var host = store.JoinRealPlayer(gameId, "Host", Start);
         store.JoinRealPlayer(gameId, "Guest", Start);

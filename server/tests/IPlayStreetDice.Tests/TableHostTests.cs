@@ -11,7 +11,7 @@ public class TableHostTests
     [Fact]
     public void FirstRealPlayerToJoinBecomesHost()
     {
-        var store = new StreetDiceTableStore();
+        var store = new StreetDiceTableStore(new PlayerAccountStore());
         var engine = store.CreateGame();
         var gameId = engine.State.GameId;
 
@@ -26,7 +26,7 @@ public class TableHostTests
     [Fact]
     public void HostSurvivesAcrossSubsequentJoins()
     {
-        var store = new StreetDiceTableStore();
+        var store = new StreetDiceTableStore(new PlayerAccountStore());
         var engine = store.CreateGame();
         var gameId = engine.State.GameId;
 

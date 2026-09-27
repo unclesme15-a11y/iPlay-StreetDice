@@ -12,8 +12,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<PlayerAccountStore>();
 builder.Services.AddSingleton<StreetDiceTableStore>();
 builder.Services.AddHostedService<StreetDiceStatePersistenceService>();
+builder.Services.AddHostedService<PlayerAccountPersistenceService>();
 
 var app = builder.Build();
 
@@ -122,6 +124,44 @@ app.MapGet("/health", () => Results.Ok(new
     reservedHotDiceColors = new[] { "Red", "Orange" }
 }));
 
+app.MapPost("/api/accounts/register", (RegisterAccountRequest request, PlayerAccountStore accounts) =>
+{
+    try
+    {
+        var account = accounts.Register(request.Username, request.Password);
+        return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level, wins = account.Wins });
+    }
+    catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+    {
+        return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status400BadRequest);
+    }
+});
+
+app.MapPost("/api/accounts/login", (LoginAccountRequest request, PlayerAccountStore accounts) =>
+{
+    try
+    {
+        var (account, token) = accounts.Login(request.Username, request.Password);
+        return Results.Ok(new { accountId = account.Id, accountSessionToken = token, username = account.Username,
+            level = account.Level, wins = account.Wins,
+            maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
+            prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status401Unauthorized);
+    }
+});
+
+app.MapGet("/api/accounts/{accountId}", (string accountId, PlayerAccountStore accounts) =>
+{
+    if (!accounts.TryGet(accountId, out var account)) return Results.NotFound();
+    return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
+        wins = account.Wins, winsUntilNextLevel = RankLadder.WinsUntilNextLevel(account.Wins),
+        maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
+        prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
+});
+
 app.MapPost("/api/street-dice/create", (StreetDiceTableStore store) =>
 {
     var engine = store.CreateGame();
@@ -138,11 +178,19 @@ app.MapPost("/api/street-dice/{gameId}/join", (string gameId, JoinRequest reques
     return Results.Ok(new { playerId = player.Id, playerSessionToken = sessionToken, state = engine.State });
 });
 
-app.MapPost("/api/street-dice/{gameId}/join-real", (string gameId, JoinRequest request, StreetDiceTableStore store) =>
+app.MapPost("/api/street-dice/{gameId}/join-real", (string gameId, JoinRequest request, StreetDiceTableStore store, PlayerAccountStore accounts) =>
 {
     if (!store.TryGet(gameId, out _)) return Results.NotFound(new { error = "Game not found." });
     var joined = store.JoinRealPlayer(gameId, request.PlayerName);
-    return Results.Ok(new { playerId = joined.Player.Id, playerSessionToken = joined.Token, state = joined.State });
+    // Linking is optional -- a guest with no account still gets a seat, they just play (and,
+    // if they end up hosting, the whole table plays) at Level 1 defaults.
+    if (!string.IsNullOrEmpty(request.AccountId) && !string.IsNullOrEmpty(request.AccountSessionToken)
+        && accounts.ValidateSession(request.AccountId, request.AccountSessionToken))
+    {
+        store.LinkAccount(gameId, joined.Player.Id, request.AccountId);
+    }
+    return Results.Ok(new { playerId = joined.Player.Id, playerSessionToken = joined.Token, state = joined.State,
+        betCap = store.EffectiveBetCap(gameId), prestigeBillsUnlocked = store.PrestigeBillsUnlocked(gameId) });
 });
 
 app.MapPost("/api/street-dice/{gameId}/dice-color", (string gameId, DiceColorRequest request, StreetDiceTableStore store) =>
@@ -167,6 +215,9 @@ app.MapPost("/api/street-dice/{gameId}/shot", (string gameId, OpenShotRequest re
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.ShooterSessionToken)) return Results.Unauthorized();
+    var cap = store.EffectiveBetCap(gameId, request.ShooterId);
+    if (request.Amount > cap) return Results.Json(new { error = $"This table's bet cap is {cap}.", betCap = cap },
+        statusCode: StatusCodes.Status400BadRequest);
     engine.OpenShot(request.ShooterId, request.CatcherId, request.Amount);
     return Results.Ok(new { state = engine.State });
 });
@@ -237,12 +288,19 @@ app.MapPost("/api/street-dice/{gameId}/roll/fade", (string gameId, PhysicalRollF
     return Results.Ok(new { result = resolution, state = engine.State });
 });
 
-app.MapPost("/api/street-dice/{gameId}/roll/commit", (string gameId, PhysicalRollCommitRequest request, StreetDiceTableStore store) =>
+app.MapPost("/api/street-dice/{gameId}/roll/commit", (string gameId, PhysicalRollCommitRequest request, StreetDiceTableStore store, PlayerAccountStore accounts) =>
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.PlayerSessionToken)) return Results.Unauthorized();
     var committed = engine.CommitPhysicalRoll(request.ShooterId, request.RollId, DateTimeOffset.UtcNow);
     store.RecordCommittedRoll(gameId, request.ShooterId, committed);
+    // Wins-per-level (see RankLadder) is the only XP metric this session's spec covers -- a
+    // shooter win counted here, whether or not they're linked to an account at all.
+    if (committed.Resolution.Result is RollResultType.ShooterComeOutWin or RollResultType.ShooterPointWin
+        && store.TryGetLinkedAccount(gameId, request.ShooterId, out var shooterAccountId))
+    {
+        accounts.RecordWin(shooterAccountId);
+    }
     return Results.Ok(new { committed.RollId, result = committed.Resolution,
         faces = committed.Throw.Faces, frames = PhysicalRollTransport.Frames(committed.Throw), state = engine.State });
 });
@@ -251,6 +309,9 @@ app.MapPost("/api/street-dice/{gameId}/decision/run-same", (string gameId, Shoot
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.PlayerSessionToken)) return Results.Unauthorized();
+    var cap = store.EffectiveBetCap(gameId, request.ShooterId);
+    if (engine.State.ShotAmount > cap) return Results.Json(new { error = $"This table's bet cap is {cap}.", betCap = cap },
+        statusCode: StatusCodes.Status400BadRequest);
     engine.RunSame(request.ShooterId);
     return Results.Ok(new { state = engine.State });
 });
@@ -259,6 +320,9 @@ app.MapPost("/api/street-dice/{gameId}/decision/double-up", (string gameId, Shoo
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.PlayerSessionToken)) return Results.Unauthorized();
+    var cap = store.EffectiveBetCap(gameId, request.ShooterId);
+    if (engine.State.ShotAmount * 2 > cap) return Results.Json(new { error = $"This table's bet cap is {cap}.", betCap = cap },
+        statusCode: StatusCodes.Status400BadRequest);
     engine.DoubleUp(request.ShooterId);
     return Results.Ok(new { state = engine.State });
 });
@@ -321,20 +385,31 @@ app.MapGet("/api/street-dice/{gameId}", (string gameId, int? afterRoll, StreetDi
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     return Results.Ok(new { state = engine.State, pendingRoll = engine.CurrentPhysicalRoll(now),
         wagers = engine.PeerWagers, bettingWindow = engine.CurrentBettingWindow(now),
-        lastCommittedRoll = committed?.Sequence > (afterRoll ?? 0) ? committed : null });
+        lastCommittedRoll = committed?.Sequence > (afterRoll ?? 0) ? committed : null,
+        betCap = store.EffectiveBetCap(gameId), prestigeBillsUnlocked = store.PrestigeBillsUnlocked(gameId) });
 });
 
 app.Run();
 
 public sealed class StreetDiceTableStore
 {
+    private readonly PlayerAccountStore _accounts;
     private readonly ConcurrentDictionary<string, StreetDiceGameEngine> _games = new();
     private readonly ConcurrentDictionary<string, string> _playerSessions = new();
     private readonly ConcurrentDictionary<string, DateTimeOffset> _disconnected = new();
     private readonly ConcurrentDictionary<string, DateTimeOffset> _lastSeen = new();
     private readonly ConcurrentDictionary<string, CommittedRollBroadcast> _committedRolls = new();
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _gates = new();
+    // gameId:playerId -> AccountId, for whichever seated players are logged in. A table can
+    // run entirely with unlinked (guest) players -- this only matters for the rank-gated bet
+    // cap and prestige note unlocks below, which fall back to Level 1 when nobody's linked.
+    private readonly ConcurrentDictionary<string, string> _accountLinks = new();
     public SemaphoreSlim Gate(string gameId) => _gates.GetOrAdd(gameId, _ => new SemaphoreSlim(1, 1));
+
+    public StreetDiceTableStore(PlayerAccountStore accounts)
+    {
+        _accounts = accounts;
+    }
 
     public StreetDiceGameEngine CreateGame()
     {
@@ -354,7 +429,8 @@ public sealed class StreetDiceTableStore
         return new PersistedStoreState
         {
             Games = _games.Values.Select(e => e.State.ToSnapshot()).ToList(),
-            PlayerSessions = new Dictionary<string, string>(_playerSessions)
+            PlayerSessions = new Dictionary<string, string>(_playerSessions),
+            AccountLinks = new Dictionary<string, string>(_accountLinks)
         };
     }
 
@@ -374,6 +450,64 @@ public sealed class StreetDiceTableStore
         {
             _playerSessions[sessionKey] = token;
         }
+
+        foreach (var (sessionKey, accountId) in snapshot.AccountLinks)
+        {
+            _accountLinks[sessionKey] = accountId;
+        }
+    }
+
+    /// <summary>Links a seated player to their persistent account, once their AccountSessionToken
+    /// validates -- see the join-real endpoint. Unlinked players (guests, bots) simply don't
+    /// appear here and fall back to Level 1 defaults everywhere rank matters.</summary>
+    public void LinkAccount(string gameId, string playerId, string accountId) =>
+        _accountLinks[SessionKey(gameId, playerId)] = accountId;
+
+    public bool TryGetLinkedAccount(string gameId, string playerId, out string accountId) =>
+        _accountLinks.TryGetValue(SessionKey(gameId, playerId), out accountId!);
+
+    private int AccountLevel(string gameId, string playerId)
+    {
+        if (!_accountLinks.TryGetValue(SessionKey(gameId, playerId), out var accountId)) return 1;
+        return _accounts.TryGet(accountId, out var account) ? account.Level : 1;
+    }
+
+    private int HostLevel(string gameId)
+    {
+        if (!_games.TryGetValue(gameId, out var engine) || engine.State.HostId is not { } hostId) return 1;
+        return AccountLevel(gameId, hostId);
+    }
+
+    /// <summary>"They will be able to bet more... because that is the high ranked player's dice
+    /// game if he/she is the host" -- a higher-ranked host lifts everyone at the table up to
+    /// their level, but never DOWN below what a player already earned on their own account. So
+    /// this is the higher of the acting player's own level and the host's, not the host's alone.
+    /// With no playerId (e.g. a generic table-status display before anyone's identified as the
+    /// actor), it's just the host's level.</summary>
+    private int EffectiveLevel(string gameId, string? playerId) =>
+        Math.Max(HostLevel(gameId), playerId is null ? 1 : AccountLevel(gameId, playerId));
+
+    public int EffectiveBetCap(string gameId, string? playerId = null) =>
+        RankLadder.MaxBetForLevel(EffectiveLevel(gameId, playerId));
+
+    /// <summary>Whether the $50/$100 note art is usable at this table, in general. A hustled
+    /// prestige note specifically also has its own per-player check -- see
+    /// PrestigeNoteUsableBy -- since "they level up themselves" was called out as its own path
+    /// to using one, distinct from whatever the host provides.</summary>
+    public bool PrestigeBillsUnlocked(string gameId, string? playerId = null) =>
+        RankLadder.PrestigeBillsUnlockedAtLevel(EffectiveLevel(gameId, playerId));
+
+    /// <summary>"It's ok if it's a lower rank that ends up with a $50 or $100. That's a flex
+    /// because they hustled it from a higher rank... they wouldn't be able to use it unless
+    /// they are in a party with a level 3+ host or they level up themselves." Nothing yet
+    /// decides how a note lands in PlayerAccount.HustledPrestigeNotes -- this only answers
+    /// whether one they already hold is currently usable.</summary>
+    public bool PrestigeNoteUsableBy(string gameId, string playerId, int denomination)
+    {
+        if (!_accountLinks.TryGetValue(SessionKey(gameId, playerId), out var accountId)
+            || !_accounts.TryGet(accountId, out var account)
+            || !account.HustledPrestigeNotes.Contains(denomination)) return false;
+        return PrestigeBillsUnlocked(gameId, playerId);
     }
 
     public RealPlayerJoin JoinRealPlayer(string gameId, string playerName, DateTimeOffset? now = null)
@@ -526,7 +660,45 @@ public sealed class StreetDiceStatePersistenceService : IHostedService, IDisposa
     public void Dispose() => _timer?.Dispose();
 }
 
-public sealed record JoinRequest(string PlayerName, string? PlayerId = null);
+/// <summary>Same load-on-start/snapshot-on-timer/flush-on-stop shape as StreetDiceStatePersistenceService,
+/// pointed at its own file so table-state and account data are never coupled to the same write.</summary>
+public sealed class PlayerAccountPersistenceService : IHostedService, IDisposable
+{
+    private static readonly TimeSpan SaveInterval = TimeSpan.FromSeconds(5);
+
+    private readonly PlayerAccountStore _accounts;
+    private readonly string _filePath;
+    private Timer? _timer;
+
+    public PlayerAccountPersistenceService(PlayerAccountStore accounts, IConfiguration config)
+    {
+        _accounts = accounts;
+        _filePath = config["StreetDice:AccountsPersistencePath"]
+            ?? Environment.GetEnvironmentVariable("STREET_DICE_ACCOUNTS_PERSISTENCE_PATH")
+            ?? Path.Combine(AppContext.BaseDirectory, "data", "player-accounts.json");
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        var restored = PlayerAccountPersistence.Load(_filePath);
+        if (restored != null) _accounts.Restore(restored);
+        _timer = new Timer(_ => PlayerAccountPersistence.Save(_filePath, _accounts.Snapshot()), null, SaveInterval, SaveInterval);
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _timer?.Change(Timeout.Infinite, 0);
+        PlayerAccountPersistence.Save(_filePath, _accounts.Snapshot());
+        return Task.CompletedTask;
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}
+
+public sealed record JoinRequest(string PlayerName, string? PlayerId = null, string? AccountId = null, string? AccountSessionToken = null);
+public sealed record RegisterAccountRequest(string Username, string Password);
+public sealed record LoginAccountRequest(string Username, string Password);
 public sealed record PlayerActionRequest(string PlayerId, string PlayerSessionToken);
 public sealed record MusicControlRequest(string PlayerId, string PlayerSessionToken, string? TrackUri,
     double PositionMilliseconds, bool IsPlaying);
