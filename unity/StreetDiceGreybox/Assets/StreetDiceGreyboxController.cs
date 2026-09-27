@@ -199,6 +199,7 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         if (sceneInitialized) return;
         sceneInitialized = true;
         baseUrl = PlayerPrefs.GetString("StreetDice.ServerUrl", baseUrl);
+        LoadAccountFromPrefs();
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         Application.targetFrameRate = 60;
         Camera.main?.gameObject.SetActive(false);
@@ -1459,7 +1460,8 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
     {
         string joined = null;
         yield return Post("/api/street-dice/" + gameId + "/join-real",
-            JsonUtility.ToJson(new JoinRealRequest { playerName = playerName }), body => joined = body);
+            JsonUtility.ToJson(new JoinRealRequest { playerName = playerName,
+                accountId = accountId, accountSessionToken = accountSessionToken }), body => joined = body);
         if (string.IsNullOrEmpty(joined))
         {
             mainOptions = true;
@@ -3097,7 +3099,7 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
 
     [Serializable] private sealed class CreateResponse { public string gameId = ""; public StateDto state = null!; }
     [Serializable] private sealed class JoinResponse { public string playerId = ""; public string playerSessionToken = ""; public StateDto state = null!; }
-    [Serializable] private sealed class JoinRealRequest { public string playerName = ""; }
+    [Serializable] private sealed class JoinRealRequest { public string playerName = ""; public string accountId = ""; public string accountSessionToken = ""; }
     [Serializable] private sealed class ActionResponse { public StateDto state = null!; }
     [Serializable] private sealed class OpenShotDto
     {

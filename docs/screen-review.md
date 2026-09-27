@@ -717,3 +717,45 @@ layout that's risky to widen without a live Unity Editor to check it in.
 The crowd-size and dice-color-wheel reward ideas from the original
 rank-system brainstorm are also still unbuilt -- this round only covers
 what had concrete numbers attached (bet cap, prestige bill unlock).
+
+## Group 2, round 5 -- 2026-09-27
+
+### Music moved inline; login + Game Stats added
+
+Per instruction: music controls no longer live behind their own drawer
+tab. `DrawInlineMusicControls` renders the exact same connect/status/now-
+playing/host-transport controls directly on the main Options page, right
+under Voice & Sound -- removed the "Music" button and the separate
+`drawerPage == "Music"` page entirely, no dead code left behind.
+
+Also closed the gap flagged at the end of the last round ("no Unity
+login screen yet"): a new `StreetDiceAccount.cs` gives the client an
+actual account system --
+
+- Sign in / Create Account form on the new **Game Stats** page (reached
+  from a new Options button), using the same `DrawFlowField` styled
+  text-input helper the startup flow already uses for player name/server
+  address, plus `GUI.PasswordField` for the password.
+- Logged-in state shows level, wins, wins to next level, this level's
+  max bet, and whether $50/$100 notes are unlocked -- all real data from
+  `GET /api/accounts/{id}`, not placeholders.
+- Login persists across app restarts via `PlayerPrefs` (same pattern
+  `baseUrl` already uses), and `JoinRealPlayer` now sends the saved
+  `accountId`/`accountSessionToken` along with `join-real` -- this is
+  the piece that actually turns on the bet cap and prestige-bill
+  unlocks built last round for a real signed-in player, not just in
+  tests.
+- Account requests use their own `PostAccount` coroutine rather than the
+  shared `Post`/`PostOpen` helpers, since those assume a table already
+  exists and swallow the server's actual error text; sign-in failures
+  now show the real message (e.g. "Incorrect username or password.")
+  on the form itself.
+- Server-side: `GET/POST /api/accounts/*` responses now send
+  `winsUntilNextLevel: -1` at max level instead of a JSON `null` --
+  Unity's `JsonUtility` doesn't reliably handle a null landing on a
+  non-nullable int field, so this avoids relying on unverified behavior
+  there. Live-verified with `dotnet run` + `curl`: register, log in
+  (now-consistent response shape between login and profile fetch), wrong
+  password correctly returns 401 with a readable error body. 132/132
+  tests still pass (no test-visible behavior changed server-side this
+  round, just the response shape).

@@ -144,6 +144,7 @@ app.MapPost("/api/accounts/login", (LoginAccountRequest request, PlayerAccountSt
         var (account, token) = accounts.Login(request.Username, request.Password);
         return Results.Ok(new { accountId = account.Id, accountSessionToken = token, username = account.Username,
             level = account.Level, wins = account.Wins,
+            winsUntilNextLevel = RankLadder.WinsUntilNextLevel(account.Wins) ?? -1,
             maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
             prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
     }
@@ -156,8 +157,11 @@ app.MapPost("/api/accounts/login", (LoginAccountRequest request, PlayerAccountSt
 app.MapGet("/api/accounts/{accountId}", (string accountId, PlayerAccountStore accounts) =>
 {
     if (!accounts.TryGet(accountId, out var account)) return Results.NotFound();
+    // winsUntilNextLevel is -1 at MaxLevel rather than a JSON null -- Unity's JsonUtility (the
+    // client's deserializer) doesn't reliably handle a null literal landing on a non-nullable
+    // int field, and this response has no need for a true null here anyway.
     return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
-        wins = account.Wins, winsUntilNextLevel = RankLadder.WinsUntilNextLevel(account.Wins),
+        wins = account.Wins, winsUntilNextLevel = RankLadder.WinsUntilNextLevel(account.Wins) ?? -1,
         maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
         prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
 });

@@ -848,7 +848,8 @@ public sealed partial class StreetDiceGreyboxController
         DrawOpaquePanel(new Rect(x, 0, width, h));
         GUI.Label(new Rect(x + 18, 16, 220, 32), drawerPage);
         if (DrawMetalButton(new Rect(x + width - 56, 12, 40, 36), "X")) drawerOpen = false;
-        drawerScroll = GUI.BeginScrollView(new Rect(x + 12, 60, width - 24, h - 138), drawerScroll, new Rect(0, 0, width - 46, drawerPage == "Options" ? 445 : 530));
+        float scrollContentHeight = drawerPage == "Options" ? 635 : drawerPage == "Game Stats" ? 410 : 530;
+        drawerScroll = GUI.BeginScrollView(new Rect(x + 12, 60, width - 24, h - 138), drawerScroll, new Rect(0, 0, width - 46, scrollContentHeight));
         if (drawerPage == "Options")
         {
             GUI.Label(new Rect(4, 10, 284, 26), "Throw Style");
@@ -867,8 +868,9 @@ public sealed partial class StreetDiceGreyboxController
             GUI.enabled = true;
             SetTutorialMode(DrawOptionSwitch(new Rect(4, 197, 284, 40), tutorialMode, "Tutorial Mode"));
             if (DrawMetalButton(new Rect(4, 257, 284, 44), "Voice & Sound")) drawerPage = "Voice & Sound";
-            if (DrawMetalButton(new Rect(4, 313, 284, 44), "Music")) drawerPage = "Music";
-            if (DrawMetalButton(new Rect(4, 369, 284, 44), "Rules")) drawerPage = "Rules";
+            DrawInlineMusicControls(313f);
+            if (DrawMetalButton(new Rect(4, 515, 284, 44), "Rules")) drawerPage = "Rules";
+            if (DrawMetalButton(new Rect(4, 571, 284, 44), "Game Stats")) drawerPage = "Game Stats";
         }
         else if (drawerPage == "Voice & Sound")
         {
@@ -886,42 +888,10 @@ public sealed partial class StreetDiceGreyboxController
             GUI.enabled = true;
             if (DrawMetalButton(new Rect(4, 310, 284, 42), "Back")) drawerPage = "Options";
         }
-        else if (drawerPage == "Music")
+        else if (drawerPage == "Game Stats")
         {
-            if (localDemo)
-            {
-                GUI.Label(new Rect(4, 4, 284, 60), "Music syncing needs an online table -- it's unavailable in the offline demo.");
-            }
-            else
-            {
-                EnsureSpotifyBridge();
-                GUI.Label(new Rect(4, 4, 284, 60), !spotifyBridge.IsAvailable
-                    ? "Spotify sync needs the mobile app -- unavailable here."
-                    : spotifyConnected ? "Spotify connected." : "Connect Spotify to hear the table's music.");
-                GUI.enabled = spotifyBridge.IsAvailable && !spotifyConnected;
-                if (DrawMetalButton(new Rect(4, 68, 284, 44), "Connect Spotify")) ConnectSpotifyIfNeeded();
-                GUI.enabled = true;
-
-                string nowPlaying = string.IsNullOrEmpty(lastMusicTrackUri) ? "Nothing queued yet."
-                    : (lastMusicIsPlaying ? "Playing: " : "Paused: ") + lastMusicTrackUri;
-                GUI.Label(new Rect(4, 128, 284, 50), nowPlaying);
-
-                if (IsHost)
-                {
-                    GUI.Label(new Rect(4, 188, 284, 26), "You're the host -- your Spotify drives the table.");
-                    GUI.enabled = spotifyConnected;
-                    if (DrawMetalButton(new Rect(4, 220, 90, 44), "Prev")) HostSkip(false);
-                    if (DrawMetalButton(new Rect(97, 220, 90, 44), lastMusicIsPlaying ? "Pause" : "Play")) HostTogglePlayPause(!lastMusicIsPlaying);
-                    if (DrawMetalButton(new Rect(190, 220, 98, 44), "Next")) HostSkip(true);
-                    GUI.enabled = true;
-                    GUI.Label(new Rect(4, 276, 284, 60), "Pick and control the song from inside Spotify itself, or use the buttons above -- everyone else's Spotify follows.");
-                }
-                else
-                {
-                    GUI.Label(new Rect(4, 188, 284, 60), "The host controls the music. Their track plays through your own Spotify once you're connected.");
-                }
-            }
-            if (DrawMetalButton(new Rect(4, 356, 284, 42), "Back")) drawerPage = "Options";
+            DrawGameStatsPage();
+            if (DrawMetalButton(new Rect(4, 350, 284, 42), "Back")) drawerPage = "Options";
         }
         else if (drawerPage == "Rules")
         {
@@ -934,6 +904,75 @@ public sealed partial class StreetDiceGreyboxController
         GUI.EndScrollView();
         // Always pinned last, outside the scrolling options.
         if (DrawMetalButton(new Rect(x + 16, h - 62, width - 32, 46), "Leave Game")) { confirmLeave = true; CancelShake(); }
+    }
+
+    /// <summary>Music, inline on the main Options page rather than its own drawer tab --
+    /// explicit instruction, since a sub-tab buried the controls behind an extra
+    /// step.</summary>
+    private void DrawInlineMusicControls(float y)
+    {
+        GUI.Label(new Rect(4, y, 284, 22), "Music");
+        if (localDemo)
+        {
+            GUI.Label(new Rect(4, y + 26, 284, 44), "Needs an online table -- unavailable in the offline demo.");
+            return;
+        }
+
+        EnsureSpotifyBridge();
+        GUI.Label(new Rect(4, y + 26, 284, 44), !spotifyBridge.IsAvailable
+            ? "Spotify sync needs the mobile app -- unavailable here."
+            : spotifyConnected ? "Spotify connected." : "Connect Spotify to hear the table's music.");
+        GUI.enabled = spotifyBridge.IsAvailable && !spotifyConnected;
+        if (DrawMetalButton(new Rect(4, y + 72, 284, 40), "Connect Spotify")) ConnectSpotifyIfNeeded();
+        GUI.enabled = true;
+
+        string nowPlaying = string.IsNullOrEmpty(lastMusicTrackUri) ? "Nothing queued yet."
+            : (lastMusicIsPlaying ? "Playing: " : "Paused: ") + lastMusicTrackUri;
+        GUI.Label(new Rect(4, y + 116, 284, 26), nowPlaying);
+
+        if (IsHost)
+        {
+            GUI.enabled = spotifyConnected;
+            if (DrawMetalButton(new Rect(4, y + 146, 90, 40), "Prev")) HostSkip(false);
+            if (DrawMetalButton(new Rect(97, y + 146, 90, 40), lastMusicIsPlaying ? "Pause" : "Play")) HostTogglePlayPause(!lastMusicIsPlaying);
+            if (DrawMetalButton(new Rect(190, y + 146, 98, 40), "Next")) HostSkip(true);
+            GUI.enabled = true;
+        }
+        else
+        {
+            GUI.Label(new Rect(4, y + 146, 284, 40), "The host controls the music.");
+        }
+    }
+
+    private void DrawGameStatsPage()
+    {
+        if (localDemo)
+        {
+            GUI.Label(new Rect(4, 4, 284, 60), "Stats need an online account -- unavailable in the offline demo.");
+            return;
+        }
+
+        if (!accountLoggedIn)
+        {
+            GUI.Label(new Rect(4, 4, 284, 30), "Sign in to track your rank across games.");
+            DrawFlowField(new Rect(4, 78, 284, 34), "Username", ref statsUsernameInput, 24);
+            statsPasswordInput = GUI.PasswordField(new Rect(4, 150, 284, 34), statsPasswordInput, '*', 32);
+            if (!string.IsNullOrEmpty(statsError)) GUI.Label(new Rect(4, 192, 284, 40), statsError);
+            GUI.enabled = !statsBusy;
+            if (DrawMetalButton(new Rect(4, 240, 138, 44), "Sign In")) SubmitSignIn();
+            if (DrawMetalButton(new Rect(150, 240, 138, 44), "Create Account")) SubmitCreateAccount();
+            GUI.enabled = true;
+            if (statsBusy) GUI.Label(new Rect(4, 292, 284, 26), "Working...");
+            return;
+        }
+
+        GUI.Label(new Rect(4, 4, 284, 30), accountUsername);
+        GUI.Label(new Rect(4, 40, 284, 40), $"Level {accountLevel}");
+        GUI.Label(new Rect(4, 84, 284, 26), $"Wins: {accountWins}");
+        GUI.Label(new Rect(4, 114, 284, 26), accountLevel >= 5 ? "Max level reached." : $"Wins to next level: {accountWinsUntilNextLevel}");
+        GUI.Label(new Rect(4, 144, 284, 26), $"Max bet at this level: {accountMaxBet}");
+        GUI.Label(new Rect(4, 174, 284, 26), accountPrestigeUnlocked ? "$50/$100 notes unlocked." : "$50/$100 notes locked until Level 3.");
+        if (DrawMetalButton(new Rect(4, 220, 284, 42), "Log Out")) LogOutAccount();
     }
 
     private void DrawLeaveConfirmation()
