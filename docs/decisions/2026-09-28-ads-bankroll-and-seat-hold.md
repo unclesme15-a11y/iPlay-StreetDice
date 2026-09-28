@@ -4,13 +4,51 @@ Owner-approved 2026-09-28. **None of this is built yet.** Claude owns the ad
 and revenue planning; Codex builds. Uses the host rule from
 `2026-09-27-rank-host-and-rewards.md`.
 
+## Ad network: AppLovin MAX (mediation)
+
+- Use **AppLovin MAX** mediation, with Google AdMob, Unity Ads and other
+  networks plugged in as bidders, so several networks compete for every slot.
+- The SDK key and ad unit IDs come from the owner's MAX account. Use MAX's
+  test mode during development; never ship test IDs.
+- Rewarded ads must use MAX's server-side verification callback to grant the
+  refill (see below).
+- Use MAX's built-in consent flow (privacy consent where the law requires it)
+  and, on iPhone, Apple's tracking prompt with this wording (Info.plist
+  `NSUserTrackingUsageDescription`): *"Allowing tracking helps keep iPlay free
+  by showing ads that fit you better. You'll see ads either way."*
+- **No purchases.** No "remove ads" or any other in-app purchase (owner
+  decision).
+
+## Ad rules (Google's social casino requirements)
+
+Google's ad network accepts simulated-gambling games where nothing of real
+value can be won, if the game has an adults-only notice and says it offers no
+real-money gambling and no real-world prizes. The existing 18+ screen
+(`StreetDiceStartup.cs`, `DrawAdultGate`) says "for adults, play money only";
+extend its text to also say **"No real money. Nothing of real value can be
+won."** Promoting the game with Google's own ads later needs a separate social
+casino certification -- that's a marketing step, not a build step.
+
 ## Ad layout
 
 | Where | Format | Rule |
 | --- | --- | --- |
-| Every screen that isn't a live game (main menu, online lobby, settings, credits) | Banner | Always on. Every menu needs a clear strip so the banner never covers a button. |
-| After a seven-out | Full-screen, skippable after 15 seconds | Only the shooter who sevened out sees it, on every **2nd** seven-out of their own. **Never** after a come-out 2/3/12 (the shooter keeps the dice, so the party would wait). |
+| Every screen that isn't a live game (main menu, online lobby, settings, credits) | Banner | Always on. Every menu needs a clear strip so the banner never covers a button. No banners inside a game, including the in-game drawer. |
+| After a seven-out (Craps) | Full-screen, skippable after 15 seconds | Only the shooter who sevened out sees it, on every **2nd** seven-out of their own. **Never** after a come-out 2/3/12 (the shooter keeps the dice, so the party would wait). |
+| After losing to the banker (Cee-lo) | Full-screen, skippable after 15 seconds | Only that player, on every **2nd** loss of their own to the banker. The next player rolls meanwhile, so nobody waits. |
 | Player is broke | Rewarded video, 15-30 seconds, can't skip once started | Player chooses to watch (store rules require opt-in). See refill rules. |
+
+**Offline play vs the computer uses the same rules** as online (banners,
+loss ad, broke-player ad). Offline, the player is the host, so the refill goes
+up to their own max bet.
+
+### Owner setup (before ads can go live)
+
+1. Create the AppLovin MAX account (and tax info), add the app, send the SDK
+   key and ad unit IDs.
+2. Put an `app-ads.txt` file (MAX provides the contents) on the website listed
+   in the store pages.
+3. Update the privacy policy to cover ads and the ad networks' data use.
 
 ### Broke-player refill
 

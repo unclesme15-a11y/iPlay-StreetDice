@@ -84,9 +84,8 @@ Test on a real Android phone and a real iPhone before building features.
   held seat for someone new. While the HOST's seat is on hold, the next-highest
   rank covers as host and hands it back when they return. Ad breaks mark the
   player "away" so the 20-second disconnect timer doesn't remove them.
-- d. **Broke-player refill, server side**, with a hook for the ad network's
-  server-side verification. Do NOT pick or integrate an ad network -- Claude
-  owns ad planning and will spec it.
+- d. **Broke-player refill, server side**, granted only through AppLovin MAX's
+  server-side verification callback (never trusted from the app).
 - e. **Dice color unlocks:** white at start, Level 2 green, Level 3 black,
   Level 4 red and blue with white pips (the red visibly different from hot
   dice), Level 5 a color wheel in settings showing real RGB numbers.
@@ -152,14 +151,33 @@ in The Jungle -- it plays the iPlay soundtrack.
 Follow `docs/spotify-integration-setup.md` once the owner supplies a Spotify
 Client ID.
 
+### 8b. Ads -- AppLovin MAX (spec in the ads/bankroll doc)
+Integrate AppLovin MAX mediation once the owner supplies the SDK key and ad unit
+IDs (use MAX test mode until then; never ship test IDs):
+- Banners on every non-game screen only (menus, online lobby, settings,
+  credits) -- never inside a game or the in-game drawer; leave a clear strip so
+  a banner never covers a button.
+- Full-screen ad, skippable after 15 seconds: Craps -- the shooter who sevened
+  out, on every 2nd seven-out of their own, never after a come-out 2/3/12.
+  Cee-lo -- the player who lost to the banker, on every 2nd loss of their own.
+- Rewarded ad when broke (player opts in): pays half the player's OWN max bet
+  per ad, up to the HOST's max bet; granted via MAX server-side verification.
+- Before any ad starts, mark the player "away" (seat hold) so the disconnect
+  timer never removes them. Never show an ad mid-roll.
+- Offline vs the computer uses the same ad rules.
+- MAX's consent flow; iPhone tracking prompt text is in the ads doc.
+- Extend the 18+ screen text with "No real money. Nothing of real value can be
+  won." (Google's social casino requirement).
+- No in-app purchases of any kind.
+
 ### 9. Modern UI switch -- last, before launch
 Move menus, HUD and drawer off IMGUI (`OnGUI`) to uGUI or UI Toolkit, keeping the
 exact iPlay look. Only after gameplay is verified on phones.
 
 ## Do NOT build (saved for later or owned by someone else)
 Daily challenges (saved for after launch), player cards / rank titles,
-seasons / leaderboards, cosmetic shop, store trailer, any ad network
-integration (Claude), crowd footage itself (Claude).
+seasons / leaderboards, cosmetic shop or any in-app purchase, store trailer,
+crowd footage itself (Claude is sourcing it).
 
 ## Before every push
 - `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (162/162 now,
