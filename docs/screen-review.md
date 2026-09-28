@@ -880,3 +880,31 @@ that makes that consequence explicit rather than leaving it implicit.
 - 162/162 tests. Live-verified on a real server roll: a shooter winning $20 on
   the first shot of the day earned 150 XP ((8+8+12+2) x 5) and the catcher 80.
   All 28 Unity scripts still parse clean.
+
+## Round 10 -- 2026-09-28
+
+### Street-dice speed: no countdown before every point roll
+
+The owner flagged that a shot must not take a minute. Measured: it did. The
+server (`StreetDiceGameEngine.Roll`) and the offline game
+(`StreetDiceGreyboxController`) reopened the full 10s propose + 5s lock
+countdown after **every** roll during a point, and `docs/game-rules.md` said
+to. With ~5 seconds of throw/result per roll, every point roll cost about 20
+seconds -- roughly 70 seconds per shot.
+
+Now a countdown opens only when a new betting situation starts: the come-out
+and the moment the point is set. After that the shooter keeps rolling; between
+rolls only Double Up / paired-number add-ons can be proposed, which the
+shooter accepts before throwing. Average shot drops to about 48 seconds
+(simulated), and individual point rolls take about 5 seconds. New test
+`AfterThePointWindow_TheShooterKeepsRollingWithNoCountdown` fails on the old
+code ("Acceptance countdown is still running") and passes now. 163/163.
+
+### Party ad break
+
+Owner corrected the loss ad: it's a party-wide break after every 2nd seven-out
+at the party, whoever threw it. Set by simulation
+(`docs/reference/ad-break-simulation.py`): 90-second floor between breaks,
+never more than 3 seven-outs without one -- 100% of 5-player rotations get at
+least 2 breaks, about 14 breaks per hour. Recorded in the ads doc and the
+Codex prompt, along with the owner's color countdown ring around the lock.

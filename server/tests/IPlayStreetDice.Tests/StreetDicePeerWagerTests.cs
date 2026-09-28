@@ -172,6 +172,28 @@ public sealed class StreetDicePeerWagerTests
         Assert.Equal(4000, game.State.Players.Sum(player => player.Balance));
     }
 
+    [Fact]
+    public void AfterThePointWindow_TheShooterKeepsRollingWithNoCountdown()
+    {
+        var game = NewShot();
+        game.Roll(new DiceRoll(4, 6), Start.AddSeconds(20));           // point 10: point window opens
+        var source = game.OfferPeerWager("p3", "p1", WagerOutcome.Crap, 10, 5, Start.AddSeconds(21));
+        game.AcceptPeerWager("p1", source.Id, Start.AddSeconds(22));
+
+        game.Roll(new DiceRoll(3, 3), Start.AddSeconds(36));           // 6: point still live
+        // No new countdown: the very next throw can go right away.
+        game.Roll(new DiceRoll(2, 3), Start.AddSeconds(38));
+        Assert.Equal(0, game.CurrentBettingWindow(Start.AddSeconds(39))!.OfferRemainingMilliseconds);
+
+        // Between rolls, new Hit/Crap bets are closed; only Double Up / paired number.
+        Assert.Throws<InvalidOperationException>(() =>
+            game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 10, 5, Start.AddSeconds(39)));
+        var doubled = game.OfferPeerAddOn("p3", source.Id, WagerAddOnKind.DoubleUp, Start.AddSeconds(39));
+        game.AcceptPeerWager("p1", doubled.Id, Start.AddSeconds(40));
+        game.Roll(new DiceRoll(1, 1), Start.AddSeconds(41));
+        Assert.Equal(WagerStatus.Accepted, doubled.Status);
+    }
+
     private static StreetDiceGameEngine NewShot()
     {
         var game = new StreetDiceGameEngine("peer-test");

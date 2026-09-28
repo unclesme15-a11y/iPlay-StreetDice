@@ -226,7 +226,12 @@ public sealed partial class StreetDiceGameEngine
         if (_peerWagers.Rolling) SettlePeerWagers(_peerWagers.Resolve(roll.Total));
         if (resolution.Result is not (RollResultType.ShooterComeOutLoss or RollResultType.ShooterSevenOutLoss))
             State.Streak = Math.Min(State.HotDiceThreshold, State.Streak + Math.Min(_shooterSideWinsThisRoll, 2) * 0.5f);
-        if (State.Phase == GamePhase.Point && _peerWagers.Started)
+        // A betting window opens only when a new betting situation starts: the come-out
+        // (OpenShot / RunSame / DoubleUp) and the moment a point is set. Street dice is quick --
+        // after that the shooter keeps rolling with no countdown, and between rolls players can
+        // only propose a Double Up or the paired number (ProposeAddOn), which the shooter
+        // accepts before the next throw.
+        if (resolution.Result == RollResultType.PointEstablished && _peerWagers.Started)
             _peerWagers.Open(State.ShooterId!, State.Point!.Value, BettingSeconds(now ?? DateTimeOffset.UtcNow));
         return resolution;
     }

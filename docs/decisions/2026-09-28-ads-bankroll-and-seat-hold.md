@@ -34,9 +34,36 @@ casino certification -- that's a marketing step, not a build step.
 | Where | Format | Rule |
 | --- | --- | --- |
 | Every screen that isn't a live game (main menu, online lobby, settings, credits) | Banner | Always on. Every menu needs a clear strip so the banner never covers a button. No banners inside a game, including the in-game drawer. |
-| After a seven-out (Craps) | Full-screen, skippable after 15 seconds | Only the shooter who sevened out sees it, on every **2nd** seven-out of their own. **Never** after a come-out 2/3/12 (the shooter keeps the dice, so the party would wait). |
-| After losing to the banker (Cee-lo) | Full-screen, skippable after 15 seconds | Only that player, on every **2nd** loss of their own to the banker. The next player rolls meanwhile, so nobody waits. |
+| Party ad break (Craps) | Full-screen, skippable after 15 seconds | **The whole party at once**, after every **2nd seven-out at the party, no matter who threw it** -- see "Party ad break" below. **Never** counts a come-out 2/3/12 (the shooter keeps the dice). |
+| Party ad break (Cee-lo) | Full-screen, skippable after 15 seconds | *Proposed, owner to confirm:* the whole party after every **2nd time the bank passes** (Cee-lo's version of the dice passing), same timer rules. |
 | Player is broke | Rewarded video, 15-30 seconds, can't skip once started | Player chooses to watch (store rules require opt-in). See refill rules. |
+
+### Party ad break (owner-defined 2026-09-28)
+
+Like a TV commercial break: everyone at the party watches at the same time,
+so nobody waits on anybody.
+
+- **Trigger:** every 2nd seven-out at the party, whoever threw it. Example: 5
+  players each seven-out once -> breaks after the 2nd and 4th seven-outs, and
+  the next one after the first shooter of round two sevens out (6th).
+- **Time floor:** a break needs at least **90 seconds** since the last break
+  ended. If the 2nd seven-out comes sooner (a quick seven-out), the break waits
+  for the next seven-out instead.
+- **Cap:** never more than **3 seven-outs** without a break, even if 90 seconds
+  haven't passed. This guarantees the owner's rule that 2 breaks have played
+  before all 5 players have shot and sevened out.
+- **Why these numbers (simulated 100,000 turns of real craps odds with the
+  2026-09-28 roll timing):** a shooter's turn averages about 2 minutes and a
+  5-player rotation about 9.5 minutes; with the 90-second floor and the
+  3-seven-out cap, **100% of rotations got at least 2 breaks**, averaging about
+  **14 breaks per hour** (one every ~4 minutes). A 120-second floor dropped
+  below 100%.
+- **Mechanics:** the server pauses the party (no rolls, no bets, betting
+  timers frozen), marks everyone "away" so the disconnect timer can't remove
+  anyone, and resumes when every player's ad has closed or after 35 seconds,
+  whichever comes first. Never starts mid-roll -- only right after a
+  seven-out resolves.
+- Offline vs the computer: same trigger and timer; bots' seven-outs count.
 
 **Offline play vs the computer uses the same rules** as online (banners,
 loss ad, broke-player ad). Offline, the player is the host, so the refill goes

@@ -1917,11 +1917,14 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         if (rollFaded) { if (!fadeInProgress) rolling = false; rollState = RollState.FadeWindow; yield break; }
         rollState = RollState.Resolving;
 
+        bool wasComeOut = phase == "ComeOut";
         ResolveLocalRoll(a + b);
         if (phase == "Point")
         {
             rollState = RollState.FadeWindow;
-            if (shotCommitted) OpenBettingWindow();
+            // Same rule as the server: a countdown only when the point is first set, never
+            // before every point roll.
+            if (shotCommitted && wasComeOut) OpenBettingWindow();
         }
         ApplyDiceColor();
     }

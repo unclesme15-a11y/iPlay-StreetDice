@@ -106,6 +106,13 @@ filled, whether a shot is live; none open -> start one as host). No host Spotify
 in The Jungle -- it plays the iPlay soundtrack.
 
 ### 6. Launch features (launch-features doc)
+- **Street-dice speed (already fixed server-side 2026-09-28 -- keep it):** a
+  betting countdown opens only at the come-out and when the point is set; the
+  point rolls after that have no countdown (see `docs/game-rules.md`). Verify
+  the client HUD matches. Replace the big countdown number with a **color
+  countdown ring around the lock** once a lock is on screen: it drains around
+  the lock through the 10-second propose window (green -> yellow -> red), and
+  the shooter's ring keeps going through their extra 5 seconds to lock bets in.
 - **Level-up moment:** flash, crowd reaction, new level + unlocks revealed;
   smaller version per step; everyone at the party sees it; never mid-roll.
 - **Dice calls, Tutorial Mode only:** in real play the voice chat IS the dice
@@ -157,9 +164,13 @@ IDs (use MAX test mode until then; never ship test IDs):
 - Banners on every non-game screen only (menus, online lobby, settings,
   credits) -- never inside a game or the in-game drawer; leave a clear strip so
   a banner never covers a button.
-- Full-screen ad, skippable after 15 seconds: Craps -- the shooter who sevened
-  out, on every 2nd seven-out of their own, never after a come-out 2/3/12.
-  Cee-lo -- the player who lost to the banker, on every 2nd loss of their own.
+- Party ad break (full-screen, skippable after 15 seconds) for the WHOLE party
+  at once: after every 2nd seven-out at the party, whoever threw it; at least
+  90 seconds after the last break ended, but never more than 3 seven-outs
+  without one. Server pauses the party (no rolls, timers frozen, everyone
+  "away"), resumes when all ads close or after 35 seconds. Never counts a
+  come-out 2/3/12; never mid-roll. Cee-lo: see the ads doc (pending owner
+  confirmation).
 - Rewarded ad when broke (player opts in): pays half the player's OWN max bet
   per ad, up to the HOST's max bet; granted via MAX server-side verification.
 - Before any ad starts, mark the player "away" (seat hold) so the disconnect
@@ -180,7 +191,7 @@ seasons / leaderboards, cosmetic shop or any in-app purchase, store trailer,
 crowd footage itself (Claude is sourcing it).
 
 ## Before every push
-- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (162/162 now,
+- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (163/163 now,
   plus whatever you add).
 - Unity compiles clean; the readiness run passes; screenshots of any UI change.
 - Add a new round to `docs/screen-review.md` for each change: what, why, how

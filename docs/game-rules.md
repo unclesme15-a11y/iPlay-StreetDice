@@ -83,11 +83,11 @@ Possible side bets:
 
 Side bets do not resolve on faded rolls.
 
-- Every craps roll opens a public 10-second betting window after the main shot is committed.
+- A public 10-second betting window opens at two moments only: the come-out (after the main shot is committed) and when the point is set. Street dice is quick -- there is no countdown before the other rolls.
 - Every non-shooter sees a real `10` through `1` countdown. The shooter sees one continuous `15` through `1` countdown because only the shooter receives the additional five-second acceptance period.
 - The shooter cannot begin the throw until the 15-second countdown reaches zero.
 - New side-bet offers and non-shooter acceptances received after 10 seconds are rejected. The shooter may accept an already offered wager during the additional five seconds; no new offer can be created then.
-- If the point remains active after a roll, a fresh 10/15-second role-specific window opens before the shooter's next roll.
+- After the point window, the shooter keeps rolling with no countdown until the point is hit or they seven-out. Between those rolls the only bets anyone can propose are **Double Up** and the **paired number** add-ons below, which the shooter accepts or ignores before throwing again. (Changed 2026-09-28 by the owner; previously a fresh window opened before every point roll, which made a shot take over a minute.)
 
 Point group side bets use these street dice groups:
 
