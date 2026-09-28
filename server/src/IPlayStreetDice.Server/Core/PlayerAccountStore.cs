@@ -68,9 +68,35 @@ public sealed class PlayerAccountStore
         }
     }
 
-    public void RecordWin(string accountId)
+    /// <summary>Credits one finished shot (shooter or catcher). opponentKey identifies who was
+    /// on the other side, so the win bonus stops paying out after a few wins against the same
+    /// person in one day. Returns the XP actually granted after the daily cap.</summary>
+    public int RecordShot(string accountId, bool won, string opponentKey, int amountWon, DateOnly today)
     {
-        if (_accountsById.TryGetValue(accountId, out var account)) account.Wins++;
+        if (!_accountsById.TryGetValue(accountId, out var account)) return 0;
+        lock (account)
+        {
+            if (account.DailyXpDay != today)
+            {
+                account.DailyXpDay = today;
+                account.DailyXp = 0;
+                account.DailyWinBonusesByOpponent.Clear();
+            }
+            account.ShotsPlayed++;
+            var winBonusAvailable = false;
+            if (won)
+            {
+                account.Wins++;
+                account.DailyWinBonusesByOpponent.TryGetValue(opponentKey, out var bonusesToday);
+                winBonusAvailable = bonusesToday < RankLadder.WinBonusesPerOpponentPerDay;
+                if (winBonusAvailable) account.DailyWinBonusesByOpponent[opponentKey] = bonusesToday + 1;
+            }
+            var granted = Math.Min(RankLadder.XpForShot(won, winBonusAvailable, amountWon),
+                Math.Max(0, RankLadder.DailyXpCap - account.DailyXp));
+            account.Xp += granted;
+            account.DailyXp += granted;
+            return granted;
+        }
     }
 
     public IReadOnlyCollection<PlayerAccount> All => _accountsById.Values.ToList();
@@ -79,7 +105,9 @@ public sealed class PlayerAccountStore
     // silently invalidated every saved login, and players dropped to Level 1 without being told.
     public List<PersistedAccount> Snapshot() => _accountsById.Values.Select(a => new PersistedAccount(
         a.Id, a.Username, a.PasswordHash, a.PasswordSalt, a.Wins, a.HustledPrestigeNotes.ToList(),
-        _accountSessions.TryGetValue(a.Id, out var token) ? token : null)).ToList();
+        _accountSessions.TryGetValue(a.Id, out var token) ? token : null,
+        a.Xp, a.ShotsPlayed, a.DailyXp, a.DailyXpDay,
+        new Dictionary<string, int>(a.DailyWinBonusesByOpponent))).ToList();
 
     public void Restore(IEnumerable<PersistedAccount> accounts)
     {
@@ -87,8 +115,14 @@ public sealed class PlayerAccountStore
         {
             var account = new PlayerAccount(persisted.Id, persisted.Username, persisted.PasswordHash, persisted.PasswordSalt)
             {
-                Wins = persisted.Wins
+                Wins = persisted.Wins,
+                Xp = persisted.Xp,
+                ShotsPlayed = persisted.ShotsPlayed,
+                DailyXp = persisted.DailyXp,
+                DailyXpDay = persisted.DailyXpDay
             };
+            foreach (var (opponent, bonuses) in persisted.DailyWinBonusesByOpponent ?? new())
+                account.DailyWinBonusesByOpponent[opponent] = bonuses;
             foreach (var note in persisted.HustledPrestigeNotes) account.HustledPrestigeNotes.Add(note);
             _accountsById[account.Id] = account;
             _idByUsername[account.Username] = account.Id;
@@ -111,5 +145,8 @@ public sealed class PlayerAccountStore
     }
 }
 
+// Everything after HustledPrestigeNotes is optional so account files saved by earlier
+// builds still load (they come back at 0 XP -- pre-launch test accounts only).
 public sealed record PersistedAccount(string Id, string Username, string PasswordHash, string PasswordSalt, int Wins,
-    List<int> HustledPrestigeNotes, string? SessionToken = null);
+    List<int> HustledPrestigeNotes, string? SessionToken = null, int Xp = 0, int ShotsPlayed = 0,
+    int DailyXp = 0, DateOnly? DailyXpDay = null, Dictionary<string, int>? DailyWinBonusesByOpponent = null);

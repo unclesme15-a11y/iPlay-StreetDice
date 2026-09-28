@@ -819,3 +819,35 @@ that makes that consequence explicit rather than leaving it implicit.
   This catches structural mistakes, not wrong Unity API names or types.
 - #2 (stakes can't reach the cap) and #3 (host leaving) wait on owner
   answers -- see docs/decisions/2026-09-27-rank-host-and-rewards.md.
+
+## Round 8 -- 2026-09-28
+
+### Review findings #2 and #3, plus the XP formula
+
+- **#3 fixed: the host leaving.** `StreetDiceTableStore.HandleDeparture` runs on
+  every departure path (leave button and disconnect expiry). The party keeps
+  the departing host's level for the rest of the party (`LockedTableLevel`),
+  and the host role passes to the highest-ranked player still seated. Also
+  fixed a related gap: `HostId` was never saved, so a server restart cleared
+  every party's host, rank and music controls. `HostId` and
+  `LockedTableLevel` now persist.
+- **#2 fixed: bets can reach the cap.** Tapping a bill now adds it to the
+  stake like dropping cash, up to the party's cap and what both sides can
+  cover, with a Clear button and a "Stake $X (max $Y)" label. Run Same and
+  Double Up respect the cap too. The app reads `betCap` and
+  `prestigeBillsUnlocked` from the state poll. $50/$100 join the picker and
+  ground piles only when unlocked *and* their art exists, so a missing
+  texture can't crash a pile. `SelectMainWager` still sets an exact single
+  bill, so the existing Editor readiness checks stay valid; stacking needs its
+  own readiness check. The pile's look should match the owner's stacked-bills
+  screenshot once uploaded.
+- **XP is now a combination of playing, winning and money won**, with
+  per-opponent and daily caps against farming (see the rank doc). Both the
+  shooter and the catcher earn XP on every finished shot. Game Stats shows XP,
+  shots, wins and XP to next level.
+- Live-verified with `dotnet run` and real server-rolled dice: a come-out loss
+  gave the shooter 10 XP and the $20-winning catcher 27 XP; the host leaving
+  moved the host role to p2 with the level locked. 146/146 tests (+11). All 28
+  Unity scripts still parse with 0 syntax errors.
+- New `docs/decisions/2026-09-28-ads-bankroll-and-seat-hold.md` records the
+  approved ad layout, one-bankroll-per-account and seat hold (not built).

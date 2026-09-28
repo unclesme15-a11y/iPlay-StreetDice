@@ -76,7 +76,11 @@ app.MapPost("/api/street-dice/{gameId}/leave", (string gameId, PlayerActionReque
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound();
     if (!store.ValidatePlayerSession(gameId, request.PlayerId, request.PlayerSessionToken)) return Results.Unauthorized();
-    lock (engine) { engine.LeaveGame(request.PlayerId); }
+    lock (engine)
+    {
+        engine.LeaveGame(request.PlayerId);
+        store.HandleDeparture(gameId, request.PlayerId);
+    }
     store.RevokePlayerSession(gameId, request.PlayerId);
     return Results.Ok(new { state = engine.State });
 });
@@ -144,7 +148,8 @@ app.MapPost("/api/accounts/login", (LoginAccountRequest request, PlayerAccountSt
         var (account, token) = accounts.Login(request.Username, request.Password);
         return Results.Ok(new { accountId = account.Id, accountSessionToken = token, username = account.Username,
             level = account.Level, wins = account.Wins,
-            winsUntilNextLevel = RankLadder.WinsUntilNextLevel(account.Wins) ?? -1,
+            xp = account.Xp, shotsPlayed = account.ShotsPlayed,
+            xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
             maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
             prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
     }
@@ -163,7 +168,8 @@ app.MapPost("/api/accounts/{accountId}/session", (string accountId, AccountSessi
         return Results.Json(new { error = "Your sign-in expired. Sign in again to keep your rank." },
             statusCode: StatusCodes.Status401Unauthorized);
     return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
-        wins = account.Wins, winsUntilNextLevel = RankLadder.WinsUntilNextLevel(account.Wins) ?? -1,
+        wins = account.Wins, xp = account.Xp, shotsPlayed = account.ShotsPlayed,
+        xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
         maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
         prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
 });
@@ -171,11 +177,12 @@ app.MapPost("/api/accounts/{accountId}/session", (string accountId, AccountSessi
 app.MapGet("/api/accounts/{accountId}", (string accountId, PlayerAccountStore accounts) =>
 {
     if (!accounts.TryGet(accountId, out var account)) return Results.NotFound();
-    // winsUntilNextLevel is -1 at MaxLevel rather than a JSON null -- Unity's JsonUtility (the
+    // xpUntilNextLevel is -1 at MaxLevel rather than a JSON null -- Unity's JsonUtility (the
     // client's deserializer) doesn't reliably handle a null literal landing on a non-nullable
     // int field, and this response has no need for a true null here anyway.
     return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
-        wins = account.Wins, winsUntilNextLevel = RankLadder.WinsUntilNextLevel(account.Wins) ?? -1,
+        wins = account.Wins, xp = account.Xp, shotsPlayed = account.ShotsPlayed,
+        xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
         maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
         prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
 });
@@ -310,15 +317,20 @@ app.MapPost("/api/street-dice/{gameId}/roll/commit", (string gameId, PhysicalRol
 {
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.ShooterId, request.PlayerSessionToken)) return Results.Unauthorized();
+    // Captured before the roll resolves, in case resolution moves the dice on.
+    var shooterId = engine.State.ShooterId;
+    var catcherId = engine.State.CatcherId;
+    var shotAmount = engine.State.ShotAmount;
     var committed = engine.CommitPhysicalRoll(request.ShooterId, request.RollId, DateTimeOffset.UtcNow);
     store.RecordCommittedRoll(gameId, request.ShooterId, committed);
-    // Wins-per-level (see RankLadder) is the only XP metric this session's spec covers -- a
-    // shooter win counted here, whether or not they're linked to an account at all.
-    if (committed.Resolution.Result is RollResultType.ShooterComeOutWin or RollResultType.ShooterPointWin
-        && store.TryGetLinkedAccount(gameId, request.ShooterId, out var shooterAccountId))
+    bool? shooterWon = committed.Resolution.Result switch
     {
-        accounts.RecordWin(shooterAccountId);
-    }
+        RollResultType.ShooterComeOutWin or RollResultType.ShooterPointWin => true,
+        RollResultType.ShooterComeOutLoss or RollResultType.ShooterSevenOutLoss => false,
+        _ => null // point set, no-count, faded: the shot isn't over yet
+    };
+    if (shooterWon is { } won && shooterId is not null && catcherId is not null)
+        store.RecordShotXp(gameId, accounts, shooterId, catcherId, won, shotAmount, DateOnly.FromDateTime(DateTime.UtcNow));
     return Results.Ok(new { committed.RollId, result = committed.Resolution,
         faces = committed.Throw.Faces, frames = PhysicalRollTransport.Frames(committed.Throw), state = engine.State });
 });
@@ -484,6 +496,21 @@ public sealed class StreetDiceTableStore
     public bool TryGetLinkedAccount(string gameId, string playerId, out string accountId) =>
         _accountLinks.TryGetValue(SessionKey(gameId, playerId), out accountId!);
 
+    /// <summary>Both sides of a finished shot earn XP (see RankLadder): the shooter and the
+    /// catcher each played it; whoever won also gets the win and money bonuses. Unlinked
+    /// (guest) seats earn nothing but still count as a distinct opponent.</summary>
+    public void RecordShotXp(string gameId, PlayerAccountStore accounts, string shooterId, string catcherId,
+        bool shooterWon, int shotAmount, DateOnly today)
+    {
+        string OpponentKey(string playerId) =>
+            TryGetLinkedAccount(gameId, playerId, out var id) ? id : $"seat:{gameId}:{playerId}".ToLowerInvariant();
+
+        if (TryGetLinkedAccount(gameId, shooterId, out var shooterAccount))
+            accounts.RecordShot(shooterAccount, shooterWon, OpponentKey(catcherId), shooterWon ? shotAmount : 0, today);
+        if (TryGetLinkedAccount(gameId, catcherId, out var catcherAccount))
+            accounts.RecordShot(catcherAccount, !shooterWon, OpponentKey(shooterId), shooterWon ? 0 : shotAmount, today);
+    }
+
     private int AccountLevel(string gameId, string playerId)
     {
         if (!_accountLinks.TryGetValue(SessionKey(gameId, playerId), out var accountId)) return 1;
@@ -497,8 +524,30 @@ public sealed class StreetDiceTableStore
     /// not a floor, not a ceiling -- just the host's level, for everyone seated.</summary>
     private int HostLevel(string gameId)
     {
-        if (!_games.TryGetValue(gameId, out var engine) || engine.State.HostId is not { } hostId) return 1;
-        return AccountLevel(gameId, hostId);
+        if (!_games.TryGetValue(gameId, out var engine)) return 1;
+        if (engine.State.LockedTableLevel is { } locked) return locked;
+        return engine.State.HostId is { } hostId ? AccountLevel(gameId, hostId) : 1;
+    }
+
+    /// <summary>Owner's rule for a host leaving: the party keeps the departing host's level
+    /// for the rest of the party, and the host role (music, invites) passes to the
+    /// highest-ranked player still seated -- earliest seat wins a tie. Call after
+    /// engine.LeaveGame for every departure path.</summary>
+    public void HandleDeparture(string gameId, string playerId)
+    {
+        if (!_games.TryGetValue(gameId, out var engine)) return;
+        var state = engine.State;
+        if (!string.Equals(state.HostId, playerId, StringComparison.OrdinalIgnoreCase)) return;
+        state.LockedTableLevel ??= HostLevel(gameId);
+        var successor = state.Players
+            .Where(p => !p.HasLeft)
+            .Select((p, seat) => (p, seat))
+            .OrderByDescending(x => AccountLevel(gameId, x.p.Id))
+            .ThenBy(x => x.seat)
+            .Select(x => x.p)
+            .FirstOrDefault();
+        state.HostId = successor?.Id;
+        state.Log(successor is null ? "The host left." : $"The host left. {successor.Name} is now the host.");
     }
 
     public int EffectiveBetCap(string gameId) => RankLadder.MaxBetForLevel(HostLevel(gameId));
@@ -631,6 +680,7 @@ public sealed class StreetDiceTableStore
                 || !_disconnected.TryRemove(entry.Key, out _)) continue;
             var playerId = entry.Key[(gameId.Length + 1)..];
             engine.LeaveGame(playerId);
+            HandleDeparture(gameId, playerId);
             _playerSessions.TryRemove(entry.Key, out _);
             _lastSeen.TryRemove(entry.Key, out _);
         }

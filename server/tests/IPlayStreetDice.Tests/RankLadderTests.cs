@@ -6,18 +6,18 @@ public class RankLadderTests
 {
     [Theory]
     [InlineData(0, 1)]
-    [InlineData(4, 1)]
-    [InlineData(5, 2)]
-    [InlineData(14, 2)]
-    [InlineData(15, 3)]
-    [InlineData(29, 3)]
-    [InlineData(30, 4)]
-    [InlineData(49, 4)]
-    [InlineData(50, 5)]
-    [InlineData(500, 5)]
-    public void LevelForWins_FollowsThePlaceholderCurve(int wins, int expectedLevel)
+    [InlineData(199, 1)]
+    [InlineData(200, 2)]
+    [InlineData(999, 2)]
+    [InlineData(1000, 3)]
+    [InlineData(2499, 3)]
+    [InlineData(2500, 4)]
+    [InlineData(4999, 4)]
+    [InlineData(5000, 5)]
+    [InlineData(50000, 5)]
+    public void LevelForXp_FollowsTheLadder(int xp, int expectedLevel)
     {
-        Assert.Equal(expectedLevel, RankLadder.LevelForWins(wins));
+        Assert.Equal(expectedLevel, RankLadder.LevelForXp(xp));
     }
 
     [Theory]
@@ -42,9 +42,19 @@ public class RankLadderTests
     }
 
     [Fact]
-    public void WinsUntilNextLevel_IsNullAtMaxLevel()
+    public void XpUntilNextLevel_IsNullAtMaxLevel()
     {
-        Assert.Null(RankLadder.WinsUntilNextLevel(50));
-        Assert.Equal(5, RankLadder.WinsUntilNextLevel(0));
+        Assert.Null(RankLadder.XpUntilNextLevel(5000));
+        Assert.Equal(200, RankLadder.XpUntilNextLevel(0));
+    }
+
+    [Theory]
+    [InlineData(false, true, 0, 10)]     // lost: just the shot played
+    [InlineData(true, true, 20, 27)]     // won $20: 10 played + 15 win + 2 money
+    [InlineData(true, false, 20, 12)]    // same win, but the win bonus is used up vs this opponent
+    [InlineData(true, true, 1000, 75)]   // money XP tops out at 50 per shot
+    public void XpForShot_CombinesPlayingWinningAndMoneyWon(bool won, bool bonus, int amountWon, int expected)
+    {
+        Assert.Equal(expected, RankLadder.XpForShot(won, bonus, amountWon));
     }
 }

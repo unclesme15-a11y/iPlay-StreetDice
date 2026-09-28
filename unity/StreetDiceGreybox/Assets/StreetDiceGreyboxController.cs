@@ -1621,6 +1621,8 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
             (rolling && shooterId == SelfId)) yield break;
         var snapshot = JsonUtility.FromJson<OnlineTableDto>(request.downloadHandler.text);
         if (snapshot?.state == null) yield break;
+        if (snapshot.betCap > 0) onlineTableBetCap = snapshot.betCap;
+        onlinePrestigeBillsUnlocked = snapshot.prestigeBillsUnlocked;
         bool hotBeforeRoll = streak >= HotDiceThreshold;
         UpdateState(snapshot.state);
         ApplyOnlineWagerSnapshot(snapshot.wagers, snapshot.bettingWindow);
@@ -3116,6 +3118,8 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         public OnlineWagerDto[] wagers;
         public BettingWindowDto bettingWindow;
         public LastCommittedRollDto lastCommittedRoll;
+        public int betCap;
+        public bool prestigeBillsUnlocked;
     }
     [Serializable] private sealed class LastCommittedRollDto
     {

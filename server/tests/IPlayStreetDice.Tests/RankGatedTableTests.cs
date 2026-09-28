@@ -31,7 +31,7 @@ public class RankGatedTableTests
 
         var host = store.JoinRealPlayer(gameId, "Bell");
         var account = accounts.Register("Bell", "hustle123");
-        for (var i = 0; i < 15; i++) accounts.RecordWin(account.Id); // -> Level 3
+        account.Xp = 1000; // -> Level 3
         store.LinkAccount(gameId, host.Player.Id, account.Id);
 
         Assert.Equal(500, store.EffectiveBetCap(gameId));
@@ -49,7 +49,7 @@ public class RankGatedTableTests
         store.JoinRealPlayer(gameId, "Host"); // Level 1, unlinked -- stays host
         var guest = store.JoinRealPlayer(gameId, "Bell");
         var guestAccount = accounts.Register("Bell", "hustle123");
-        for (var i = 0; i < 50; i++) accounts.RecordWin(guestAccount.Id); // -> Level 5
+        guestAccount.Xp = 5000; // -> Level 5
         store.LinkAccount(gameId, guest.Player.Id, guestAccount.Id);
 
         Assert.Equal(100, store.EffectiveBetCap(gameId));
@@ -70,7 +70,7 @@ public class RankGatedTableTests
 
         var guest = store.JoinRealPlayer(gameId, "Bell");
         var guestAccount = accounts.Register("Bell", "another-pw1");
-        for (var i = 0; i < 50; i++) accounts.RecordWin(guestAccount.Id); // -> Level 5
+        guestAccount.Xp = 5000; // -> Level 5
         store.LinkAccount(gameId, guest.Player.Id, guestAccount.Id);
 
         // "I want it all to be around the host" -- a Level 5 guest still plays at the
@@ -89,7 +89,7 @@ public class RankGatedTableTests
 
         var host = store.JoinRealPlayer(gameId, "Bell");
         var hostAccount = accounts.Register("Bell", "hustle123");
-        for (var i = 0; i < 15; i++) accounts.RecordWin(hostAccount.Id); // -> Level 3
+        hostAccount.Xp = 1000; // -> Level 3
         store.LinkAccount(gameId, host.Player.Id, hostAccount.Id);
 
         var guest = store.JoinRealPlayer(gameId, "Dice");
@@ -119,7 +119,7 @@ public class RankGatedTableTests
         // "I want it all to be around the host" -- there's no separate personal-level path
         // here either, so leveling up yourself doesn't unlock a hustled note under a host
         // who's still under Level 3.
-        for (var i = 0; i < 15; i++) accounts.RecordWin(guestAccount.Id); // guest reaches Level 3 themselves
+        guestAccount.Xp = 1000; // guest reaches Level 3 themselves
         Assert.False(store.PrestigeNoteUsableBy(gameId, guest.Player.Id, 50));
     }
 
@@ -133,7 +133,7 @@ public class RankGatedTableTests
 
         var host = store.JoinRealPlayer(gameId, "Bell");
         var hostAccount = accounts.Register("Bell", "hustle123");
-        for (var i = 0; i < 15; i++) accounts.RecordWin(hostAccount.Id); // -> Level 3
+        hostAccount.Xp = 1000; // -> Level 3
         store.LinkAccount(gameId, host.Player.Id, hostAccount.Id);
 
         var guestWithNote = store.JoinRealPlayer(gameId, "Dice");

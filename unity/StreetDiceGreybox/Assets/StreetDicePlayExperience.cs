@@ -34,6 +34,16 @@ public sealed partial class StreetDiceGreyboxController
     private readonly List<CashBet> cashBets = new();
     private readonly List<GameObject> moneyPiles = new();
     private static readonly int[] WagerAmounts = { 1, 5, 10, 20 };
+    // $50/$100 join the stake picker and the ground piles only once the table's host is
+    // Level 3+ AND the note art actually exists in Resources/Money (not generated yet) --
+    // a pile asking for a bill with no material would throw.
+    private static readonly int[] PrestigeBillAmounts = { 50, 100 };
+    private int onlineTableBetCap = 100;
+    private bool onlinePrestigeBillsUnlocked;
+    // Offline vs AI, the player is effectively the host, so their own account level applies
+    // (accountMaxBet is the Level 1 $100 when signed out).
+    private int TableBetCap => localDemo ? accountMaxBet : onlineTableBetCap;
+    private bool TablePrestigeUnlocked => localDemo ? accountPrestigeUnlocked : onlinePrestigeBillsUnlocked;
     private static readonly Vector2[] OpponentMoneyViewports =
     {
         new(0.14f, 0.275f), new(0.15f, 0.13f),
@@ -494,9 +504,10 @@ public sealed partial class StreetDiceGreyboxController
             }
             else if (!rolling && phase == "ShooterDecision" && shooterId == SelfId)
             {
-                GUI.enabled = !drawerOpen && CanCover(shotAmount);
+                GUI.enabled = !drawerOpen && CanCover(shotAmount) && shotAmount <= TableBetCap;
                 if (DrawMetalButton(new Rect(w / 2 - 210, h - 104, 132, 46), "Run Same")) StartCoroutine(RunSame());
-                GUI.enabled = !drawerOpen && lastResolvedShotWasWin && shotAmount <= int.MaxValue / 2 && CanCover(shotAmount * 2);
+                GUI.enabled = !drawerOpen && lastResolvedShotWasWin && shotAmount <= int.MaxValue / 2 &&
+                    shotAmount * 2 <= TableBetCap && CanCover(shotAmount * 2);
                 if (DrawMetalButton(new Rect(w / 2 - 70, h - 104, 132, 46), "Double Up")) StartCoroutine(DoubleUp());
                 GUI.enabled = !drawerOpen && (localDemo || Array.FindAll(onlinePlayers, player => !player.hasLeft).Length >= 2);
                 if (DrawMetalButton(new Rect(w / 2 + 70, h - 104, 132, 46), "Pass")) PassLocalDice();
@@ -968,8 +979,8 @@ public sealed partial class StreetDiceGreyboxController
 
         GUI.Label(new Rect(4, 4, 284, 30), accountUsername);
         GUI.Label(new Rect(4, 40, 284, 40), $"Level {accountLevel}");
-        GUI.Label(new Rect(4, 84, 284, 26), $"Wins: {accountWins}");
-        GUI.Label(new Rect(4, 114, 284, 26), accountLevel >= 5 ? "Max level reached." : $"Wins to next level: {accountWinsUntilNextLevel}");
+        GUI.Label(new Rect(4, 84, 284, 26), $"XP: {accountXp}   Shots: {accountShotsPlayed}   Wins: {accountWins}");
+        GUI.Label(new Rect(4, 114, 284, 26), accountLevel >= 5 ? "Max level reached." : $"XP to next level: {accountXpUntilNextLevel}");
         GUI.Label(new Rect(4, 144, 284, 26), $"Max bet at this level: {accountMaxBet}");
         GUI.Label(new Rect(4, 174, 284, 26), accountPrestigeUnlocked ? "$50/$100 notes unlocked." : "$50/$100 notes locked until Level 3.");
         if (DrawMetalButton(new Rect(4, 220, 284, 42), "Log Out")) LogOutAccount();
@@ -1111,22 +1122,58 @@ public sealed partial class StreetDiceGreyboxController
         nextOfferAt = Time.unscaledTime + 1.6f;
     }
 
+    private List<int> StakeDenominations()
+    {
+        var bills = new List<int>(WagerAmounts);
+        if (TablePrestigeUnlocked)
+            foreach (int bill in PrestigeBillAmounts)
+                if (billMaterials.ContainsKey(bill)) bills.Add(bill);
+        return bills;
+    }
+
+    private bool CanChangeMainStake => awaitingShootChoice && !shotCommitted && !rolling && point == "-";
+
+    // Sets the stake to exactly one bill (kept for the Editor readiness checks and bots).
     private void SelectMainWager(int amount)
     {
-        if (!awaitingShootChoice || shotCommitted || rolling || point != "-" || Array.IndexOf(WagerAmounts, amount) < 0) return;
+        if (!CanChangeMainStake || !StakeDenominations().Contains(amount) || amount > TableBetCap) return;
         shotAmount = amount;
+    }
+
+    // Tapping a bill drops it on the pile: stakes stack up bill by bill, like real cash,
+    // up to the table's cap (the host's level) and what both sides can cover.
+    private void AddToMainStake(int bill)
+    {
+        if (!CanChangeMainStake || !StakeDenominations().Contains(bill)) return;
+        int next = shotAmount + bill;
+        if (next > TableBetCap || !CanCover(next)) return;
+        shotAmount = next;
+    }
+
+    private void ClearMainStake()
+    {
+        if (CanChangeMainStake) shotAmount = 0;
     }
 
     private void DrawShotAmountRow(Rect area)
     {
-        float gap = 8f, cellWidth = (area.width - gap * (WagerAmounts.Length - 1)) / WagerAmounts.Length;
-        for (int i = 0; i < WagerAmounts.Length; i++)
+        // A lower cap can arrive after the stake was set (e.g. joining a lower-level party).
+        if (shotAmount > TableBetCap) shotAmount = TableBetCap;
+        var bills = StakeDenominations();
+        const float cellWidth = 64f, gap = 8f;
+        float width = bills.Count * cellWidth + (bills.Count - 1) * gap;
+        float left = area.center.x - width * 0.5f;
+        bool enabled = GUI.enabled;
+        for (int i = 0; i < bills.Count; i++)
         {
-            int amount = WagerAmounts[i];
-            var cell = new Rect(area.x + i * (cellWidth + gap), area.y, cellWidth, area.height);
-            if (DrawBetBill(cell, amount)) SelectMainWager(amount);
-            if (shotAmount == amount) DrawSelectedPlateEdge(cell);
+            var cell = new Rect(left + i * (cellWidth + gap), area.y, cellWidth, area.height);
+            GUI.enabled = enabled && shotAmount + bills[i] <= TableBetCap && CanCover(shotAmount + bills[i]);
+            if (DrawBetBill(cell, bills[i])) AddToMainStake(bills[i]);
         }
+        GUI.enabled = enabled;
+        var totalStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontSize = 20, fontStyle = FontStyle.Bold };
+        GUI.Label(new Rect(left, area.y - 38f, width - 96f, 32f), $"Stake ${shotAmount}  (max ${TableBetCap})", totalStyle);
+        if (DrawMetalButton(new Rect(left + width - 88f, area.y - 40f, 88f, 34f), "Clear")) ClearMainStake();
     }
 
     private void PassLocalDice()
@@ -1329,10 +1376,17 @@ public sealed partial class StreetDiceGreyboxController
 
     private void CreateGroundMoney()
     {
-        foreach (int denomination in WagerAmounts)
+        var denominations = new List<int>(WagerAmounts);
+        denominations.AddRange(PrestigeBillAmounts);
+        foreach (int denomination in denominations)
         {
             var texture = Resources.Load<Texture2D>(denomination == 20 ? "Money/iplay-prop-note" : "Money/iplay-note-" + denomination);
-            if (texture == null) { Debug.LogError("Missing bill texture: " + denomination); continue; }
+            if (texture == null)
+            {
+                // $50/$100 art is expected to be missing until it's generated; the base set isn't.
+                if (Array.IndexOf(PrestigeBillAmounts, denomination) < 0) Debug.LogError("Missing bill texture: " + denomination);
+                continue;
+            }
             var material = new Material(Shader.Find("Unlit/Texture"));
             material.mainTexture = texture;
             texture.filterMode = FilterMode.Trilinear;
@@ -1358,15 +1412,17 @@ public sealed partial class StreetDiceGreyboxController
         RefreshGroundMoney();
     }
 
-    private static List<BillGroup> BillGroupsForAmount(int amount)
+    private List<BillGroup> BillGroupsForAmount(int amount)
     {
         var bills = new List<BillGroup>();
-        for (int i = WagerAmounts.Length - 1; i >= 0; i--)
+        var denominations = StakeDenominations();
+        denominations.Sort();
+        for (int i = denominations.Count - 1; i >= 0; i--)
         {
-            int count = amount / WagerAmounts[i];
+            int count = amount / denominations[i];
             if (count <= 0) continue;
-            for (int note = 0; note < count; note++) bills.Add(new BillGroup(WagerAmounts[i], 1));
-            amount -= WagerAmounts[i] * count;
+            for (int note = 0; note < count; note++) bills.Add(new BillGroup(denominations[i], 1));
+            amount -= denominations[i] * count;
         }
         return bills;
     }

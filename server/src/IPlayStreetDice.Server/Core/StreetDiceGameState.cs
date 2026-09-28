@@ -12,6 +12,10 @@ public sealed class StreetDiceGameState
     // ShooterId's default -- see StreetDiceTableStore.JoinRealPlayer). Nothing
     // else in this game had a "host" concept before the music controls below.
     public string? HostId { get; set; }
+    // Set once the original host leaves: the party keeps that host's level for the rest of
+    // the party, even though the host role itself passes to someone else. Null while the
+    // original host is still seated (their live level applies).
+    public int? LockedTableLevel { get; set; }
     // Host-controlled "now playing" state, piggybacking the same real-time
     // poll every client already uses for dice/wager sync (GET
     // /api/street-dice/{gameId}) -- no separate sync channel needed. This is

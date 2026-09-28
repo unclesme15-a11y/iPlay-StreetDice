@@ -22,7 +22,14 @@ public sealed class PlayerAccount
     public string PasswordHash { get; set; }
     public string PasswordSalt { get; set; }
     public int Wins { get; set; }
-    public int Level => RankLadder.LevelForWins(Wins);
+    public int ShotsPlayed { get; set; }
+    public int Xp { get; set; }
+    public int Level => RankLadder.LevelForXp(Xp);
+
+    // Daily farming guards (see RankLadder). Reset whenever a shot lands on a new UTC day.
+    public int DailyXp { get; set; }
+    public DateOnly? DailyXpDay { get; set; }
+    public Dictionary<string, int> DailyWinBonusesByOpponent { get; } = new();
 
     /// <summary>Prestige notes ($50/$100) this account has "hustled" as a
     /// flex -- won off a higher-ranked player somehow -- but only ever

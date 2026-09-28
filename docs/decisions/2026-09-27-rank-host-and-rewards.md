@@ -1,59 +1,71 @@
 # Rank, Host and Rewards -- Agreed Design
 
-Owner-approved decisions from the 2026-09-27 design sessions. "Table" in code
+Owner-approved decisions from the 2026-09-27/28 design sessions. "Table" in code
 means one game session of up to 5 players -- the same thing the owner calls a
-"party."
+"party." Ads, bankroll and seat hold live in
+`2026-09-28-ads-bankroll-and-seat-hold.md`.
 
 ## The host rule (applies to everything below)
 
 - The first real player to join is the host (`StreetDiceGameState.HostId`).
-- **Everything rank-related at a table is the host's level, full stop.** A
+- **Everything rank-related at a party is the host's level, full stop.** A
   Level 3 host gives every seat Level 3 benefits. A Level 1 host caps every seat
   at Level 1, even a Level 5 guest. Not additive, not "whichever is higher."
-- The host alone controls the table's music (Spotify).
+- **When the host leaves:** the party keeps the departing host's level for the
+  rest of the party (`LockedTableLevel`), and the host role passes to the
+  highest-ranked player still seated (earliest seat breaks a tie). The owner
+  said "the voice controls go to a higher rank"; read as the host's controls
+  (music, invites), since hosts have no separate voice controls. Confirm if
+  that was meant literally.
+- Only the host can share or re-share the party invite.
 
 ## Built (server-enforced, tested)
 
-| Level | Max bet | Unlocks |
-| --- | --- | --- |
-| 1 (start) | $100 | -- |
-| 2 | $250 (placeholder) | -- |
-| 3 | $500 | $50 and $100 notes |
-| 4 | $750 (placeholder) | -- |
-| 5 (top) | $1,000 | -- |
+| Level | Max bet | XP to reach | Unlocks |
+| --- | --- | --- | --- |
+| 1 (start) | $100 | 0 | White dice |
+| 2 | $250 (placeholder) | 200 | Green dice |
+| 3 | $500 | 1,000 | Black dice, $50 and $100 notes |
+| 4 | $750 (placeholder) | 2,500 | Red and blue dice with white pips |
+| 5 (top) | $1,000 | 5,000 | Custom RGB color wheel |
 
-- Owner set levels 1, 3 and 5. Levels 2 and 4 are placeholders.
-- Leveling is total shot wins (5 / 15 / 30 / 50). Also a placeholder -- the
-  owner hasn't chosen how XP is earned.
-- Real accounts (username + password), not device-local rank.
-- Hustled $50/$100 notes: a lower rank can hold one as a flex. It is only
-  usable at a table whose host is Level 3+. It's a trophy, not an exclusive
-  unlock (everyone at a Level 3+ table can already use $50/$100).
+Owner set the level 1/3/5 caps. Dice-color and color-wheel unlocks are
+approved but **not built** (see below).
+
+### XP formula (owner: "a combo of all"; numbers tunable in `RankLadder.cs`)
+
+- +10 XP for every finished shot you're in, shooter or catcher, win or lose.
+- +15 XP for winning a shot, but only your first 3 wins against the same
+  opponent each day.
+- +1 XP per $10 won on the shot, up to 50 per shot.
+- 500 XP daily cap. At the cap, Level 5 takes at least 10 days.
+- Only signed-in players earn XP. Live-verified: a catcher winning $20 earned
+  27 XP (10 + 15 + 2); the shooter who lost earned 10.
+
+### Other built pieces
+
+- Real accounts (username + password); logins survive server restarts.
+- **Stakes stack like cash:** tapping a bill adds it to the pile, up to the
+  party's cap, with a Clear button. $50/$100 join the picker once the host is
+  Level 3+ *and* the note art exists in `Resources/Money` (not generated yet).
+  **Owner has a close-up screenshot of stacked bills that shows exactly how
+  the pile should look -- match it once it's uploaded.**
+- Hustled $50/$100 notes are only usable at a Level 3+ host's party. It's a
+  trophy, not an exclusive unlock.
 
 ## Approved, not built yet
 
-- **Dice colors level up.** Everyone starts with white dice only.
-- **Level 4: blue and red dice with white pips.** The Level 4 red must be a
-  visibly different shade from the hot-dice orange-red so nobody mistakes it
-  for hot dice.
-- **Level 5 (top): custom color wheel in settings** showing the real RGB
-  numbers, for a truly custom die.
-- **Crowd size scales with level** -- bigger crowd at a higher-level table
-  (host-driven, like everything else). Crowd footage itself is being sourced
+- Dice colors level up (table above). Everyone starts with white only. The
+  Level 4 red must be visibly different from the hot-dice orange-red.
+- Level 5 color wheel in settings, showing the real RGB numbers.
+- Crowd size scales with level (host-driven). Crowd footage is being sourced
   separately (Kling / Veo / Runway) and will land in `docs/` for approval.
-- Per the host rule, all of the above follow the host: a Level 5 host's table
-  gets the color wheel and the big crowd for everyone.
 
-## Open questions (don't guess -- ask the owner)
+## Still open (ask the owner)
 
-1. Which dice colors unlock at Levels 2 and 3?
-2. How is XP earned? (Wins are trivially farmable by two friends shooting $1
-   at each other.)
-3. How does a player actually "hustle" a $50/$100 note?
-4. When the host leaves mid-game, who becomes host, and does the table's level
-   change mid-game or stay locked?
-5. How does a player stake above $20 when only $1/$5/$10/$20 notes exist
-   below Level 3? (Stacking bills? Bigger presets?)
+1. How does a player actually "hustle" a $50/$100 note?
+2. Do online parties require signing in? (Needed once money follows the
+   account -- see the ads/bankroll doc.)
 
 ## Other locked decisions
 

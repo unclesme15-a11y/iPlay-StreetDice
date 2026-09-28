@@ -16,6 +16,8 @@ public sealed class GameSnapshot
     public List<SideBetSnapshot> SideBets { get; set; } = new();
     public string? ShooterId { get; set; }
     public string? CatcherId { get; set; }
+    public string? HostId { get; set; }
+    public int? LockedTableLevel { get; set; }
     public int ShotAmount { get; set; }
     public int? Point { get; set; }
     public int FadeCount { get; set; }

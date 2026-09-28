@@ -26,7 +26,9 @@ public sealed partial class StreetDiceGreyboxController
     private string accountUsername = "";
     private int accountLevel = 1;
     private int accountWins;
-    private int accountWinsUntilNextLevel;
+    private int accountXp;
+    private int accountXpUntilNextLevel;
+    private int accountShotsPlayed;
     private int accountMaxBet = 100;
     private bool accountPrestigeUnlocked;
     private bool accountLoggedIn;
@@ -43,7 +45,7 @@ public sealed partial class StreetDiceGreyboxController
     private sealed class AccountResponseDto
     {
         public string accountId = "", accountSessionToken = "", username = "";
-        public int level = 1, wins, winsUntilNextLevel, maxBetAtLevel = 100;
+        public int level = 1, wins, xp, xpUntilNextLevel, shotsPlayed, maxBetAtLevel = 100;
         public bool prestigeBillsUnlocked;
     }
 
@@ -99,7 +101,7 @@ public sealed partial class StreetDiceGreyboxController
     {
         accountId = accountSessionToken = accountUsername = "";
         accountLevel = 1;
-        accountWins = accountWinsUntilNextLevel = 0;
+        accountWins = accountXp = accountXpUntilNextLevel = accountShotsPlayed = 0;
         accountMaxBet = 100;
         accountPrestigeUnlocked = false;
         accountLoggedIn = false;
@@ -184,7 +186,9 @@ public sealed partial class StreetDiceGreyboxController
         accountUsername = response.username;
         accountLevel = response.level;
         accountWins = response.wins;
-        accountWinsUntilNextLevel = response.winsUntilNextLevel;
+        accountXp = response.xp;
+        accountXpUntilNextLevel = response.xpUntilNextLevel;
+        accountShotsPlayed = response.shotsPlayed;
         accountMaxBet = response.maxBetAtLevel;
         accountPrestigeUnlocked = response.prestigeBillsUnlocked;
         // Login responses carry a fresh session token; a session refresh doesn't, so don't
