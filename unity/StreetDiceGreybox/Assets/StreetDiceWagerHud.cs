@@ -24,7 +24,7 @@ public sealed partial class StreetDiceGreyboxController
     private readonly Dictionary<int, GameObject> groundAmountDice = new Dictionary<int, GameObject>();
     private RenderTexture wagerOpenIcon, wagerClosedIcon;
     private bool bettingWindowWasOpen;
-    private bool comeOutLockHidden, comeOutLockMode;
+    private bool comeOutNoBet, comeOutBillsOpen;
 
     private void ResetWagerDraft()
     {
@@ -47,13 +47,13 @@ public sealed partial class StreetDiceGreyboxController
 
     // The bet menu pops open by itself only when the point is set, for everyone but the
     // shooter, who is busy taking locks. (The come-out has one bet, CRAP 2/3/12, so it gets
-    // the center lock instead -- DrawComeOutLock.) When the 10 seconds to propose run out,
+    // the come-out overlay instead -- DrawComeOutOverlay.) When the 10 seconds to propose run out,
     // or everyone is done, it closes and only the locks stay on the ground. The BET button
     // brings it back (a late bet, Double Up or the paired number between rolls).
     private void UpdateBetMenuAutoOpen()
     {
         bool open = BettingWindowOpen && !mainOptions;
-        if (open && !bettingWindowWasOpen) comeOutLockHidden = comeOutLockMode = false;
+        if (open && !bettingWindowWasOpen) comeOutNoBet = comeOutBillsOpen = false;
         if (open && !bettingWindowWasOpen && phase == "Point" && shooterId != SelfId && !drawerOpen && !confirmLeave)
         {
             string target = CanComposeWagerAgainst(shooterId) ? shooterId : FirstWagerTarget();
@@ -67,7 +67,7 @@ public sealed partial class StreetDiceGreyboxController
         }
         else if (!open && bettingWindowWasOpen)
         {
-            wagerOverlayOpen = comeOutLockMode = false;
+            wagerOverlayOpen = comeOutBillsOpen = false;
             ResetWagerDraft();
         }
         bettingWindowWasOpen = open;
@@ -84,28 +84,48 @@ public sealed partial class StreetDiceGreyboxController
         return false;
     }
 
-    private Rect ComeOutLockRect => new Rect(UiWidth * 0.5f - 55f, UiHeight * 0.38f, 110f, 130f);
+    // The come-out overlay: a lock twice the standard size (standard is 85x99) center
+    // screen, with a NO BET tab beside it and a glowing line running down around it for
+    // the 10 seconds. Press the lock -> the bills come up -> pick the amount and the lock
+    // drops to the ground as a proposed bet. Press NO BET to sit this come-out out. It
+    // stays up whether the bet menu is open or not; BET never hides it (owner 2026-09-28).
+    private Rect ComeOutLockRect => new Rect(UiWidth * 0.5f - 85f, UiHeight * 0.2f, 170f, 198f);
 
-    // Come-out: the only bet is CRAP 2/3/12, so instead of the menu one lock sits center
-    // screen with a glowing line running down around it for the 10 seconds. Tap it, pick
-    // the bills, and it drops to the ground as a proposed bet. BET hides it ("done") or
-    // brings it back while the countdown is still running.
-    private void DrawComeOutLock(bool interact)
+    private void DrawComeOutOverlay(bool interact)
     {
-        if (!ComeOutLockAvailable || comeOutLockHidden || (wagerOverlayOpen && !comeOutLockMode)) return;
+        if (!ComeOutLockAvailable || comeOutNoBet) { comeOutBillsOpen = false; return; }
         Rect rect = ComeOutLockRect;
         float remaining = Mathf.Clamp01((float)((OfferDeadline - Time.unscaledTimeAsDouble) / BettingWindowSeconds));
-        DrawCountdownLine(new Rect(rect.x - 10f, rect.y - 10f, rect.width + 20f, rect.height + 20f), remaining);
-        if (wagerOverlayOpen) return; // bills are up; the bill picker draws the lock itself
-        GUI.enabled = interact && !onlineWagerRequestInFlight;
+        DrawCountdownLine(new Rect(rect.x - 12f, rect.y - 12f, rect.width + 24f, rect.height + 24f), remaining);
+        bool ready = interact && !onlineWagerRequestInFlight;
+        GUI.enabled = ready;
         if (DrawAmountLock(rect, 0, false, -1f, WagerOutcome.Crap, 0))
         {
-            ResetWagerDraft();
-            wagerOverlayOpen = comeOutLockMode = true;
-            wagerTarget = shooterId;
-            draftOutcome = WagerOutcome.Crap;
-            draftNumber = 0;
-            SetWagerStage(3);
+            comeOutBillsOpen = !comeOutBillsOpen;
+            PlayAudio(rollClip, 0.16f);
+        }
+        GUI.enabled = ready;
+        if (DrawMetalButton(new Rect(rect.xMax + 28f, rect.center.y - 32f, 132f, 64f), "NO BET"))
+        {
+            comeOutNoBet = true;
+            comeOutBillsOpen = false;
+            MarkBettorDone(SelfId);
+        }
+        if (comeOutBillsOpen)
+        {
+            float billWidth = 124f, gap = 29f;
+            float left = UiWidth * 0.5f - (billWidth * WagerAmounts.Length + gap * (WagerAmounts.Length - 1)) * 0.5f;
+            for (int i = 0; i < WagerAmounts.Length; i++)
+            {
+                int amount = WagerAmounts[i];
+                GUI.enabled = ready && WagerFunds(SelfId) - ActiveWagerExposure(SelfId) >= amount;
+                if (DrawBetBill(new Rect(left + i * (billWidth + gap), rect.yMax + 26f, billWidth, 82f), amount))
+                {
+                    OfferWager(SelfId, shooterId, WagerOutcome.Crap, 0, amount);
+                    comeOutBillsOpen = false;
+                    PlayAudio(lockClip, 0.65f);
+                }
+            }
         }
         GUI.enabled = interact;
     }
@@ -156,24 +176,13 @@ public sealed partial class StreetDiceGreyboxController
         GUI.enabled = available && !drawerOpen;
         if (GUI.Button(die, new GUIContent("", "Toggle betting overlay"), GUIStyle.none))
         {
-            if (ComeOutLockAvailable)
-            {
-                // Come-out: BET hides the center lock (that player is done) or brings it back.
-                bool hide = wagerOverlayOpen || !comeOutLockHidden;
-                wagerOverlayOpen = comeOutLockMode = false;
-                ResetWagerDraft();
-                comeOutLockHidden = hide;
-                if (hide) MarkBettorDone(SelfId);
-            }
-            else
-            {
-                bool wasOpen = wagerOverlayOpen;
-                wagerOverlayOpen = !wagerOverlayOpen;
-                comeOutLockMode = false;
-                ResetWagerDraft();
-                if (wagerOverlayOpen) { wagerTarget = shooterId; SetWagerStage(1); }
-                else if (wasOpen) MarkBettorDone(SelfId);
-            }
+            // BET only opens or closes the bet menu; it never touches the come-out overlay.
+            // Closing the menu at the point means "done" -- at the come-out, NO BET does that.
+            bool wasOpen = wagerOverlayOpen;
+            wagerOverlayOpen = !wagerOverlayOpen;
+            ResetWagerDraft();
+            if (wagerOverlayOpen) { wagerTarget = shooterId; SetWagerStage(1); }
+            else if (wasOpen && phase == "Point") MarkBettorDone(SelfId);
             PlayAudio(rollClip, 0.16f);
         }
         GUI.enabled = !drawerOpen;
@@ -191,17 +200,11 @@ public sealed partial class StreetDiceGreyboxController
     {
         if ((!BettingWindowOpen && !CanRequestPointAddOn && !CanLateBet) || rolling || gameMode != GameMode.Craps)
         {
-            wagerOverlayOpen = comeOutLockMode = false;
+            wagerOverlayOpen = false;
             ResetWagerDraft();
             return;
         }
         bool interact = GUI.enabled && !onlineWagerRequestInFlight;
-        if (comeOutLockMode)
-        {
-            if (wagerStage == 3) DrawWagerBillSelection(interact);
-            GUI.enabled = interact;
-            return;
-        }
         foreach (string id in DemoShooterOrder)
         {
             if (id == SelfId || (!localDemo && !Array.Exists(onlinePlayers, p => p.id == id && !p.hasLeft))) continue;
@@ -222,7 +225,7 @@ public sealed partial class StreetDiceGreyboxController
         if (DrawDigitalBetDie(new Rect(x, y, size, size), "", true))
         {
             if (selected && stage > 1) SetWagerStage(stage - 1);
-            else { wagerOverlayOpen = false; ResetWagerDraft(); MarkBettorDone(SelfId); }
+            else { wagerOverlayOpen = false; ResetWagerDraft(); if (phase == "Point") MarkBettorDone(SelfId); }
         }
         if (stage == 1)
         {
@@ -290,8 +293,6 @@ public sealed partial class StreetDiceGreyboxController
                 }
                 draftAmount = draftNumber = 0;
                 SetWagerStage(1);
-                // Come-out lock: the bet is proposed, so the lock drops to the ground.
-                if (comeOutLockMode) { wagerOverlayOpen = comeOutLockMode = false; ResetWagerDraft(); }
             }
         }
         GUI.enabled = interact;

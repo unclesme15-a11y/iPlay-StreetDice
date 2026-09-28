@@ -211,7 +211,7 @@ public sealed partial class StreetDiceGreyboxController
         wagerAcceptedAt.Clear();
         offerPage.Clear();
         offerSwipeStart.Clear();
-        wagerOverlayOpen = bettingWindowWasOpen = comeOutLockHidden = comeOutLockMode = false;
+        wagerOverlayOpen = bettingWindowWasOpen = comeOutNoBet = comeOutBillsOpen = false;
         botDoneAt.Clear();
         armedOfferId = 0;
         ResetWagerDraft();
@@ -485,7 +485,7 @@ public sealed partial class StreetDiceGreyboxController
             DrawSeatHud();
             if (SkyDisplayActive) DrawSkyCamDisplay(w);
             DrawBettingTimer();
-            DrawComeOutLock(GUI.enabled);
+            DrawComeOutOverlay(GUI.enabled);
             if (wagerOverlayOpen) DrawBettingOverlay();
             if (gameMode == GameMode.Craps && shooterId == SelfId)
                 DrawHotMeter(new Rect(settingsControl.x - 56f, settingsControl.y, 48f, 124f));
@@ -797,8 +797,8 @@ public sealed partial class StreetDiceGreyboxController
             DrawDoorGhostNumber("COME OUT", Mathf.Clamp01(cueAge / 0.38f), new Color(0.92f, 0.95f, 0.92f, fade));
             return;
         }
-        // The come-out lock's own countdown line replaces the big number.
-        if (ComeOutLockAvailable && !comeOutLockHidden) return;
+        // The come-out overlay's own countdown line replaces the big number.
+        if (ComeOutLockAvailable && !comeOutNoBet) return;
         int seconds = CurrentBettingCountdown(now);
         float withinSecond = 1f - Mathf.Clamp01((float)(remaining - (seconds - 1)));
         Color color = seconds <= 3 ? new Color(1f, 0.2f, 0.12f) : new Color(0.92f, 0.95f, 0.92f);

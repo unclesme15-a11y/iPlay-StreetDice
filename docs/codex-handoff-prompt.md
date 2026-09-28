@@ -24,7 +24,7 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/spotify-integration-setup.md` -- host-controlled Spotify + search bar
 - `docs/decisions/2026-09-27-fifty-hundred-dollar-notes.md` -- $50/$100 art prompts
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
-- `docs/screen-review.md` -- rounds 1-12: every change so far and why
+- `docs/screen-review.md` -- rounds 1-13: every change so far and why
 
 ## Rules that never change
 
@@ -115,16 +115,18 @@ in The Jungle -- it plays the iPlay soundtrack.
   the shooter's ring keeps going through their extra 5 seconds to lock bets in.
 - **Betting flow (built 2026-09-28 -- compile it, verify on phones; rules in
   `docs/game-rules.md`):**
-  - Come-out: no menu. One tappable CRAP 2/3/12 lock center screen for every
-    non-shooter, with a glowing countdown line around it
-    (`DrawComeOutLock` / `DrawCountdownLine` in `StreetDiceWagerHud.cs`). Tap ->
-    bills -> the lock drops to the ground. BET hides or brings it back.
+  - Come-out overlay: no menu. A CRAP 2/3/12 lock twice the standard size
+    (170x198 vs 85x99) center screen for every non-shooter, a NO BET tab beside
+    it, and a glowing countdown line around it (`DrawComeOutOverlay` /
+    `DrawCountdownLine` in `StreetDiceWagerHud.cs`). Press the lock -> bills ->
+    the lock drops to the ground; NO BET = done. It stays up whether the bet
+    menu is open or not -- BET never hides it.
   - Point set: the bet menu pops open by itself for non-shooters
     (`UpdateBetMenuAutoOpen`) -- the only automatic pop-up. It closes when the
     propose time ends; only locks stay. BET opens/closes it any time betting
     is allowed. "He don't hit 10" is the CRAP 10 lock.
-  - Ends early when everyone's done: proposing or closing the menu/lock marks
-    a player done (`WagerBook.MarkDone`, server `POST /wager/done`); when all
+  - Ends early when everyone's done: proposing, NO BET, or closing the menu at
+    the point marks a player done (`WagerBook.MarkDone`, server `POST /wager/done`); when all
     non-shooters are done the countdown ends and the shooter keeps up to 5
     seconds only while a lock is waiting on them. Offline bots count as done
     2-6 seconds into the window.

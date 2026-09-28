@@ -977,3 +977,20 @@ timelines were adjusted to the new rule (the shooter can now throw as soon as
 nothing is waiting on them). 166/166. Unity scripts parse clean; not compiled
 (no Unity here) -- Codex step 1 compiles and runs the readiness check, which
 may need timing updates where bots now finish the window early.
+
+## Round 13 -- 2026-09-28
+
+### Come-out overlay: big lock + NO BET
+
+Owner: BET never hides the come-out lock -- it stays whether the bet menu is
+up or not. Beside the lock goes a **NO BET** tab: press the lock to bet, NO
+BET to sit the come-out out. The lock on this "come-out overlay" is much
+bigger than the standard lock.
+
+`DrawComeOutOverlay` replaces `DrawComeOutLock`: a 170x198 CRAP 2/3/12 lock
+(standard ground lock is 85x99) at 20% down the screen, the countdown line
+around it, a metal NO BET button to its right, and the four bills under it
+after the lock is pressed. It has its own state (`comeOutNoBet`,
+`comeOutBillsOpen`) so the regular bet menu can be open at the same time. The
+BET button now only opens/closes the bet menu; closing it counts as "done"
+only at the point. Scripts parse clean; server unchanged (166/166).
