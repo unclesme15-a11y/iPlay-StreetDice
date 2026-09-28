@@ -120,10 +120,12 @@ in The Jungle -- it plays the iPlay soundtrack.
     3D-positioned, filtered to sound like a portable speaker, pulsing to the
     music. (Spotify audio can't get this effect -- it doesn't run through the
     game.)
-  - Private parties: host Spotify plus a search bar in the Options drawer
-    (Spotify Web API search -> `HostPlayTrack`). Only the host's choices count
-    (already enforced server-side). No always-listening voice command --
-    "Hey Siri/Google, play ___ on Spotify" already syncs the party.
+  - Private parties: the HOST chooses "Party music: Spotify / iPlay Soundtrack"
+    in the Options drawer. Soundtrack = synced, from the speaker prop, host gets
+    play/pause/skip. Spotify = host Spotify plus a search bar (Spotify Web API
+    search -> `HostPlayTrack`). Only the host's choices count (already enforced
+    server-side). No always-listening voice command -- "Hey Siri/Google, play
+    ___ on Spotify" already syncs the party.
   - Free Spotify guests can't play a specific song (Premium only): check
     `canPlayOnDemand`; if false, play the closest thing Spotify allows (host's
     album/artist on shuffle) and offer a one-tap switch to the iPlay soundtrack.

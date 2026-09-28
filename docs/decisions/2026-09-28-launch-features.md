@@ -77,11 +77,16 @@ Spoken dice calls exist in code but are silent: they need recordings at
   alley echo). The speaker can pulse to the music. This only works for the
   soundtrack and menu music: Spotify's audio plays through the Spotify app,
   not the game, so the game can't reshape or position it.
-- **Private parties:** the host's Spotify, as already designed
-  (`docs/spotify-integration-setup.md`), plus a **search bar** in the Options
-  drawer's Music section so the host can pick songs without leaving the game.
-  Search uses Spotify's Web API (App Remote alone can't search), then plays the
-  chosen track for the whole party through the existing sync.
+- **Private parties: the host chooses the party's music** -- a "Party music:
+  Spotify / iPlay Soundtrack" choice in the Options drawer's Music section,
+  host only. Everyone else follows the host's choice.
+  - **iPlay Soundtrack:** synced for the party and played from the in-game
+    speaker, exactly like The Jungle, except the host also gets play/pause/skip.
+  - **Spotify:** the host's Spotify, as already designed
+    (`docs/spotify-integration-setup.md`), plus a **search bar** so the host can
+    pick songs without leaving the game. Search uses Spotify's Web API (App
+    Remote alone can't search), then plays the chosen track for the whole party
+    through the existing sync.
 - **Free Spotify guests:** Spotify only lets **Premium** accounts play a
   specific song on demand. A guest on free Spotify gets the closest thing
   Spotify allows (check the App Remote `canPlayOnDemand` capability; if false,
