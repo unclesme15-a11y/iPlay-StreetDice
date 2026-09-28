@@ -24,7 +24,7 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/spotify-integration-setup.md` -- host-controlled Spotify + search bar
 - `docs/decisions/2026-09-27-fifty-hundred-dollar-notes.md` -- $50/$100 art prompts
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
-- `docs/screen-review.md` -- rounds 1-9: every change so far and why
+- `docs/screen-review.md` -- rounds 1-10: every change so far and why
 
 ## Rules that never change
 
@@ -47,7 +47,7 @@ the spec, and they win over anything you'd otherwise assume:
 
 ## What already exists (don't rebuild)
 
-Server (162 passing tests): craps engine with server-rolled physical dice, peer
+Server (163 passing tests): craps engine with server-rolled physical dice, peer
 wagers, persistence across restarts, accounts (sign up / sign in, logins survive
 restarts), rank ladder (Level 1-5 caps $100/$250/$500/$750/$1,000), XP (everyone
 seated earns per finished shot; shooter/catcher and winner earn more; first 15
