@@ -978,12 +978,30 @@ public sealed partial class StreetDiceGreyboxController
         }
 
         GUI.Label(new Rect(4, 4, 284, 30), accountUsername);
-        GUI.Label(new Rect(4, 40, 284, 40), $"Level {accountLevel}");
+        GUI.Label(new Rect(4, 40, 284, 40), accountLevel >= 5 ? "Level 5" : $"Level {accountLevel}  -  Step {accountLevelStep}/5");
+        DrawLevelProgressBar(new Rect(4, 74, 284, 8), accountLevelProgress);
         GUI.Label(new Rect(4, 84, 284, 26), $"XP: {accountXp}   Shots: {accountShotsPlayed}   Wins: {accountWins}");
         GUI.Label(new Rect(4, 114, 284, 26), accountLevel >= 5 ? "Max level reached." : $"XP to next level: {accountXpUntilNextLevel}");
         GUI.Label(new Rect(4, 144, 284, 26), $"Max bet at this level: {accountMaxBet}");
         GUI.Label(new Rect(4, 174, 284, 26), accountPrestigeUnlocked ? "$50/$100 notes unlocked." : "$50/$100 notes locked until Level 3.");
-        if (DrawMetalButton(new Rect(4, 220, 284, 42), "Log Out")) LogOutAccount();
+        if (accountTrophyNotes.Length > 0)
+            GUI.Label(new Rect(4, 202, 284, 26), "Trophy notes: $" + string.Join(", $", accountTrophyNotes));
+        if (DrawMetalButton(new Rect(4, 236, 284, 42), "Log Out")) LogOutAccount();
+    }
+
+    // 2K-style rep bar: the fill shows progress through the whole level, with four tick
+    // marks splitting it into the five steps.
+    private static void DrawLevelProgressBar(Rect rect, float progress)
+    {
+        var old = GUI.color;
+        GUI.color = new Color(0f, 0f, 0f, 0.55f);
+        GUI.DrawTexture(rect, Texture2D.whiteTexture);
+        GUI.color = new Color(0.16f, 0.79f, 0.9f, 0.95f);
+        GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(progress), rect.height), Texture2D.whiteTexture);
+        GUI.color = new Color(0f, 0f, 0f, 0.8f);
+        for (int step = 1; step < 5; step++)
+            GUI.DrawTexture(new Rect(rect.x + rect.width * step / 5f - 1f, rect.y, 2f, rect.height), Texture2D.whiteTexture);
+        GUI.color = old;
     }
 
     private void DrawLeaveConfirmation()

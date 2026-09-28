@@ -851,3 +851,32 @@ that makes that consequence explicit rather than leaving it implicit.
   Unity scripts still parse with 0 syntax errors.
 - New `docs/decisions/2026-09-28-ads-bankroll-and-seat-hold.md` records the
   approved ad layout, one-bankroll-per-account and seat hold (not built).
+
+## Round 9 -- 2026-09-28
+
+### XP reworked to a "junior NBA 2K" grind; trophy notes built
+
+- **No daily cap, slower XP, steeper levels.** The owner asked for a real grind
+  without a cap: Level 2 in about 5 days for an extreme grinder and 10 for a
+  daily casual, each level harder than the last, and a longer climb to the top.
+  New ladder: 12,000 / 42,000 / 112,000 / 272,000 total XP (roughly 3 months
+  to Level 5 for a grinder, 7 for a casual). Every signed-in player seated
+  earns XP per finished shot (8), the shooter and catcher more (+8), the
+  winner more again (+12, still limited to 3 per opponent per day), plus money
+  won. The daily cap is replaced by a daily bonus: the first 15 shots each day
+  earn 5x. A plain no-cap system makes XP track hours played, so a 3-hour
+  grinder would level about 6x faster than a 30-minute player, not 2x; the
+  daily bonus closes that gap without stopping anyone.
+- **Five steps per level** with a progress bar on Game Stats
+  (`levelStep`, `levelProgress` in the account API).
+- **Trophy notes** (replaces the old "hustle" wording, per the owner): a player
+  below Level 3 who beats a Level 3+ opponent in a shot of $50+ keeps one note
+  as a trophy -- $100 if the shot was $100+, else $50. Shown on Game Stats.
+- Decided and documented, not built: online requires sign-in; while a host's
+  seat is on hold the next-highest rank covers and hands it back. New
+  `docs/decisions/2026-09-28-launch-features.md` records the owner's picks
+  for launch: Find a game, the modern UI switch, the level-up moment, daily
+  challenges, share-a-clip and the reactive crowd.
+- 162/162 tests. Live-verified on a real server roll: a shooter winning $20 on
+  the first shot of the day earned 150 XP ((8+8+12+2) x 5) and the catcher 80.
+  All 28 Unity scripts still parse clean.

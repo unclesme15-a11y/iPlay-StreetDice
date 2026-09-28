@@ -49,8 +49,8 @@ public class TableHostTests
         var host = store.JoinRealPlayer(gameId, "Host");
         var lowGuest = store.JoinRealPlayer(gameId, "Low");
         var highGuest = store.JoinRealPlayer(gameId, "High");
-        var high = accounts.Register("High", "hustle123");
-        high.Xp = 2500; // Level 4 -- sits in a later seat but outranks the earlier guest
+        var high = accounts.Register("High", "dice1234");
+        high.Xp = 112_000; // Level 4 -- sits in a later seat but outranks the earlier guest
         store.LinkAccount(gameId, highGuest.Player.Id, high.Id);
 
         engine.LeaveGame(host.Player.Id);
@@ -69,12 +69,12 @@ public class TableHostTests
         var gameId = engine.State.GameId;
 
         var host = store.JoinRealPlayer(gameId, "Host");
-        var hostAccount = accounts.Register("Host", "hustle123");
-        hostAccount.Xp = 1000; // Level 3
+        var hostAccount = accounts.Register("Host", "dice1234");
+        hostAccount.Xp = 42_000; // Level 3
         store.LinkAccount(gameId, host.Player.Id, hostAccount.Id);
         var guest = store.JoinRealPlayer(gameId, "Guest");
         var guestAccount = accounts.Register("Guest", "another-pw1");
-        guestAccount.Xp = 5000; // Level 5
+        guestAccount.Xp = 272_000; // Level 5
         store.LinkAccount(gameId, guest.Player.Id, guestAccount.Id);
 
         engine.LeaveGame(host.Player.Id);

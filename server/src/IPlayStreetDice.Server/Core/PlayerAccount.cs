@@ -26,17 +26,15 @@ public sealed class PlayerAccount
     public int Xp { get; set; }
     public int Level => RankLadder.LevelForXp(Xp);
 
-    // Daily farming guards (see RankLadder). Reset whenever a shot lands on a new UTC day.
-    public int DailyXp { get; set; }
-    public DateOnly? DailyXpDay { get; set; }
+    // Daily bonus and win-trading guard (see RankLadder). Reset whenever a shot lands on a
+    // new UTC day. DailyShots counts every finished shot seated, for the daily bonus.
+    public int DailyShots { get; set; }
+    public DateOnly? DailyDay { get; set; }
     public Dictionary<string, int> DailyWinBonusesByOpponent { get; } = new();
 
-    /// <summary>Prestige notes ($50/$100) this account has "hustled" as a
-    /// flex -- won off a higher-ranked player somehow -- but only ever
-    /// actually show up at a table whose host is Level 3+ (see
-    /// StreetDiceTableStore.PrestigeNoteUsableBy in Program.cs), same as
-    /// everyone else's $50/$100 access there. Nothing in this session yet
-    /// decides how a note lands in here; this is just the holding data
-    /// other systems can populate once that's designed.</summary>
-    public HashSet<int> HustledPrestigeNotes { get; } = new();
+    /// <summary>$50/$100 notes won as trophies: a player below Level 3 who wins a shot of $50
+    /// or more against a Level 3+ opponent keeps one (see StreetDiceTableStore.AwardTrophyNote
+    /// in Program.cs). A bragging-rights collectible -- it only shows up at a party whose host
+    /// is Level 3+, same as everyone else's $50/$100 access there.</summary>
+    public HashSet<int> TrophyNotes { get; } = new();
 }

@@ -13,34 +13,45 @@ means one game session of up to 5 players -- the same thing the owner calls a
   at Level 1, even a Level 5 guest. Not additive, not "whichever is higher."
 - **When the host leaves:** the party keeps the departing host's level for the
   rest of the party (`LockedTableLevel`), and the host role passes to the
-  highest-ranked player still seated (earliest seat breaks a tie). The owner
-  said "the voice controls go to a higher rank"; read as the host's controls
-  (music, invites), since hosts have no separate voice controls. Confirm if
-  that was meant literally.
+  highest-ranked player still seated (earliest seat breaks a tie). The host's
+  controls that pass are music and invites (owner confirmed).
+- If the host's seat is only on hold (phone died, ad break), the next-highest
+  rank covers as host and the original host gets the role back when they
+  return. Not built yet -- see the seat-hold section of the ads/bankroll doc.
 - Only the host can share or re-share the party invite.
 
 ## Built (server-enforced, tested)
 
-| Level | Max bet | XP to reach | Unlocks |
-| --- | --- | --- | --- |
-| 1 (start) | $100 | 0 | White dice |
-| 2 | $250 (placeholder) | 200 | Green dice |
-| 3 | $500 | 1,000 | Black dice, $50 and $100 notes |
-| 4 | $750 (placeholder) | 2,500 | Red and blue dice with white pips |
-| 5 (top) | $1,000 | 5,000 | Custom RGB color wheel |
+| Level | Max bet | Total XP to reach | Grinder (~3 h/day) | Casual (~30 min/day) | Unlocks |
+| --- | --- | --- | --- | --- | --- |
+| 1 (start) | $100 | 0 | -- | -- | White dice |
+| 2 | $250 (placeholder) | 12,000 | ~5 days | ~10 days | Green dice |
+| 3 | $500 | 42,000 | ~2 weeks | ~5 weeks | Black dice, $50 and $100 notes |
+| 4 | $750 (placeholder) | 112,000 | ~6 weeks | ~3 months | Red and blue dice with white pips |
+| 5 (top) | $1,000 | 272,000 | ~3 months | ~7 months | Custom RGB color wheel |
 
-Owner set the level 1/3/5 caps. Dice-color and color-wheel unlocks are
-approved but **not built** (see below).
+Owner set the level 1/3/5 caps and the pacing: a "junior NBA 2K" grind, Level 2
+in about 5 days for an extreme grinder and 10 for a daily casual, getting
+harder every level, with a longer climb to the top. Dice-color and color-wheel
+unlocks are approved but **not built** (see below).
 
-### XP formula (owner: "a combo of all"; numbers tunable in `RankLadder.cs`)
+### XP formula (numbers tunable in `RankLadder.cs`)
 
-- +10 XP for every finished shot you're in, shooter or catcher, win or lose.
-- +15 XP for winning a shot, but only your first 3 wins against the same
-  opponent each day.
-- +1 XP per $10 won on the shot, up to 50 per shot.
-- 500 XP daily cap. At the cap, Level 5 takes at least 10 days.
-- Only signed-in players earn XP. Live-verified: a catcher winning $20 earned
-  27 XP (10 + 15 + 2); the shooter who lost earned 10.
+- **No daily cap.** Grinders are never stopped.
+- **Every signed-in player seated at the party** earns 8 XP per finished shot,
+  so a full 5-player party levels as fast as a 1-on-1.
+- **Shooter or catcher:** +8 more.
+- **Winning the shot:** +12, but only the first 3 wins against the same
+  opponent each day (stops friends trading wins on purpose).
+- **Money won:** +1 per $10, up to 20 per shot.
+- **Daily bonus:** your first 15 shots each day are worth 5x. This is what lets
+  a 30-minute daily player keep roughly half a grinder's pace instead of a
+  sixth, without capping anyone.
+- **Five steps inside every level** with a progress bar on Game Stats (Level 2,
+  Step 3/5), so there's always a step coming even when a level takes weeks.
+- The day counts above assume about 40 finished shots per hour at a party.
+  That's an estimate: measure real shots per hour in beta, then retune the
+  numbers in `RankLadder.cs`.
 
 ### Other built pieces
 
@@ -50,8 +61,13 @@ approved but **not built** (see below).
   Level 3+ *and* the note art exists in `Resources/Money` (not generated yet).
   **Owner has a close-up screenshot of stacked bills that shows exactly how
   the pile should look -- match it once it's uploaded.**
-- Hustled $50/$100 notes are only usable at a Level 3+ host's party. It's a
-  trophy, not an exclusive unlock.
+- **Trophy notes:** a player below Level 3 who wins a shot of $50 or more
+  against a Level 3+ opponent keeps one note as a trophy (the $100 if the shot
+  was $100+, otherwise the $50). Both must be signed in. Shown on Game Stats.
+  Like all $50/$100 use, it only shows up at a Level 3+ host's party -- it's
+  bragging rights, not an exclusive unlock.
+- Online parties require signing in (owner decision; client flow not built
+  yet). Offline play vs AI stays open to everyone.
 
 ## Approved, not built yet
 
@@ -61,11 +77,9 @@ approved but **not built** (see below).
 - Crowd size scales with level (host-driven). Crowd footage is being sourced
   separately (Kling / Veo / Runway) and will land in `docs/` for approval.
 
-## Still open (ask the owner)
+## Still open
 
-1. How does a player actually "hustle" a $50/$100 note?
-2. Do online parties require signing in? (Needed once money follows the
-   account -- see the ads/bankroll doc.)
+Nothing on rank. Tune the XP numbers after beta measures real shots per hour.
 
 ## Other locked decisions
 

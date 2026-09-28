@@ -150,8 +150,10 @@ app.MapPost("/api/accounts/login", (LoginAccountRequest request, PlayerAccountSt
             level = account.Level, wins = account.Wins,
             xp = account.Xp, shotsPlayed = account.ShotsPlayed,
             xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
+            levelStep = RankLadder.LevelStep(account.Xp), levelProgress = RankLadder.LevelProgress(account.Xp),
             maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
-            prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
+            prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level),
+            trophyNotes = account.TrophyNotes.OrderBy(n => n).ToArray() });
     }
     catch (InvalidOperationException ex)
     {
@@ -170,8 +172,10 @@ app.MapPost("/api/accounts/{accountId}/session", (string accountId, AccountSessi
     return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
         wins = account.Wins, xp = account.Xp, shotsPlayed = account.ShotsPlayed,
         xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
+            levelStep = RankLadder.LevelStep(account.Xp), levelProgress = RankLadder.LevelProgress(account.Xp),
         maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
-        prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
+        prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level),
+            trophyNotes = account.TrophyNotes.OrderBy(n => n).ToArray() });
 });
 
 app.MapGet("/api/accounts/{accountId}", (string accountId, PlayerAccountStore accounts) =>
@@ -183,8 +187,10 @@ app.MapGet("/api/accounts/{accountId}", (string accountId, PlayerAccountStore ac
     return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
         wins = account.Wins, xp = account.Xp, shotsPlayed = account.ShotsPlayed,
         xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
+            levelStep = RankLadder.LevelStep(account.Xp), levelProgress = RankLadder.LevelProgress(account.Xp),
         maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
-        prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
+        prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level),
+            trophyNotes = account.TrophyNotes.OrderBy(n => n).ToArray() });
 });
 
 app.MapPost("/api/street-dice/create", (StreetDiceTableStore store) =>
@@ -496,19 +502,48 @@ public sealed class StreetDiceTableStore
     public bool TryGetLinkedAccount(string gameId, string playerId, out string accountId) =>
         _accountLinks.TryGetValue(SessionKey(gameId, playerId), out accountId!);
 
-    /// <summary>Both sides of a finished shot earn XP (see RankLadder): the shooter and the
-    /// catcher each played it; whoever won also gets the win and money bonuses. Unlinked
-    /// (guest) seats earn nothing but still count as a distinct opponent.</summary>
+    /// <summary>Every signed-in player seated at the party earns XP for a finished shot (see
+    /// RankLadder); the shooter and catcher earn more, and whichever of them won also gets the
+    /// win and money bonuses. Unlinked (guest) seats earn nothing but still count as a distinct
+    /// opponent for the win-trading guard.</summary>
+    /// <summary>Owner-approved: a player below Level 3 who wins a shot of $50 or more against a
+    /// Level 3+ opponent keeps one note as a trophy -- the $100 if the shot was $100 or more,
+    /// otherwise the $50. Both players must be signed in.</summary>
+    public void AwardTrophyNote(string gameId, string winnerId, string loserId, int shotAmount)
+    {
+        if (shotAmount < 50) return;
+        if (!TryGetLinkedAccount(gameId, winnerId, out var winnerAccountId)
+            || !_accounts.TryGet(winnerAccountId, out var winner)
+            || winner.Level >= RankLadder.PrestigeBillUnlockLevel) return;
+        if (!TryGetLinkedAccount(gameId, loserId, out _)
+            || AccountLevel(gameId, loserId) < RankLadder.PrestigeBillUnlockLevel) return;
+        lock (winner) winner.TrophyNotes.Add(shotAmount >= 100 ? 100 : 50);
+    }
+
     public void RecordShotXp(string gameId, PlayerAccountStore accounts, string shooterId, string catcherId,
         bool shooterWon, int shotAmount, DateOnly today)
     {
+        if (!_games.TryGetValue(gameId, out var engine)) return;
         string OpponentKey(string playerId) =>
             TryGetLinkedAccount(gameId, playerId, out var id) ? id : $"seat:{gameId}:{playerId}".ToLowerInvariant();
 
-        if (TryGetLinkedAccount(gameId, shooterId, out var shooterAccount))
-            accounts.RecordShot(shooterAccount, shooterWon, OpponentKey(catcherId), shooterWon ? shotAmount : 0, today);
-        if (TryGetLinkedAccount(gameId, catcherId, out var catcherAccount))
-            accounts.RecordShot(catcherAccount, !shooterWon, OpponentKey(shooterId), shooterWon ? 0 : shotAmount, today);
+        // Before XP, so the trophy check uses the winner's level going into this shot.
+        AwardTrophyNote(gameId, shooterWon ? shooterId : catcherId, shooterWon ? catcherId : shooterId, shotAmount);
+
+        foreach (var player in engine.State.Players.Where(p => !p.HasLeft))
+        {
+            if (!TryGetLinkedAccount(gameId, player.Id, out var accountId)) continue;
+            bool isShooter = string.Equals(player.Id, shooterId, StringComparison.OrdinalIgnoreCase);
+            bool isCatcher = string.Equals(player.Id, catcherId, StringComparison.OrdinalIgnoreCase);
+            if (!isShooter && !isCatcher)
+            {
+                accounts.RecordShot(accountId, shooterOrCatcher: false, won: false, opponentKey: null, 0, today);
+                continue;
+            }
+            bool won = isShooter ? shooterWon : !shooterWon;
+            accounts.RecordShot(accountId, shooterOrCatcher: true, won,
+                OpponentKey(isShooter ? catcherId : shooterId), won ? shotAmount : 0, today);
+        }
     }
 
     private int AccountLevel(string gameId, string playerId)
@@ -553,22 +588,19 @@ public sealed class StreetDiceTableStore
     public int EffectiveBetCap(string gameId) => RankLadder.MaxBetForLevel(HostLevel(gameId));
 
     /// <summary>Whether the $50/$100 note art is usable at this table -- purely the host's
-    /// level, same as EffectiveBetCap. Applies to a hustled prestige note too (see
+    /// level, same as EffectiveBetCap. Applies to trophy notes too (see
     /// PrestigeNoteUsableBy): "I want it all to be around the host" means there's no separate
-    /// personal-level path here either, even for a note someone hustled off a higher rank.</summary>
+    /// personal-level path here either.</summary>
     public bool PrestigeBillsUnlocked(string gameId) => RankLadder.PrestigeBillsUnlockedAtLevel(HostLevel(gameId));
 
-    /// <summary>"It's ok if it's a lower rank that ends up with a $50 or $100, that's a flex
-    /// because they hustled it from a higher rank." A held note is only ever usable at a table
-    /// whose host is Level 3+ -- the flex is having the note at all; showing it off still
-    /// depends entirely on the host, like everything else about the table. Nothing yet decides
-    /// how a note lands in PlayerAccount.HustledPrestigeNotes -- this only answers whether one
-    /// already held is currently usable.</summary>
+    /// <summary>A trophy note is only ever usable at a table whose host is Level 3+ -- the
+    /// bragging rights are having it at all; showing it off still depends on the host, like
+    /// everything else about the table.</summary>
     public bool PrestigeNoteUsableBy(string gameId, string playerId, int denomination)
     {
         if (!_accountLinks.TryGetValue(SessionKey(gameId, playerId), out var accountId)
             || !_accounts.TryGet(accountId, out var account)
-            || !account.HustledPrestigeNotes.Contains(denomination)) return false;
+            || !account.TrophyNotes.Contains(denomination)) return false;
         return PrestigeBillsUnlocked(gameId);
     }
 

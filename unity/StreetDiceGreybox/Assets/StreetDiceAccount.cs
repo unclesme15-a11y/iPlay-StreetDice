@@ -29,7 +29,10 @@ public sealed partial class StreetDiceGreyboxController
     private int accountXp;
     private int accountXpUntilNextLevel;
     private int accountShotsPlayed;
+    private int accountLevelStep = 1;
+    private float accountLevelProgress;
     private int accountMaxBet = 100;
+    private int[] accountTrophyNotes = Array.Empty<int>();
     private bool accountPrestigeUnlocked;
     private bool accountLoggedIn;
 
@@ -45,8 +48,10 @@ public sealed partial class StreetDiceGreyboxController
     private sealed class AccountResponseDto
     {
         public string accountId = "", accountSessionToken = "", username = "";
-        public int level = 1, wins, xp, xpUntilNextLevel, shotsPlayed, maxBetAtLevel = 100;
+        public int level = 1, wins, xp, xpUntilNextLevel, shotsPlayed, levelStep = 1, maxBetAtLevel = 100;
+        public float levelProgress;
         public bool prestigeBillsUnlocked;
+        public int[] trophyNotes;
     }
 
     [Serializable] private sealed class AccountErrorDto { public string error = ""; }
@@ -102,6 +107,9 @@ public sealed partial class StreetDiceGreyboxController
         accountId = accountSessionToken = accountUsername = "";
         accountLevel = 1;
         accountWins = accountXp = accountXpUntilNextLevel = accountShotsPlayed = 0;
+        accountLevelStep = 1;
+        accountLevelProgress = 0f;
+        accountTrophyNotes = Array.Empty<int>();
         accountMaxBet = 100;
         accountPrestigeUnlocked = false;
         accountLoggedIn = false;
@@ -189,6 +197,9 @@ public sealed partial class StreetDiceGreyboxController
         accountXp = response.xp;
         accountXpUntilNextLevel = response.xpUntilNextLevel;
         accountShotsPlayed = response.shotsPlayed;
+        accountLevelStep = response.levelStep;
+        accountLevelProgress = response.levelProgress;
+        accountTrophyNotes = response.trophyNotes ?? Array.Empty<int>();
         accountMaxBet = response.maxBetAtLevel;
         accountPrestigeUnlocked = response.prestigeBillsUnlocked;
         // Login responses carry a fresh session token; a session refresh doesn't, so don't

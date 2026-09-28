@@ -47,8 +47,13 @@ and revenue planning; Codex builds. Uses the host rule from
 - Only allowed when the player has no live bet and isn't holding the dice (a
   broke player naturally has neither).
 
-## Open
+- **If the host's own seat is on hold,** the next-highest rank covers as host
+  (music, invites) and the original host gets the role back when they return.
+  (A host who actually leaves hands it off for good -- already built.)
 
-- If the host's own seat is on hold, does the host role (music, invites) pass
-  to the next-highest rank, and does it come back when they return?
-- Do online parties require signing in, now that money follows the account?
+## Sign-in
+
+Online parties require signing in (owner decision), so money, XP and rank stay
+honest. Offline play vs AI stays open to everyone. Enforce it server-side at
+`join-real` (reject without a valid account token) together with the client's
+sign-in prompt, so neither ships without the other.

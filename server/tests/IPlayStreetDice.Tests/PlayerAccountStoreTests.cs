@@ -8,9 +8,9 @@ public class PlayerAccountStoreTests
     public void RegisterThenLogin_Succeeds()
     {
         var accounts = new PlayerAccountStore();
-        var registered = accounts.Register("Bell", "hustle123");
+        var registered = accounts.Register("Bell", "dice1234");
 
-        var (account, token) = accounts.Login("Bell", "hustle123");
+        var (account, token) = accounts.Login("Bell", "dice1234");
 
         Assert.Equal(registered.Id, account.Id);
         Assert.Equal(64, token.Length);
@@ -21,7 +21,7 @@ public class PlayerAccountStoreTests
     public void Login_WithWrongPassword_Throws()
     {
         var accounts = new PlayerAccountStore();
-        accounts.Register("Bell", "hustle123");
+        accounts.Register("Bell", "dice1234");
 
         Assert.Throws<InvalidOperationException>(() => accounts.Login("Bell", "wrong-password"));
     }
@@ -30,79 +30,96 @@ public class PlayerAccountStoreTests
     public void Register_DuplicateUsername_Throws()
     {
         var accounts = new PlayerAccountStore();
-        accounts.Register("Bell", "hustle123");
+        accounts.Register("Bell", "dice1234");
 
         Assert.Throws<InvalidOperationException>(() => accounts.Register("Bell", "different-pw"));
     }
 
     private static readonly DateOnly Day1 = new(2026, 9, 28);
 
+    private static int Watch(PlayerAccountStore accounts, string id, DateOnly day) =>
+        accounts.RecordShot(id, shooterOrCatcher: false, won: false, opponentKey: null, 0, day);
+
+    private static int Win(PlayerAccountStore accounts, string id, string opponent, DateOnly day) =>
+        accounts.RecordShot(id, shooterOrCatcher: true, won: true, opponent, 0, day);
+
     [Fact]
-    public void RecordShot_RaisesLevelOnceThresholdIsCrossed()
+    public void FirstFifteenShotsEachDay_EarnFiveTimesXp()
     {
         var accounts = new PlayerAccountStore();
-        var account = accounts.Register("Bell", "hustle123");
+        var account = accounts.Register("Bell", "dice1234");
+
+        var granted = Enumerable.Range(0, 16).Select(_ => Watch(accounts, account.Id, Day1)).ToList();
+
+        Assert.All(granted.Take(15), xp => Assert.Equal(40, xp)); // 8 seated x 5
+        Assert.Equal(8, granted[15]);
+        Assert.Equal(40, Watch(accounts, account.Id, Day1.AddDays(1))); // bonus is back tomorrow
+    }
+
+    [Fact]
+    public void ThereIsNoDailyCap()
+    {
+        var accounts = new PlayerAccountStore();
+        var account = accounts.Register("Bell", "dice1234");
+
+        for (var i = 0; i < 1000; i++) Watch(accounts, account.Id, Day1);
+
+        Assert.Equal(15 * 40 + 985 * 8, account.Xp);
+    }
+
+    [Fact]
+    public void GrindingOneDay_CrossesIntoLevel2AtExactly12000Xp()
+    {
+        var accounts = new PlayerAccountStore();
+        var account = accounts.Register("Bell", "dice1234");
+
+        for (var i = 0; i < 1439; i++) Watch(accounts, account.Id, Day1);
         Assert.Equal(1, account.Level);
+        Watch(accounts, account.Id, Day1);
 
-        // 20 losses x 10 XP = 200 XP = Level 2 -- playing alone still levels you up.
-        for (var i = 0; i < 20; i++) accounts.RecordShot(account.Id, won: false, "opponent", 0, Day1);
-
-        Assert.Equal(200, account.Xp);
+        Assert.Equal(12_000, account.Xp);
         Assert.Equal(2, account.Level);
-        Assert.Equal(20, account.ShotsPlayed);
+        Assert.Equal(0, account.ShotsPlayed); // watching doesn't count as a shot played
     }
 
     [Fact]
     public void WinBonus_StopsAfterThreeWinsAgainstTheSameOpponentInADay()
     {
         var accounts = new PlayerAccountStore();
-        var account = accounts.Register("Bell", "hustle123");
+        var account = accounts.Register("Bell", "dice1234");
+        for (var i = 0; i < 15; i++) Watch(accounts, account.Id, Day1); // use up the daily bonus
 
-        var granted = Enumerable.Range(0, 4).Select(_ => accounts.RecordShot(account.Id, true, "same-friend", 0, Day1)).ToList();
-        Assert.Equal(new[] { 25, 25, 25, 10 }, granted);
+        var granted = Enumerable.Range(0, 4).Select(_ => Win(accounts, account.Id, "same-friend", Day1)).ToList();
+        Assert.Equal(new[] { 28, 28, 28, 16 }, granted);
 
-        // A different opponent still pays the full win bonus.
-        Assert.Equal(25, accounts.RecordShot(account.Id, true, "someone-new", 0, Day1));
-        // And the same friend pays again the next day.
-        Assert.Equal(25, accounts.RecordShot(account.Id, true, "same-friend", 0, Day1.AddDays(1)));
-    }
-
-    [Fact]
-    public void DailyCap_StopsXpAt500PerDay_ThenResetsTomorrow()
-    {
-        var accounts = new PlayerAccountStore();
-        var account = accounts.Register("Bell", "hustle123");
-
-        for (var i = 0; i < 100; i++) accounts.RecordShot(account.Id, false, "farm-partner", 0, Day1);
-        Assert.Equal(RankLadder.DailyXpCap, account.Xp);
-        Assert.Equal(100, account.ShotsPlayed); // shots still count as stats, just not XP
-
-        accounts.RecordShot(account.Id, false, "farm-partner", 0, Day1.AddDays(1));
-        Assert.Equal(RankLadder.DailyXpCap + 10, account.Xp);
+        Assert.Equal(28, Win(accounts, account.Id, "someone-new", Day1));
+        // The same friend pays again the next day (first shot of the day, so x5 too).
+        Assert.Equal(140, Win(accounts, account.Id, "same-friend", Day1.AddDays(1)));
     }
 
     [Fact]
     public void XpAndDailyCounters_SurviveASnapshotRestoreCycle()
     {
         var original = new PlayerAccountStore();
-        var account = original.Register("Bell", "hustle123");
-        for (var i = 0; i < 3; i++) original.RecordShot(account.Id, true, "same-friend", 0, Day1);
+        var account = original.Register("Bell", "dice1234");
+        for (var i = 0; i < 3; i++) Win(original, account.Id, "same-friend", Day1);
 
         var restarted = new PlayerAccountStore();
         restarted.Restore(original.Snapshot());
 
         Assert.True(restarted.TryGet(account.Id, out var restored));
         Assert.Equal(account.Xp, restored.Xp);
-        // The three win bonuses already used against this friend today are remembered.
-        Assert.Equal(10, restarted.RecordShot(account.Id, true, "same-friend", 0, Day1));
+        // Win bonuses against this friend are used up, but the daily bonus (shot 4 of 15)
+        // is still running: 16 x 5.
+        Assert.Equal(80, Win(restarted, account.Id, "same-friend", Day1));
     }
 
     [Fact]
     public void SessionTokens_SurviveASnapshotRestoreCycle()
     {
         var original = new PlayerAccountStore();
-        original.Register("Bell", "hustle123");
-        var (account, token) = original.Login("Bell", "hustle123");
+        original.Register("Bell", "dice1234");
+        var (account, token) = original.Login("Bell", "dice1234");
 
         var restarted = new PlayerAccountStore();
         restarted.Restore(original.Snapshot());
@@ -114,23 +131,23 @@ public class PlayerAccountStoreTests
     public void Restore_AcceptsOlderSnapshotsWrittenBeforeTokensWereSaved()
     {
         var original = new PlayerAccountStore();
-        var account = original.Register("Bell", "hustle123");
+        var account = original.Register("Bell", "dice1234");
         var legacy = original.Snapshot().Select(a => a with { SessionToken = null });
 
         var restarted = new PlayerAccountStore();
         restarted.Restore(legacy);
 
         Assert.True(restarted.TryGet(account.Id, out _));
-        Assert.NotNull(restarted.Login("Bell", "hustle123").Token);
+        Assert.NotNull(restarted.Login("Bell", "dice1234").Token);
     }
 
     [Fact]
     public void ValidateSession_RejectsATokenFromADifferentAccount()
     {
         var accounts = new PlayerAccountStore();
-        accounts.Register("Bell", "hustle123");
+        accounts.Register("Bell", "dice1234");
         accounts.Register("Dice", "another-pw1");
-        var (_, bellToken) = accounts.Login("Bell", "hustle123");
+        var (_, bellToken) = accounts.Login("Bell", "dice1234");
         var (diceAccount, _) = accounts.Login("Dice", "another-pw1");
 
         Assert.False(accounts.ValidateSession(diceAccount.Id, bellToken));

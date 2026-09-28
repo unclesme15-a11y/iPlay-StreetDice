@@ -48,9 +48,7 @@ the design/material source (same as the $1/$5/$10 generation did):
 
 ## Still open
 
-- Nothing in this project yet decides how a low-level player "hustles" a $50/$100 note as a
-  flex item (`PlayerAccount.HustledPrestigeNotes` in `PlayerAccountStore.cs` is the holding
-  data structure -- currently nothing populates it). That's a separate design decision, not
-  an art one.
+- (Resolved 2026-09-28) A player below Level 3 wins a trophy note by beating a Level 3+
+  player in a shot of $50 or more -- see `PlayerAccount.TrophyNotes` and the rank doc.
 - No APK built. All amounts are offline demo play money, same standing note as the rest of
   this currency set.
