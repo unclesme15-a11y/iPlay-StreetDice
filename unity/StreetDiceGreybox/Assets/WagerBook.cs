@@ -26,6 +26,8 @@ namespace IPlay.Demo
     public sealed class WagerBook
     {
         private readonly List<WagerOffer> offers = new List<WagerOffer>();
+        private readonly HashSet<string> doneBettors = new HashSet<string>();
+        private readonly HashSet<int> lateOfferIds = new HashSet<int>();
         private int nextId;
         public IReadOnlyList<WagerOffer> Offers => offers;
         public string Shooter { get; private set; } = "";
@@ -50,6 +52,7 @@ namespace IPlay.Demo
             Point = point;
             OfferDeadline = now + 10;
             ShooterDeadline = OfferDeadline + 5;
+            doneBettors.Clear();
             Started = true;
             Rolling = false;
         }
@@ -60,6 +63,34 @@ namespace IPlay.Demo
         }
 
         public bool CanOffer(double now) => Started && !Rolling && now < OfferDeadline;
+
+        // A bettor is done once they propose a bet or close the bet menu. When every bettor
+        // is done the propose time ends right away, and the shooter keeps up to 5 seconds
+        // only while a lock is still waiting on them (owner rule 2026-09-28).
+        public void MarkDone(string player, IEnumerable<string> bettors, double now)
+        {
+            if (!CanOffer(now) || string.IsNullOrEmpty(player) || player == Shooter) return;
+            doneBettors.Add(player);
+            foreach (var bettor in bettors)
+                if (bettor != Shooter && !doneBettors.Contains(bettor)) return;
+            OfferDeadline = now;
+            ShooterDeadline = Math.Min(ShooterDeadline, WaitingOnShooter() ? now + 5 : now);
+        }
+
+        public bool IsDone(string player) => doneBettors.Contains(player);
+
+        private bool WaitingOnShooter() => offers.Exists(offer => offer.Status == WagerStatus.Offered &&
+            offer.SourceOfferId == 0 && offer.To == Shooter && !lateOfferIds.Contains(offer.Id));
+
+        // After the point window, a player with no live bet against the shooter (say they
+        // closed the menu by accident) may still propose one against the point or its paired
+        // number between rolls. Like an add-on, the shooter accepts it before throwing or it
+        // expires when the next roll begins.
+        public bool CanProposeLate(string player, double now) =>
+            Started && !Rolling && Point != 0 && now >= OfferDeadline && !string.IsNullOrEmpty(player) &&
+            player != Shooter && !offers.Exists(offer => offer.From == player && offer.To == Shooter &&
+                offer.SourceOfferId == 0 &&
+                (offer.Status == WagerStatus.Offered || offer.Status == WagerStatus.Accepted));
         public bool CanRoll(double now) => Started && !Rolling && now >= ShooterDeadline;
 
         public int Exposure(string player)
@@ -76,7 +107,9 @@ namespace IPlay.Demo
             double now, Func<string, int> available)
         {
             Expire(now);
-            if (!CanOffer(now)) throw new InvalidOperationException("Betting is closed.");
+            bool late = !CanOffer(now);
+            if (late && (!CanProposeLate(from, now) || to != Shooter || outcome != WagerOutcome.Crap))
+                throw new InvalidOperationException("Betting is closed.");
             if (string.IsNullOrEmpty(from) || string.IsNullOrEmpty(to) || from == to)
                 throw new InvalidOperationException("Invalid wager participants.");
             if (amount != 1 && amount != 5 && amount != 10 && amount != 20) throw new ArgumentException("Invalid wager amount.");
@@ -96,6 +129,7 @@ namespace IPlay.Demo
             var created = new WagerOffer { Id = ++nextId, From = from, To = to, Outcome = outcome,
                 Number = number, Amount = amount, Status = WagerStatus.Offered };
             offers.Add(created);
+            if (late) lateOfferIds.Add(created.Id);
             return created;
         }
 
@@ -139,12 +173,15 @@ namespace IPlay.Demo
             if (Rolling || offer.Status != WagerStatus.Offered) throw new InvalidOperationException("Offer is unavailable.");
             if (available(player) - Exposure(player) < offer.Amount) throw new InvalidOperationException("Insufficient funds.");
             offer.Status = WagerStatus.Accepted;
+            // Nothing left to take once the propose time is over: the shooter can throw now.
+            if (now >= OfferDeadline && !WaitingOnShooter()) ShooterDeadline = Math.Min(ShooterDeadline, now);
         }
 
         public void Expire(double now)
         {
             foreach (var offer in offers)
                 if (offer.SourceOfferId == 0 && offer.Status == WagerStatus.Offered &&
+                    !lateOfferIds.Contains(offer.Id) &&
                     now >= (offer.To == Shooter ? ShooterDeadline : OfferDeadline))
                     offer.Status = WagerStatus.Expired;
         }
@@ -154,7 +191,7 @@ namespace IPlay.Demo
             Expire(now);
             if (!CanRoll(now)) throw new InvalidOperationException("Acceptance countdown is still running.");
             foreach (var offer in offers)
-                if (offer.SourceOfferId != 0 && offer.Status == WagerStatus.Offered)
+                if ((offer.SourceOfferId != 0 || lateOfferIds.Contains(offer.Id)) && offer.Status == WagerStatus.Offered)
                     offer.Status = WagerStatus.Expired;
             Rolling = true;
         }

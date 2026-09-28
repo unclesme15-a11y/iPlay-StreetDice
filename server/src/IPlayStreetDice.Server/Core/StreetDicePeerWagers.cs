@@ -28,8 +28,21 @@ public sealed partial class StreetDiceGameEngine
             throw new InvalidOperationException("The catcher can only offer against the shooter.");
         if (to == State.CatcherId && outcome != WagerOutcome.Hit)
             throw new InvalidOperationException("The catcher cannot accept a wager with the shooter.");
-        return _peerWagers.Propose(from, to, outcome, number, amount, BettingSeconds(now), AvailablePeerFunds);
+        var offer = _peerWagers.Propose(from, to, outcome, number, amount, BettingSeconds(now), AvailablePeerFunds);
+        _peerWagers.MarkDone(from, PeerBettors(), BettingSeconds(now));
+        return offer;
     }
+
+    // The player closed the bet menu (or the come-out lock) without betting: they're done.
+    // When every seated non-shooter is done, the countdown ends early.
+    public void MarkPeerBettorDone(string playerId, DateTimeOffset now)
+    {
+        if (RequirePlayer(playerId).HasLeft) throw new InvalidOperationException("Player has left.");
+        _peerWagers.MarkDone(playerId, PeerBettors(), BettingSeconds(now));
+    }
+
+    private IEnumerable<string> PeerBettors() =>
+        State.Players.Where(player => !player.HasLeft && player.Id != State.ShooterId).Select(player => player.Id);
 
     public WagerOffer AcceptPeerWager(string recipient, int offerId, DateTimeOffset now)
     {

@@ -284,6 +284,15 @@ app.MapPost("/api/street-dice/{gameId}/wager/add-on", (string gameId, PeerWagerA
     return Results.Ok(new { offer, wagers = engine.PeerWagers, bettingWindow = engine.CurrentBettingWindow(now), state = engine.State });
 });
 
+app.MapPost("/api/street-dice/{gameId}/wager/done", (string gameId, PeerWagerDoneRequest request, StreetDiceTableStore store) =>
+{
+    if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
+    if (!store.ValidatePlayerSession(gameId, request.PlayerId, request.PlayerSessionToken)) return Results.Unauthorized();
+    var now = DateTimeOffset.UtcNow;
+    engine.MarkPeerBettorDone(request.PlayerId, now);
+    return Results.Ok(new { wagers = engine.PeerWagers, bettingWindow = engine.CurrentBettingWindow(now), state = engine.State });
+});
+
 app.MapPost("/api/cee-lo/evaluate", (CeeLoRollRequest request) =>
 {
     var result = CeeLoRules.Evaluate(new CeeLoRoll(request.Die1, request.Die2, request.Die3));
@@ -798,6 +807,7 @@ public sealed record AccountSessionRequest(string AccountSessionToken);
 public sealed record PlayerActionRequest(string PlayerId, string PlayerSessionToken);
 public sealed record MusicControlRequest(string PlayerId, string PlayerSessionToken, string? TrackUri,
     double PositionMilliseconds, bool IsPlaying);
+public sealed record PeerWagerDoneRequest(string PlayerId, string PlayerSessionToken);
 public sealed record PeerWagerAddOnRequest(string BettorId, string PlayerSessionToken, int SourceOfferId, IPlay.Demo.WagerAddOnKind Kind, int Amount = 0);
 public sealed record DiceColorRequest(string PlayerId, string PlayerSessionToken, DiceColor Color);
 public sealed record OpenShotRequest(string ShooterId, string ShooterSessionToken, string CatcherId, int Amount);

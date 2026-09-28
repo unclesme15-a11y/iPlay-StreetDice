@@ -27,7 +27,7 @@ Current product name: **iPlay Cee-lo & Craps**.
 The Shooter rolls two dice.
 
 - `7` or `11`: Shooter wins immediately.
-- `2`, `3`, or `12`: Shooter loses and pays, but keeps the dice.
+- `2`, `3`, or `12`: Shooter loses and pays, but keeps the dice. Their next shot is a brand-new come-out (new come-out lock and countdown).
 - Any other total becomes the Shooter's point.
 
 ## Point Phase
@@ -84,12 +84,15 @@ Possible side bets:
 Side bets do not resolve on faded rolls.
 
 - A public 10-second betting window opens at two moments only: the come-out (after the main shot is committed) and when the point is set. Street dice is quick -- there is no countdown before the other rolls.
-- When a window opens, the bet menu pops open by itself for everyone but the shooter. When the 10 seconds to propose run out it closes and only the locks (fully proposed bets) stay on screen. The **BET** button in the top left opens or closes the menu any time betting is allowed.
-- Betting against the point ("he don't hit 10") is the `CRAP 10` lock.
+- **Come-out:** the only bet is `CRAP 2/3/12`, so there is no menu. A single tappable `CRAP 2/3/12` lock appears center screen for every non-shooter, with a glowing line around it that runs down over the 10 seconds (green -> yellow -> red). Tap the lock, pick the bills, and the lock drops to the ground as a proposed bet. The **BET** button hides the lock or brings it back while the countdown runs.
+- **Point set:** the bet menu pops open by itself for everyone but the shooter. This is the only time the menu opens by itself. Betting against the point ("he don't hit 10") is the `CRAP 10` lock.
+- When the propose time ends, the menu closes and only the locks (fully proposed bets) stay on screen. The **BET** button in the top left opens or closes the menu any time betting is allowed.
+- **Ends early when everyone's done.** A player is done once they propose a bet or close the menu / come-out lock. When every non-shooter is done, the propose time ends right away. If a lock is still waiting on the shooter they keep up to 5 more seconds to take it; once nothing is waiting on them they can throw immediately. Example: 4 opponents have bet and you close the menu by accident -- the countdown skips and the shooter can roll. (Owner rule 2026-09-28.)
+- **Late bet after the point window:** a player with no live bet against the shooter (for example, they closed the menu by accident) can bring the menu back with BET and propose one bet against the point or its paired number (`CRAP 10` or `CRAP 4` for point 10) between rolls. Like an add-on, the shooter takes it before throwing or it expires when the next roll starts.
 - Every non-shooter sees a real `10` through `1` countdown. The shooter sees one continuous `15` through `1` countdown because only the shooter receives the additional five-second acceptance period.
 - The shooter cannot begin the throw until the 15-second countdown reaches zero.
 - New side-bet offers and non-shooter acceptances received after 10 seconds are rejected. The shooter may accept an already offered wager during the additional five seconds; no new offer can be created then.
-- After the point window, the shooter keeps rolling with no countdown until the point is hit or they seven-out. Between those rolls the only bets anyone can propose are **Double Up** and the **paired number** add-ons below, which the shooter accepts or ignores before throwing again. (Changed 2026-09-28 by the owner; previously a fresh window opened before every point roll, which made a shot take over a minute.)
+- After the point window, the shooter keeps rolling with no countdown until the point is hit or they seven-out. Between those rolls the only bets anyone can propose are **Double Up** and the **paired number** add-ons below, plus the one late bet above for a player who has none, which the shooter accepts or ignores before throwing again. (Changed 2026-09-28 by the owner; previously a fresh window opened before every point roll, which made a shot take over a minute.)
 
 Point group side bets use these street dice groups:
 

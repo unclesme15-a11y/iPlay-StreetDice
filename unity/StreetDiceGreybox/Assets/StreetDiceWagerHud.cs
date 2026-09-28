@@ -24,6 +24,7 @@ public sealed partial class StreetDiceGreyboxController
     private readonly Dictionary<int, GameObject> groundAmountDice = new Dictionary<int, GameObject>();
     private RenderTexture wagerOpenIcon, wagerClosedIcon;
     private bool bettingWindowWasOpen;
+    private bool comeOutLockHidden, comeOutLockMode;
 
     private void ResetWagerDraft()
     {
@@ -44,14 +45,16 @@ public sealed partial class StreetDiceGreyboxController
         ? number == 0 ? "CRAP\n2/3/12" : "CRAP\n" + number
         : "HIT\n" + number;
 
-    // The bet menu pops open by itself when a betting window opens -- the come-out and the
-    // moment the point is set -- for everyone but the shooter, who is busy taking locks.
-    // When the 10 seconds to propose run out it closes and only the locks stay on the
-    // ground. The BET button brings it back (Double Up or the paired number between rolls).
+    // The bet menu pops open by itself only when the point is set, for everyone but the
+    // shooter, who is busy taking locks. (The come-out has one bet, CRAP 2/3/12, so it gets
+    // the center lock instead -- DrawComeOutLock.) When the 10 seconds to propose run out,
+    // or everyone is done, it closes and only the locks stay on the ground. The BET button
+    // brings it back (a late bet, Double Up or the paired number between rolls).
     private void UpdateBetMenuAutoOpen()
     {
         bool open = BettingWindowOpen && !mainOptions;
-        if (open && !bettingWindowWasOpen && shooterId != SelfId && !drawerOpen && !confirmLeave)
+        if (open && !bettingWindowWasOpen) comeOutLockHidden = comeOutLockMode = false;
+        if (open && !bettingWindowWasOpen && phase == "Point" && shooterId != SelfId && !drawerOpen && !confirmLeave)
         {
             string target = CanComposeWagerAgainst(shooterId) ? shooterId : FirstWagerTarget();
             if (target.Length > 0)
@@ -64,23 +67,113 @@ public sealed partial class StreetDiceGreyboxController
         }
         else if (!open && bettingWindowWasOpen)
         {
-            wagerOverlayOpen = false;
+            wagerOverlayOpen = comeOutLockMode = false;
             ResetWagerDraft();
         }
         bettingWindowWasOpen = open;
+    }
+
+    private bool ComeOutLockAvailable => gameMode == GameMode.Craps && phase == "ComeOut" && BettingWindowOpen &&
+        shooterId != SelfId && CanComposeWagerAgainst(shooterId) && !HasLiveBetAgainstShooter(SelfId);
+
+    private bool HasLiveBetAgainstShooter(string player)
+    {
+        foreach (var offer in ActiveWagerOffers)
+            if (offer.From == player && offer.To == shooterId && offer.SourceOfferId == 0 &&
+                (offer.Status == WagerStatus.Offered || offer.Status == WagerStatus.Accepted)) return true;
+        return false;
+    }
+
+    private Rect ComeOutLockRect => new Rect(UiWidth * 0.5f - 55f, UiHeight * 0.38f, 110f, 130f);
+
+    // Come-out: the only bet is CRAP 2/3/12, so instead of the menu one lock sits center
+    // screen with a glowing line running down around it for the 10 seconds. Tap it, pick
+    // the bills, and it drops to the ground as a proposed bet. BET hides it ("done") or
+    // brings it back while the countdown is still running.
+    private void DrawComeOutLock(bool interact)
+    {
+        if (!ComeOutLockAvailable || comeOutLockHidden || (wagerOverlayOpen && !comeOutLockMode)) return;
+        Rect rect = ComeOutLockRect;
+        float remaining = Mathf.Clamp01((float)((OfferDeadline - Time.unscaledTimeAsDouble) / BettingWindowSeconds));
+        DrawCountdownLine(new Rect(rect.x - 10f, rect.y - 10f, rect.width + 20f, rect.height + 20f), remaining);
+        if (wagerOverlayOpen) return; // bills are up; the bill picker draws the lock itself
+        GUI.enabled = interact && !onlineWagerRequestInFlight;
+        if (DrawAmountLock(rect, 0, false, -1f, WagerOutcome.Crap, 0))
+        {
+            ResetWagerDraft();
+            wagerOverlayOpen = comeOutLockMode = true;
+            wagerTarget = shooterId;
+            draftOutcome = WagerOutcome.Crap;
+            draftNumber = 0;
+            SetWagerStage(3);
+        }
+        GUI.enabled = interact;
+    }
+
+    // Glowing line around a lock that drains clockwise from the top as time runs out,
+    // green -> yellow -> red. Also the look the point-window ring should match.
+    private static void DrawCountdownLine(Rect rect, float fraction)
+    {
+        if (fraction <= 0f) return;
+        var green = new Color(0.25f, 0.95f, 0.35f);
+        var yellow = new Color(1f, 0.86f, 0.2f);
+        var red = new Color(1f, 0.22f, 0.14f);
+        Color color = fraction > 0.5f ? Color.Lerp(yellow, green, (fraction - 0.5f) * 2f)
+            : Color.Lerp(red, yellow, fraction * 2f);
+        float pulse = 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 6f);
+        DrawPerimeterLine(rect, fraction, 10f, new Color(color.r, color.g, color.b, 0.28f * pulse));
+        DrawPerimeterLine(rect, fraction, 3.5f, color);
+    }
+
+    private static void DrawPerimeterLine(Rect rect, float fraction, float thickness, Color color)
+    {
+        float left = 2f * (rect.width + rect.height) * fraction;
+        var previous = GUI.color;
+        GUI.color = color;
+        var corners = new[]
+        {
+            new Vector2(rect.center.x, rect.y), new Vector2(rect.xMax, rect.y), new Vector2(rect.xMax, rect.yMax),
+            new Vector2(rect.x, rect.yMax), new Vector2(rect.x, rect.y), new Vector2(rect.center.x, rect.y)
+        };
+        for (int i = 0; i < corners.Length - 1 && left > 0f; i++)
+        {
+            Vector2 from = corners[i], to = corners[i + 1];
+            float length = Vector2.Distance(from, to), used = Mathf.Min(length, left);
+            Vector2 end = Vector2.Lerp(from, to, used / length);
+            Vector2 min = Vector2.Min(from, end), max = Vector2.Max(from, end);
+            GUI.DrawTexture(new Rect(min.x - thickness * 0.5f, min.y - thickness * 0.5f,
+                max.x - min.x + thickness, max.y - min.y + thickness), Texture2D.whiteTexture);
+            left -= used;
+        }
+        GUI.color = previous;
     }
 
     private void DrawBettingToggle()
     {
         if (impactBetIcon == null) impactBetIcon = Resources.Load<Texture2D>("UI/impact-dice-bet-v1");
         var die = new Rect(9, 5, 79, 73);
-        bool available = (BettingWindowOpen || CanRequestPointAddOn) && !rolling;
+        bool available = (BettingWindowOpen || CanRequestPointAddOn || CanLateBet) && !rolling;
         GUI.enabled = available && !drawerOpen;
         if (GUI.Button(die, new GUIContent("", "Toggle betting overlay"), GUIStyle.none))
         {
-            wagerOverlayOpen = !wagerOverlayOpen;
-            ResetWagerDraft();
-            if (wagerOverlayOpen) { wagerTarget = shooterId; SetWagerStage(1); }
+            if (ComeOutLockAvailable)
+            {
+                // Come-out: BET hides the center lock (that player is done) or brings it back.
+                bool hide = wagerOverlayOpen || !comeOutLockHidden;
+                wagerOverlayOpen = comeOutLockMode = false;
+                ResetWagerDraft();
+                comeOutLockHidden = hide;
+                if (hide) MarkBettorDone(SelfId);
+            }
+            else
+            {
+                bool wasOpen = wagerOverlayOpen;
+                wagerOverlayOpen = !wagerOverlayOpen;
+                comeOutLockMode = false;
+                ResetWagerDraft();
+                if (wagerOverlayOpen) { wagerTarget = shooterId; SetWagerStage(1); }
+                else if (wasOpen) MarkBettorDone(SelfId);
+            }
             PlayAudio(rollClip, 0.16f);
         }
         GUI.enabled = !drawerOpen;
@@ -96,13 +189,19 @@ public sealed partial class StreetDiceGreyboxController
 
     private void DrawBettingOverlay()
     {
-        if ((!BettingWindowOpen && !CanRequestPointAddOn) || rolling || gameMode != GameMode.Craps)
+        if ((!BettingWindowOpen && !CanRequestPointAddOn && !CanLateBet) || rolling || gameMode != GameMode.Craps)
         {
-            wagerOverlayOpen = false;
+            wagerOverlayOpen = comeOutLockMode = false;
             ResetWagerDraft();
             return;
         }
         bool interact = GUI.enabled && !onlineWagerRequestInFlight;
+        if (comeOutLockMode)
+        {
+            if (wagerStage == 3) DrawWagerBillSelection(interact);
+            GUI.enabled = interact;
+            return;
+        }
         foreach (string id in DemoShooterOrder)
         {
             if (id == SelfId || (!localDemo && !Array.Exists(onlinePlayers, p => p.id == id && !p.hasLeft))) continue;
@@ -123,7 +222,7 @@ public sealed partial class StreetDiceGreyboxController
         if (DrawDigitalBetDie(new Rect(x, y, size, size), "", true))
         {
             if (selected && stage > 1) SetWagerStage(stage - 1);
-            else { wagerOverlayOpen = false; ResetWagerDraft(); }
+            else { wagerOverlayOpen = false; ResetWagerDraft(); MarkBettorDone(SelfId); }
         }
         if (stage == 1)
         {
@@ -133,19 +232,20 @@ public sealed partial class StreetDiceGreyboxController
             if (DrawDigitalBetDie(new Rect(x + gap, y, size, size), "HIT"))
             { wagerTarget = id; draftOutcome = WagerOutcome.Hit; SetWagerStage(2); }
             GUI.enabled = interact && id != catcherId && shooterId != SelfId &&
-                (BettingWindowOpen || (id == shooterId && CanRequestPointAddOn));
+                (BettingWindowOpen || (id == shooterId && (CanRequestPointAddOn || CanLateBet)));
             if (DrawDigitalBetDie(new Rect(x + 2 * gap, y, size, size), "CRAP"))
             { wagerTarget = id; draftOutcome = WagerOutcome.Crap; SetWagerStage(2); }
         }
         else if (stage == 2)
         {
-            GUI.enabled = interact && BettingWindowOpen;
+            bool late = CanLateBet && id == shooterId && draftOutcome == WagerOutcome.Crap;
+            GUI.enabled = interact && (BettingWindowOpen || late);
             if (DrawDigitalBetDie(new Rect(x + gap, y, size, size),
                 pointNumber == 0 ? "2/3/12" : pointNumber.ToString()))
             { draftNumber = pointNumber; SetWagerStage(3); }
             int paired = WagerBook.GroupMate(pointNumber);
             GUI.enabled = interact && paired != 0 &&
-                (BettingWindowOpen || EligiblePairedSource(paired) != null);
+                (BettingWindowOpen || late || EligiblePairedSource(paired) != null);
             if (DrawDigitalBetDie(new Rect(x + 2 * gap, y, size, size),
                 paired == 0 ? "--" : paired.ToString()))
             { draftNumber = paired; SetWagerStage(3); }
@@ -181,7 +281,7 @@ public sealed partial class StreetDiceGreyboxController
             // 130 tall instead of 99), keeping the same ~29px gap.
             if (DrawBetBill(new Rect(left + i * (billWidth + gap), lockY + 159f, billWidth, 82f), amount))
             {
-                if (BettingWindowOpen)
+                if (BettingWindowOpen || CanLateBet)
                     OfferWager(SelfId, wagerTarget, draftOutcome, draftNumber, amount);
                 else
                 {
@@ -190,6 +290,8 @@ public sealed partial class StreetDiceGreyboxController
                 }
                 draftAmount = draftNumber = 0;
                 SetWagerStage(1);
+                // Come-out lock: the bet is proposed, so the lock drops to the ground.
+                if (comeOutLockMode) { wagerOverlayOpen = comeOutLockMode = false; ResetWagerDraft(); }
             }
         }
         GUI.enabled = interact;
@@ -464,7 +566,8 @@ public sealed partial class StreetDiceGreyboxController
                 var lockRect = new Rect(lockBase.x, lockBase.y + 37f * settle + bounce,
                     lockBase.width, lockBase.height);
                 bool canAccept = interact && offer.To == SelfId && !accepted && !onlineWagerRequestInFlight &&
-                    (offer.SourceOfferId != 0 ? phase == "Point" : Time.unscaledTimeAsDouble <
+                    (offer.SourceOfferId != 0 || (phase == "Point" && offer.To == shooterId &&
+                        Time.unscaledTimeAsDouble >= OfferDeadline) ? phase == "Point" : Time.unscaledTimeAsDouble <
                         (shooterId == SelfId ? AcceptanceDeadline : OfferDeadline));
                 GUI.enabled = canAccept;
                 bool tapped = DrawAmountLock(lockRect, offer.Amount, accepted, lockAge, offer.Outcome, offer.Number);

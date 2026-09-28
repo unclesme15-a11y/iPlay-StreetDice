@@ -35,7 +35,7 @@ casino certification -- that's a marketing step, not a build step.
 | --- | --- | --- |
 | Every screen that isn't a live game (main menu, online lobby, settings, credits) | Banner | Always on. Every menu needs a clear strip so the banner never covers a button. No banners inside a game, including the in-game drawer. |
 | Party ad break (Craps) | Full-screen, skippable after 15 seconds | **The whole party at once**, after every **2nd seven-out at the party, no matter who threw it** -- see "Party ad break" below. **Never** counts a come-out 2/3/12 (the shooter keeps the dice). |
-| Party ad break (Cee-lo) | Full-screen, skippable after 15 seconds | *Proposed, owner to confirm:* the whole party after every **2nd time the bank passes** (Cee-lo's version of the dice passing), same timer rules. |
+| Party ad break (Cee-lo) | Full-screen, skippable after 15 seconds | The whole party after every **2nd time the bank passes** to a new banker (Cee-lo's version of the dice passing), same timer rules as Craps. Owner-approved 2026-09-28. |
 | Player is broke | Rewarded video, 15-30 seconds, can't skip once started | Player chooses to watch (store rules require opt-in). See refill rules. |
 
 ### Party ad break (owner-defined 2026-09-28)
@@ -49,18 +49,19 @@ so nobody waits on anybody.
 - **First round:** the party's first 5 seven-outs always get their breaks
   (after the 2nd and the 4th), no timer -- the owner's rule that 2 breaks have
   played before all 5 players have shot and sevened out.
-- **After the first round -- wait:** a break needs at least **4 minutes** since
+- **After the first round -- wait:** a break needs at least **3 minutes** since
   the last break ended. If the 2nd seven-out comes sooner, the break waits for
   a later seven-out.
-- **Cap:** never more than **3 seven-outs** without a break, even if the 4
+- **Cap:** never more than **3 seven-outs** without a break, even if the 3
   minutes haven't passed.
 - **Why these numbers (simulated with real craps odds and the 2026-09-28 roll
   timing, `docs/reference/ad-break-simulation.py`):** a shooter's turn averages
   about 2 minutes and a 5-player round about 9.5 minutes. The first version (a
   90-second wait) gave about 14 breaks an hour; the owner asked for **20%
-  fewer** (2026-09-28). The 4-minute wait gives about **11.5 breaks an hour**
-  (roughly one every 5 minutes) and the first round still gets 2 breaks every
-  time. Later rounds usually get 2 breaks, sometimes 1.
+  fewer**, then set the wait to **3 minutes** (2026-09-28). That gives about
+  **12 breaks an hour** (roughly one every 5 minutes) and the first round still
+  gets 2 breaks every time. Later rounds get 2 breaks about 94% of the time,
+  otherwise 1.
 - **Mechanics:** the server pauses the party (no rolls, no bets, betting
   timers frozen), marks everyone "away" so the disconnect timer can't remove
   anyone, and resumes when every player's ad has closed or after 35 seconds,

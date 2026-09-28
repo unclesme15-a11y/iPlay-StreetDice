@@ -45,8 +45,10 @@ public class WagerBookTests
         var otherOffer = book.Propose("a", "b", WagerOutcome.Hit, 4, 5, 9.9, Funds);
         Assert.Throws<InvalidOperationException>(() => book.Propose("b", "a", WagerOutcome.Crap, 10, 1, 10, Funds));
         Assert.Throws<InvalidOperationException>(() => book.Accept(otherOffer.Id, "b", 10, Funds));
-        book.Accept(shooterOffer.Id, "shooter", 14.9, Funds);
         Assert.False(book.CanRoll(14.9));
+        book.Accept(shooterOffer.Id, "shooter", 14.9, Funds);
+        // Nothing else is waiting on the shooter, so they can throw right away.
+        Assert.True(book.CanRoll(14.9));
         book.BeginRoll(15);
         Assert.Equal(WagerStatus.Accepted, shooterOffer.Status);
         Assert.Equal(WagerStatus.Expired, otherOffer.Status);

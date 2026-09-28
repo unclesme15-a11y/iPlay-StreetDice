@@ -211,7 +211,8 @@ public sealed partial class StreetDiceGreyboxController
         wagerAcceptedAt.Clear();
         offerPage.Clear();
         offerSwipeStart.Clear();
-        wagerOverlayOpen = bettingWindowWasOpen = false;
+        wagerOverlayOpen = bettingWindowWasOpen = comeOutLockHidden = comeOutLockMode = false;
+        botDoneAt.Clear();
         armedOfferId = 0;
         ResetWagerDraft();
         selectedSideWager = 10;
@@ -484,6 +485,7 @@ public sealed partial class StreetDiceGreyboxController
             DrawSeatHud();
             if (SkyDisplayActive) DrawSkyCamDisplay(w);
             DrawBettingTimer();
+            DrawComeOutLock(GUI.enabled);
             if (wagerOverlayOpen) DrawBettingOverlay();
             if (gameMode == GameMode.Craps && shooterId == SelfId)
                 DrawHotMeter(new Rect(settingsControl.x - 56f, settingsControl.y, 48f, 124f));
@@ -795,6 +797,8 @@ public sealed partial class StreetDiceGreyboxController
             DrawDoorGhostNumber("COME OUT", Mathf.Clamp01(cueAge / 0.38f), new Color(0.92f, 0.95f, 0.92f, fade));
             return;
         }
+        // The come-out lock's own countdown line replaces the big number.
+        if (ComeOutLockAvailable && !comeOutLockHidden) return;
         int seconds = CurrentBettingCountdown(now);
         float withinSecond = 1f - Mathf.Clamp01((float)(remaining - (seconds - 1)));
         Color color = seconds <= 3 ? new Color(1f, 0.2f, 0.12f) : new Color(0.92f, 0.95f, 0.92f);
@@ -1137,6 +1141,9 @@ public sealed partial class StreetDiceGreyboxController
         bettingClosesAt = gameMode == GameMode.Craps ? Time.unscaledTime + BettingWindowSeconds : Time.unscaledTime;
         if (gameMode == GameMode.Craps)
             wagerBook.Open(shooterId, int.TryParse(point, out int target) ? target : 0, Time.unscaledTimeAsDouble);
+        botDoneAt.Clear();
+        foreach (string id in DemoShooterOrder)
+            if (id != "p1" && id != shooterId) botDoneAt[id] = Time.unscaledTime + 2f + (float)random.NextDouble() * 4f;
         ResetWagerDraft();
         nextOfferAt = Time.unscaledTime + 1.6f;
     }

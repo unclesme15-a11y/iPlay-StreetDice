@@ -934,6 +934,46 @@ check.
 Owner: the 90-second wait was a little too much -- 20% fewer breaks. New rule:
 the party's first round (first 5 seven-outs) always gets its 2 breaks, then a
 4-minute wait between breaks, never more than 3 seven-outs without one. About
-11.5 breaks an hour, down from about 14. The simulation script in
+11.5 breaks an hour, down from about 14. (Changed to 3 minutes in Round 12.) The simulation script in
 `docs/reference/` now includes the 3-seven-out cap and the first-round rule
 (the earlier saved copy left the cap out).
+
+## Round 12 -- 2026-09-28
+
+### Come-out lock, ends-early countdown, late bet
+
+Owner decisions:
+
+- **Come-out gets one center lock, not the menu.** The only come-out bet is
+  CRAP 2/3/12, so every non-shooter sees a tappable CRAP 2/3/12 lock center
+  screen with a glowing line around it that runs down over 10 seconds (green
+  -> yellow -> red). Tap -> bills -> the lock drops to the ground. BET hides it
+  or brings it back. `DrawComeOutLock` + `DrawCountdownLine`
+  (`StreetDiceWagerHud.cs`); the big countdown number is hidden while the lock
+  shows. The menu now pops open by itself only when the point is set.
+- **The countdown ends early when everyone's done.** Proposing a bet or
+  closing the menu/lock marks a player done. `WagerBook.MarkDone` (shared by
+  server and offline game) ends the propose time once every seated
+  non-shooter is done; the shooter keeps up to 5 seconds only while a lock
+  waits on them, and taking the last waiting lock lets them throw at once.
+  Server: `MarkPeerBettorDone` + `POST /api/street-dice/{gameId}/wager/done`;
+  proposing marks done automatically. Offline bots count as done 2-6 seconds
+  into each window.
+- **Late bet.** The owner's example: 4 opponents bet, you close the menu by
+  accident, the countdown skips -- you can still bring the menu back and bet.
+  After the point window, a player with no live bet against the shooter may
+  propose CRAP point or its pair between rolls (`WagerBook.CanProposeLate`);
+  the shooter takes it before throwing or it expires at the throw.
+- **Come-out 2/3/12** keeps the dice and starts a fresh come-out -- the engine
+  already did this (`KeepDiceAfterLoss` -> Run Same -> new come-out window).
+- **Ad breaks:** 3-minute wait after the first round (about 12 an hour).
+  Cee-lo counts bank passes instead of seven-outs -- owner approved.
+
+Tests: 3 new server tests (`WhenEveryoneIsDone_TheCountdownEndsEarly`,
+`WithNoBets_EveryoneDoneLetsTheShooterThrowAtOnce`,
+`AfterThePointWindow_APlayerWithNoBetCanStillBetBeforeTheNextThrow`). Four
+older tests assumed a countdown that never ends early or no late bets; their
+timelines were adjusted to the new rule (the shooter can now throw as soon as
+nothing is waiting on them). 166/166. Unity scripts parse clean; not compiled
+(no Unity here) -- Codex step 1 compiles and runs the readiness check, which
+may need timing updates where bots now finish the window early.

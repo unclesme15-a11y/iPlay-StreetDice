@@ -3158,6 +3158,11 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         public string recipientId = "", playerSessionToken = "";
         public int offerId;
     }
+    [Serializable] private sealed class OnlineWagerDoneRequest
+    {
+        public string playerId = "", playerSessionToken = "";
+    }
+
     [Serializable] private sealed class OnlineWagerAddOnRequest
     {
         public string bettorId = "", playerSessionToken = "", kind = "";

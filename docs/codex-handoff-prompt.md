@@ -24,7 +24,7 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/spotify-integration-setup.md` -- host-controlled Spotify + search bar
 - `docs/decisions/2026-09-27-fifty-hundred-dollar-notes.md` -- $50/$100 art prompts
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
-- `docs/screen-review.md` -- rounds 1-10: every change so far and why
+- `docs/screen-review.md` -- rounds 1-12: every change so far and why
 
 ## Rules that never change
 
@@ -47,7 +47,7 @@ the spec, and they win over anything you'd otherwise assume:
 
 ## What already exists (don't rebuild)
 
-Server (163 passing tests): craps engine with server-rolled physical dice, peer
+Server (166 passing tests): craps engine with server-rolled physical dice, peer
 wagers, persistence across restarts, accounts (sign up / sign in, logins survive
 restarts), rank ladder (Level 1-5 caps $100/$250/$500/$750/$1,000), XP (everyone
 seated earns per finished shot; shooter/catcher and winner earn more; first 15
@@ -113,14 +113,26 @@ in The Jungle -- it plays the iPlay soundtrack.
   countdown ring around the lock** once a lock is on screen: it drains around
   the lock through the 10-second propose window (green -> yellow -> red), and
   the shooter's ring keeps going through their extra 5 seconds to lock bets in.
-- **Bet menu pops open by itself (built 2026-09-28 in `StreetDiceWagerHud.cs`
-  `UpdateBetMenuAutoOpen` -- verify on phones):** when a betting window opens
-  (come-out, and again when the point is set) the bet menu opens for everyone
-  but the shooter. When the 10 seconds to propose run out it closes, and only
-  the locks (fully proposed bets) stay on screen. The BET button in the top
-  left opens or closes it any time betting is possible -- between point rolls
-  that means Double Up or the paired number only. Betting against the point
-  ("he don't hit 10") is the CRAP 10 lock.
+- **Betting flow (built 2026-09-28 -- compile it, verify on phones; rules in
+  `docs/game-rules.md`):**
+  - Come-out: no menu. One tappable CRAP 2/3/12 lock center screen for every
+    non-shooter, with a glowing countdown line around it
+    (`DrawComeOutLock` / `DrawCountdownLine` in `StreetDiceWagerHud.cs`). Tap ->
+    bills -> the lock drops to the ground. BET hides or brings it back.
+  - Point set: the bet menu pops open by itself for non-shooters
+    (`UpdateBetMenuAutoOpen`) -- the only automatic pop-up. It closes when the
+    propose time ends; only locks stay. BET opens/closes it any time betting
+    is allowed. "He don't hit 10" is the CRAP 10 lock.
+  - Ends early when everyone's done: proposing or closing the menu/lock marks
+    a player done (`WagerBook.MarkDone`, server `POST /wager/done`); when all
+    non-shooters are done the countdown ends and the shooter keeps up to 5
+    seconds only while a lock is waiting on them. Offline bots count as done
+    2-6 seconds into the window.
+  - Late bet: after the point window, a player with no live bet against the
+    shooter can still propose CRAP point / paired number between rolls
+    (`WagerBook.CanProposeLate`); it expires at the next throw if not taken.
+  - A come-out 2/3/12 keeps the dice and starts a fresh come-out (already how
+    the engine works).
 - **Level-up moment:** flash, crowd reaction, new level + unlocks revealed;
   smaller version per step; everyone at the party sees it; never mid-roll.
 - **Dice calls, Tutorial Mode only:** in real play the voice chat IS the dice
@@ -175,11 +187,11 @@ IDs (use MAX test mode until then; never ship test IDs):
 - Party ad break (full-screen, skippable after 15 seconds) for the WHOLE party
   at once: after every 2nd seven-out at the party, whoever threw it. The
   party's first 5 seven-outs always get their 2 breaks (no timer); after that
-  a break needs at least 4 minutes since the last one ended, but never more
-  than 3 seven-outs without one (about 11.5 breaks an hour). Server pauses the party (no rolls, timers frozen, everyone
+  a break needs at least 3 minutes since the last one ended, but never more
+  than 3 seven-outs without one (about 12 breaks an hour). Server pauses the party (no rolls, timers frozen, everyone
   "away"), resumes when all ads close or after 35 seconds. Never counts a
-  come-out 2/3/12; never mid-roll. Cee-lo: see the ads doc (pending owner
-  confirmation).
+  come-out 2/3/12; never mid-roll. Cee-lo: the same, counting every time the
+  bank passes to a new banker instead of seven-outs.
 - Rewarded ad when broke (player opts in): pays half the player's OWN max bet
   per ad, up to the HOST's max bet; granted via MAX server-side verification.
 - Before any ad starts, mark the player "away" (seat hold) so the disconnect
@@ -200,7 +212,7 @@ seasons / leaderboards, cosmetic shop or any in-app purchase, store trailer,
 crowd footage itself (Claude is sourcing it).
 
 ## Before every push
-- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (163/163 now,
+- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (166/166 now,
   plus whatever you add).
 - Unity compiles clean; the readiness run passes; screenshots of any UI change.
 - Add a new round to `docs/screen-review.md` for each change: what, why, how

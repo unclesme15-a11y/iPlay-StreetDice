@@ -15,6 +15,7 @@ public sealed partial class StreetDiceGreyboxController
     private bool onlineWalletPollInFlight;
     private float nextOnlineWalletPollAt;
     private double onlineOfferDeadline, onlineShooterDeadline;
+    private readonly Dictionary<string, float> botDoneAt = new Dictionary<string, float>();
     private IEnumerable<WagerOffer> ActiveWagerOffers => localDemo ? wagerBook.Offers : onlineWagerOffers;
     private bool CanRequestPointAddOn
     {
@@ -27,6 +28,43 @@ public sealed partial class StreetDiceGreyboxController
             return false;
         }
     }
+    // After the point window a player with no live bet against the shooter can still propose
+    // one (CRAP point or its pair) before the next throw -- see WagerBook.CanProposeLate.
+    private bool CanLateBet
+    {
+        get
+        {
+            if (gameMode != GameMode.Craps || phase != "Point" || rolling || !shotCommitted ||
+                BettingWindowOpen || shooterId == SelfId) return false;
+            if (localDemo) return wagerBook.CanProposeLate(SelfId, Time.unscaledTimeAsDouble);
+            return onlineWagerWindowKnown && !HasLiveBetAgainstShooter(SelfId);
+        }
+    }
+
+    private IEnumerable<string> LocalBettors()
+    {
+        foreach (string id in DemoShooterOrder)
+            if (id != shooterId) yield return id;
+    }
+
+    // Proposing a bet, or closing the bet menu / come-out lock, means "I'm done". Once every
+    // bettor is done the countdown ends early (owner rule 2026-09-28).
+    private void MarkBettorDone(string player)
+    {
+        if (gameMode != GameMode.Craps || !shotCommitted || rolling || player == shooterId) return;
+        if (localDemo)
+        {
+            wagerBook.MarkDone(player, LocalBettors(), Time.unscaledTimeAsDouble);
+            if (!wagerBook.CanOffer(Time.unscaledTimeAsDouble))
+                bettingClosesAt = Mathf.Min(bettingClosesAt, Time.unscaledTime);
+            return;
+        }
+        if (player != SelfId || !BettingWindowOpen || onlineWagerRequestInFlight ||
+            !playerTokens.TryGetValue(SelfId, out var token)) return;
+        var request = new OnlineWagerDoneRequest { playerId = SelfId, playerSessionToken = token };
+        StartCoroutine(PostOnlineWager("/wager/done", JsonUtility.ToJson(request), false, true));
+    }
+
     private double AcceptanceDeadline => localDemo ? wagerBook.ShooterDeadline : onlineShooterDeadline;
     private double OfferDeadline => localDemo ? wagerBook.OfferDeadline : onlineOfferDeadline;
     private bool AwaitingWagerAcceptance => gameMode == GameMode.Craps && shotCommitted &&
@@ -83,7 +121,7 @@ public sealed partial class StreetDiceGreyboxController
         if (!localDemo)
         {
             if (onlineWagerRequestInFlight || !onlineWagerWindowKnown ||
-                Time.unscaledTimeAsDouble >= onlineOfferDeadline || from != SelfId ||
+                (Time.unscaledTimeAsDouble >= onlineOfferDeadline && !CanLateBet) || from != SelfId ||
                 !playerTokens.TryGetValue(from, out var token)) return null;
             var request = new OnlineWagerOfferRequest { fromId = from, toId = to,
                 playerSessionToken = token, outcome = outcome.ToString(), number = number, amount = amount };
@@ -93,6 +131,7 @@ public sealed partial class StreetDiceGreyboxController
         try
         {
             var offer = wagerBook.Propose(from, to, outcome, number, amount, Time.unscaledTimeAsDouble, WagerFunds);
+            MarkBettorDone(from);
             if (to != "p1") botOfferResponseAt[offer.Id] = Time.unscaledTime + DemoOpponentPolicy.ResponseDelay(BotProfile(to), random.NextDouble());
             return offer;
         }
@@ -145,7 +184,7 @@ public sealed partial class StreetDiceGreyboxController
         catch (InvalidOperationException) { result = "That add-on is not available for this locked bet."; }
     }
 
-    private System.Collections.IEnumerator PostOnlineWager(string route, string json, bool offering)
+    private System.Collections.IEnumerator PostOnlineWager(string route, string json, bool offering, bool quiet = false)
     {
         onlineWagerRequestInFlight = true;
         bool succeeded = false;
@@ -158,7 +197,7 @@ public sealed partial class StreetDiceGreyboxController
             succeeded = true;
         });
         onlineWagerRequestInFlight = false;
-        if (succeeded)
+        if (succeeded && !quiet)
         {
             if (offering)
             {
@@ -195,6 +234,11 @@ public sealed partial class StreetDiceGreyboxController
         if (!localDemo) return;
         wagerBook.Expire(Time.unscaledTimeAsDouble);
         if (!localDemo || mainOptions || rolling || !botWagersEnabled) return;
+        // Bots that haven't bet are done after a few seconds, so an all-ready table skips
+        // the rest of the countdown.
+        if (BettingWindowOpen)
+            foreach (var bot in new List<string>(botDoneAt.Keys))
+                if (Time.unscaledTime >= botDoneAt[bot]) { botDoneAt.Remove(bot); MarkBettorDone(bot); }
         if (botWagersEnabled && BettingWindowOpen && Time.unscaledTime >= nextOfferAt)
         {
             nextOfferAt = Time.unscaledTime + 1.5f + (float)random.NextDouble();

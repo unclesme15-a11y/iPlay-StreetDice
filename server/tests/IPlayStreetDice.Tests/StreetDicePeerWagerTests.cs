@@ -33,12 +33,12 @@ public sealed class StreetDicePeerWagerTests
     public void TenSecondOfferAndFifteenSecondShooterAcceptanceAreServerGates()
     {
         var game = NewShot();
+        var lateShooter = game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 0, 10,
+            Start.AddSeconds(2));
         var toShooter = game.OfferPeerWager("p3", "p1", WagerOutcome.Crap, 0, 5,
             Start.AddMilliseconds(9999));
         game.AcceptPeerWager("p1", toShooter.Id, Start.AddMilliseconds(14999));
         Assert.Equal(WagerStatus.Accepted, toShooter.Status);
-        var lateShooter = game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 0, 10,
-            Start.AddSeconds(2));
         Assert.Throws<InvalidOperationException>(() =>
             game.AcceptPeerWager("p1", lateShooter.Id, Start.AddSeconds(15)));
         var lateRecipient = game.OfferPeerWager("p4", "p3", WagerOutcome.Crap, 0, 1,
@@ -79,8 +79,8 @@ public sealed class StreetDicePeerWagerTests
         var ten = game.OfferPeerWager("p3", "p1", WagerOutcome.Crap, 10, 10, Start.AddSeconds(21));
         var four = game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 4, 5, Start.AddSeconds(22));
         Assert.NotEqual(ten.Id, four.Id);
-        Assert.NotNull(game.OfferPeerWager("p2", "p1", WagerOutcome.Crap, 4, 1, Start.AddSeconds(23)));
-        Assert.NotNull(game.OfferPeerWager("p3", "p4", WagerOutcome.Hit, 4, 5, Start.AddSeconds(24)));
+        Assert.NotNull(game.OfferPeerWager("p3", "p4", WagerOutcome.Hit, 4, 5, Start.AddSeconds(23)));
+        Assert.NotNull(game.OfferPeerWager("p2", "p1", WagerOutcome.Crap, 4, 1, Start.AddSeconds(24)));
         game.AcceptPeerWager("p1", ten.Id, Start.AddSeconds(25));
         var pending = game.PreparePhysicalRoll("p1", new DiceGesture(0.5f, 0), Start.AddSeconds(35), 713);
         var committed = game.CommitPhysicalRoll("p1", pending.RollId, pending.FadeDeadline);
@@ -186,12 +186,63 @@ public sealed class StreetDicePeerWagerTests
         Assert.Equal(0, game.CurrentBettingWindow(Start.AddSeconds(39))!.OfferRemainingMilliseconds);
 
         // Between rolls, new Hit/Crap bets are closed; only Double Up / paired number.
+        // p3 already has a locked bet, so no fresh one -- only the add-ons below.
         Assert.Throws<InvalidOperationException>(() =>
-            game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 10, 5, Start.AddSeconds(39)));
+            game.OfferPeerWager("p3", "p1", WagerOutcome.Crap, 4, 5, Start.AddSeconds(39)));
         var doubled = game.OfferPeerAddOn("p3", source.Id, WagerAddOnKind.DoubleUp, Start.AddSeconds(39));
         game.AcceptPeerWager("p1", doubled.Id, Start.AddSeconds(40));
         game.Roll(new DiceRoll(1, 1), Start.AddSeconds(41));
         Assert.Equal(WagerStatus.Accepted, doubled.Status);
+    }
+
+    [Fact]
+    public void WhenEveryoneIsDone_TheCountdownEndsEarly()
+    {
+        var game = NewShot();                                          // shooter p1; bettors p2, p3, p4
+        var bet = game.OfferPeerWager("p3", "p1", WagerOutcome.Crap, 0, 5, Start.AddSeconds(1));
+        game.MarkPeerBettorDone("p2", Start.AddSeconds(2));            // closed the lock without betting
+        Assert.Equal(8000, game.CurrentBettingWindow(Start.AddSeconds(2))!.OfferRemainingMilliseconds);
+        game.MarkPeerBettorDone("p4", Start.AddSeconds(3));            // last one done: propose time is over
+        Assert.Equal(0, game.CurrentBettingWindow(Start.AddSeconds(3))!.OfferRemainingMilliseconds);
+        // A lock is still waiting on the shooter, so they keep up to 5 seconds to take it...
+        Assert.Equal(5000, game.CurrentBettingWindow(Start.AddSeconds(3))!.ShooterRemainingMilliseconds);
+        Assert.Throws<InvalidOperationException>(() =>
+            game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 0, 5, Start.AddSeconds(3)));
+        // ...and once they take it, they can throw right away.
+        game.AcceptPeerWager("p1", bet.Id, Start.AddSeconds(4));
+        Assert.Equal(0, game.CurrentBettingWindow(Start.AddSeconds(4))!.ShooterRemainingMilliseconds);
+        Assert.NotNull(game.PreparePhysicalRoll("p1", new DiceGesture(0.5f, 0), Start.AddSeconds(4), 713));
+    }
+
+    [Fact]
+    public void WithNoBets_EveryoneDoneLetsTheShooterThrowAtOnce()
+    {
+        var game = NewShot();
+        foreach (var player in new[] { "p2", "p3", "p4" }) game.MarkPeerBettorDone(player, Start.AddSeconds(1));
+        Assert.Equal(new PublicBettingWindow(0, 0), game.CurrentBettingWindow(Start.AddSeconds(1)));
+        Assert.NotNull(game.PreparePhysicalRoll("p1", new DiceGesture(0.5f, 0), Start.AddSeconds(1), 713));
+    }
+
+    [Fact]
+    public void AfterThePointWindow_APlayerWithNoBetCanStillBetBeforeTheNextThrow()
+    {
+        var game = NewShot();
+        game.Roll(new DiceRoll(4, 6), Start.AddSeconds(20));           // point 10: window opens
+        game.MarkPeerBettorDone("p4", Start.AddSeconds(21));           // p4 closed the menu by accident
+        Assert.Equal(9000, game.CurrentBettingWindow(Start.AddSeconds(21))!.OfferRemainingMilliseconds);
+        // Window over. p4 brings the menu back and bets he don't hit 10.
+        var late = game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 10, 5, Start.AddSeconds(37));
+        Assert.Throws<InvalidOperationException>(() =>        // only one live bet at a time
+            game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 4, 5, Start.AddSeconds(37)));
+        Assert.Throws<InvalidOperationException>(() =>        // and only against the shooter
+            game.OfferPeerWager("p3", "p4", WagerOutcome.Crap, 10, 5, Start.AddSeconds(37)));
+        game.AcceptPeerWager("p1", late.Id, Start.AddSeconds(38));
+        Assert.Equal(WagerStatus.Accepted, late.Status);
+        // Not taken before the throw -> gone, like an add-on.
+        var ignored = game.OfferPeerWager("p3", "p1", WagerOutcome.Crap, 4, 5, Start.AddSeconds(39));
+        game.Roll(new DiceRoll(3, 3), Start.AddSeconds(40));
+        Assert.Equal(WagerStatus.Expired, ignored.Status);
+        Assert.Equal(WagerStatus.Accepted, late.Status);
     }
 
     private static StreetDiceGameEngine NewShot()
