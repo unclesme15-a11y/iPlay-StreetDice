@@ -219,6 +219,32 @@ whatever SDK version you pull in.
 - [ ] Extended quota mode requested on the Dashboard app before public
       release, if you expect more than a handful of test users
 
+## Song search bar (owner-approved, not built)
+
+The host needs to pick songs from inside the game, not only from the Spotify
+app. App Remote can play, pause and skip, but it can't search, so search goes
+through Spotify's Web API:
+
+1. When the host connects Spotify, also request a Web API access token through
+   Spotify's auth SDK (the `spotify-auth` library already listed above), with
+   the scopes it needs for search. Tokens expire after about an hour; refresh
+   or re-request quietly.
+2. A search bar in the Options drawer's Music section (host only, private
+   parties only -- there's no host Spotify in The Jungle). Typing calls
+   `GET https://api.spotify.com/v1/search?q=<text>&type=track&limit=10` with
+   the token, and shows track name, artist and album art.
+3. Tapping a result calls the existing `HostPlayTrack(trackUri)`, which plays it
+   on the host's Spotify and syncs the whole party through the existing
+   `/music` broadcast.
+4. Follow Spotify's display rules for showing its content (attribution/logo)
+   -- check their current developer design guidelines before shipping.
+
+**Voice:** "Hey Siri / Hey Google, play ___ on Spotify" works with no extra
+code: the host's Spotify changes, `PlayerStateChanged` fires, and the party
+follows. The search bar also gets the phone keyboard's dictation mic for free.
+Don't build an always-listening in-game command -- the mic already streams the
+party's voice chat, so it would be listening to every word.
+
 ## The 3 questions this was built to answer
 
 **Does Spotify need to be open on the phone?** Not visibly -- it doesn't
