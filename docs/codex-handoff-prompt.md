@@ -113,6 +113,14 @@ in The Jungle -- it plays the iPlay soundtrack.
   countdown ring around the lock** once a lock is on screen: it drains around
   the lock through the 10-second propose window (green -> yellow -> red), and
   the shooter's ring keeps going through their extra 5 seconds to lock bets in.
+- **Bet menu pops open by itself (built 2026-09-28 in `StreetDiceWagerHud.cs`
+  `UpdateBetMenuAutoOpen` -- verify on phones):** when a betting window opens
+  (come-out, and again when the point is set) the bet menu opens for everyone
+  but the shooter. When the 10 seconds to propose run out it closes, and only
+  the locks (fully proposed bets) stay on screen. The BET button in the top
+  left opens or closes it any time betting is possible -- between point rolls
+  that means Double Up or the paired number only. Betting against the point
+  ("he don't hit 10") is the CRAP 10 lock.
 - **Level-up moment:** flash, crowd reaction, new level + unlocks revealed;
   smaller version per step; everyone at the party sees it; never mid-roll.
 - **Dice calls, Tutorial Mode only:** in real play the voice chat IS the dice
@@ -165,9 +173,10 @@ IDs (use MAX test mode until then; never ship test IDs):
   credits) -- never inside a game or the in-game drawer; leave a clear strip so
   a banner never covers a button.
 - Party ad break (full-screen, skippable after 15 seconds) for the WHOLE party
-  at once: after every 2nd seven-out at the party, whoever threw it; at least
-  90 seconds after the last break ended, but never more than 3 seven-outs
-  without one. Server pauses the party (no rolls, timers frozen, everyone
+  at once: after every 2nd seven-out at the party, whoever threw it. The
+  party's first 5 seven-outs always get their 2 breaks (no timer); after that
+  a break needs at least 4 minutes since the last one ended, but never more
+  than 3 seven-outs without one (about 11.5 breaks an hour). Server pauses the party (no rolls, timers frozen, everyone
   "away"), resumes when all ads close or after 35 seconds. Never counts a
   come-out 2/3/12; never mid-roll. Cee-lo: see the ads doc (pending owner
   confirmation).

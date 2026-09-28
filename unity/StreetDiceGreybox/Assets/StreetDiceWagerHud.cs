@@ -23,6 +23,7 @@ public sealed partial class StreetDiceGreyboxController
     private float armedOfferAt;
     private readonly Dictionary<int, GameObject> groundAmountDice = new Dictionary<int, GameObject>();
     private RenderTexture wagerOpenIcon, wagerClosedIcon;
+    private bool bettingWindowWasOpen;
 
     private void ResetWagerDraft()
     {
@@ -42,6 +43,32 @@ public sealed partial class StreetDiceGreyboxController
     private static string WagerLabel(WagerOutcome outcome, int number) => outcome == WagerOutcome.Crap
         ? number == 0 ? "CRAP\n2/3/12" : "CRAP\n" + number
         : "HIT\n" + number;
+
+    // The bet menu pops open by itself when a betting window opens -- the come-out and the
+    // moment the point is set -- for everyone but the shooter, who is busy taking locks.
+    // When the 10 seconds to propose run out it closes and only the locks stay on the
+    // ground. The BET button brings it back (Double Up or the paired number between rolls).
+    private void UpdateBetMenuAutoOpen()
+    {
+        bool open = BettingWindowOpen && !mainOptions;
+        if (open && !bettingWindowWasOpen && shooterId != SelfId && !drawerOpen && !confirmLeave)
+        {
+            string target = CanComposeWagerAgainst(shooterId) ? shooterId : FirstWagerTarget();
+            if (target.Length > 0)
+            {
+                ResetWagerDraft();
+                wagerOverlayOpen = true;
+                wagerTarget = target;
+                SetWagerStage(1);
+            }
+        }
+        else if (!open && bettingWindowWasOpen)
+        {
+            wagerOverlayOpen = false;
+            ResetWagerDraft();
+        }
+        bettingWindowWasOpen = open;
+    }
 
     private void DrawBettingToggle()
     {

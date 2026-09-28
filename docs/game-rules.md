@@ -84,6 +84,8 @@ Possible side bets:
 Side bets do not resolve on faded rolls.
 
 - A public 10-second betting window opens at two moments only: the come-out (after the main shot is committed) and when the point is set. Street dice is quick -- there is no countdown before the other rolls.
+- When a window opens, the bet menu pops open by itself for everyone but the shooter. When the 10 seconds to propose run out it closes and only the locks (fully proposed bets) stay on screen. The **BET** button in the top left opens or closes the menu any time betting is allowed.
+- Betting against the point ("he don't hit 10") is the `CRAP 10` lock.
 - Every non-shooter sees a real `10` through `1` countdown. The shooter sees one continuous `15` through `1` countdown because only the shooter receives the additional five-second acceptance period.
 - The shooter cannot begin the throw until the 15-second countdown reaches zero.
 - New side-bet offers and non-shooter acceptances received after 10 seconds are rejected. The shooter may accept an already offered wager during the additional five seconds; no new offer can be created then.

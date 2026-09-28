@@ -2108,7 +2108,14 @@ public static class PlayReadinessVerification
         Set(c, "shooterId", "p3");
         Set(c, "catcherId", "p2");
         Set(c, "phase", "Point"); Set(c, "point", "10");
+        Set(c, "bettingWindowWasOpen", false);
         Call(c, "OpenBettingWindow");
+        yield return null;
+        Check((bool)Get(c, "wagerOverlayOpen") && (int)Get(c, "wagerStage") == 1,
+            "Bet menu did not pop open when the point betting window opened");
+        var closeOverlay = PointerClick(c, new Vector2(49, 42));
+        while (closeOverlay.MoveNext()) yield return null;
+        Check(!(bool)Get(c, "wagerOverlayOpen"), "Wall Bet die did not close the digital wager overlay");
         var openOverlay = PointerClick(c, new Vector2(49, 42));
         while (openOverlay.MoveNext()) yield return null;
         Check((bool)Get(c, "wagerOverlayOpen") && (int)Get(c, "wagerStage") == 1,

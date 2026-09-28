@@ -908,3 +908,32 @@ at the party, whoever threw it. Set by simulation
 never more than 3 seven-outs without one -- 100% of 5-player rotations get at
 least 2 breaks, about 14 breaks per hour. Recorded in the ads doc and the
 Codex prompt, along with the owner's color countdown ring around the lock.
+
+## Round 11 -- 2026-09-28
+
+### Bet menu pops open at each betting window
+
+Owner: the bet menu should open by itself when betting opens -- the come-out
+and again when the point is set -- with 10 seconds to propose (15 for the
+shooter). After that it closes and only the locks (fully proposed bets) stay
+on screen; the BET button in the top left brings it back, which between point
+rolls means Double Up or the paired number. Before this, the menu only ever
+opened from the BET button, so players could miss the window.
+
+`UpdateBetMenuAutoOpen` (`StreetDiceWagerHud.cs`), called every frame from
+`UpdatePlayExperience`, watches for the window opening and closing: on open it
+opens the menu for every non-shooter (the shooter is taking locks); on close
+it shuts the menu. Works offline and online since both use
+`BettingWindowOpen`. `VerifyWagerControls` now checks the menu pops open by
+itself, that BET closes it, and that BET opens it again. Not compiled here (no
+Unity in this environment) -- Codex's step 1 compiles and runs the readiness
+check.
+
+### Party ad break: 20% fewer
+
+Owner: the 90-second wait was a little too much -- 20% fewer breaks. New rule:
+the party's first round (first 5 seven-outs) always gets its 2 breaks, then a
+4-minute wait between breaks, never more than 3 seven-outs without one. About
+11.5 breaks an hour, down from about 14. The simulation script in
+`docs/reference/` now includes the 3-seven-out cap and the first-round rule
+(the earlier saved copy left the cap out).

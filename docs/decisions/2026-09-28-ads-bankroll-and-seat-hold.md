@@ -46,18 +46,21 @@ so nobody waits on anybody.
 - **Trigger:** every 2nd seven-out at the party, whoever threw it. Example: 5
   players each seven-out once -> breaks after the 2nd and 4th seven-outs, and
   the next one after the first shooter of round two sevens out (6th).
-- **Time floor:** a break needs at least **90 seconds** since the last break
-  ended. If the 2nd seven-out comes sooner (a quick seven-out), the break waits
-  for the next seven-out instead.
-- **Cap:** never more than **3 seven-outs** without a break, even if 90 seconds
-  haven't passed. This guarantees the owner's rule that 2 breaks have played
-  before all 5 players have shot and sevened out.
-- **Why these numbers (simulated 100,000 turns of real craps odds with the
-  2026-09-28 roll timing):** a shooter's turn averages about 2 minutes and a
-  5-player rotation about 9.5 minutes; with the 90-second floor and the
-  3-seven-out cap, **100% of rotations got at least 2 breaks**, averaging about
-  **14 breaks per hour** (one every ~4 minutes). A 120-second floor dropped
-  below 100%.
+- **First round:** the party's first 5 seven-outs always get their breaks
+  (after the 2nd and the 4th), no timer -- the owner's rule that 2 breaks have
+  played before all 5 players have shot and sevened out.
+- **After the first round -- wait:** a break needs at least **4 minutes** since
+  the last break ended. If the 2nd seven-out comes sooner, the break waits for
+  a later seven-out.
+- **Cap:** never more than **3 seven-outs** without a break, even if the 4
+  minutes haven't passed.
+- **Why these numbers (simulated with real craps odds and the 2026-09-28 roll
+  timing, `docs/reference/ad-break-simulation.py`):** a shooter's turn averages
+  about 2 minutes and a 5-player round about 9.5 minutes. The first version (a
+  90-second wait) gave about 14 breaks an hour; the owner asked for **20%
+  fewer** (2026-09-28). The 4-minute wait gives about **11.5 breaks an hour**
+  (roughly one every 5 minutes) and the first round still gets 2 breaks every
+  time. Later rounds usually get 2 breaks, sometimes 1.
 - **Mechanics:** the server pauses the party (no rolls, no bets, betting
   timers frozen), marks everyone "away" so the disconnect timer can't remove
   anyone, and resumes when every player's ad has closed or after 35 seconds,

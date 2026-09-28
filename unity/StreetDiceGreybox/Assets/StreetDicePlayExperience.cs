@@ -211,7 +211,7 @@ public sealed partial class StreetDiceGreyboxController
         wagerAcceptedAt.Clear();
         offerPage.Clear();
         offerSwipeStart.Clear();
-        wagerOverlayOpen = false;
+        wagerOverlayOpen = bettingWindowWasOpen = false;
         armedOfferId = 0;
         ResetWagerDraft();
         selectedSideWager = 10;
@@ -226,6 +226,7 @@ public sealed partial class StreetDiceGreyboxController
         audioSource.volume = effectsVolume;
         UpdateStartupExperience();
         UpdateWagerOffers();
+        UpdateBetMenuAutoOpen();
         RefreshGroundMoney();
         UpdateGroundOfferBills();
         if (mainOptions) return;
