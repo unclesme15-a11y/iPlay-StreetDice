@@ -75,8 +75,11 @@ public sealed class PlayerAccountStore
 
     public IReadOnlyCollection<PlayerAccount> All => _accountsById.Values.ToList();
 
+    // Session tokens are persisted alongside the account: without them, every server restart
+    // silently invalidated every saved login, and players dropped to Level 1 without being told.
     public List<PersistedAccount> Snapshot() => _accountsById.Values.Select(a => new PersistedAccount(
-        a.Id, a.Username, a.PasswordHash, a.PasswordSalt, a.Wins, a.HustledPrestigeNotes.ToList())).ToList();
+        a.Id, a.Username, a.PasswordHash, a.PasswordSalt, a.Wins, a.HustledPrestigeNotes.ToList(),
+        _accountSessions.TryGetValue(a.Id, out var token) ? token : null)).ToList();
 
     public void Restore(IEnumerable<PersistedAccount> accounts)
     {
@@ -89,6 +92,7 @@ public sealed class PlayerAccountStore
             foreach (var note in persisted.HustledPrestigeNotes) account.HustledPrestigeNotes.Add(note);
             _accountsById[account.Id] = account;
             _idByUsername[account.Username] = account.Id;
+            if (!string.IsNullOrEmpty(persisted.SessionToken)) _accountSessions[account.Id] = persisted.SessionToken;
         }
     }
 
@@ -107,4 +111,5 @@ public sealed class PlayerAccountStore
     }
 }
 
-public sealed record PersistedAccount(string Id, string Username, string PasswordHash, string PasswordSalt, int Wins, List<int> HustledPrestigeNotes);
+public sealed record PersistedAccount(string Id, string Username, string PasswordHash, string PasswordSalt, int Wins,
+    List<int> HustledPrestigeNotes, string? SessionToken = null);

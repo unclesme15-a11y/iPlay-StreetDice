@@ -149,13 +149,32 @@ public sealed partial class StreetDiceGreyboxController
         statsUsernameInput = statsPasswordInput = "";
     }
 
+    [Serializable] private sealed class AccountSessionRequestDto { public string accountSessionToken = ""; }
+
+    private const string ExpiredLoginMessage = "Your sign-in expired, so you're playing without your rank. Sign in again from Game Stats.";
+
+    /// <summary>Checks the saved token, not just the account -- a login can expire, or be
+    /// replaced by signing in on another phone. A 401 means the token is dead, so sign out
+    /// visibly; any other failure (no signal, server down) keeps the saved login as-is.</summary>
     private IEnumerator RefreshAccountProfile()
     {
         if (string.IsNullOrEmpty(accountId)) yield break;
-        using var request = UnityWebRequest.Get(baseUrl + "/api/accounts/" + accountId);
+        using var request = new UnityWebRequest(baseUrl + "/api/accounts/" + accountId + "/session", "POST");
+        request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(
+            JsonUtility.ToJson(new AccountSessionRequestDto { accountSessionToken = accountSessionToken })));
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
         yield return request.SendWebRequest();
+        if (request.responseCode == 401) { ExpireAccountLogin(); yield break; }
         if (request.result != UnityWebRequest.Result.Success) yield break;
         ApplyAccountResponse(JsonUtility.FromJson<AccountResponseDto>(request.downloadHandler.text));
+    }
+
+    private void ExpireAccountLogin()
+    {
+        LogOutAccount();
+        statsError = ExpiredLoginMessage;
+        result = ExpiredLoginMessage;
     }
 
     private void ApplyAccountResponse(AccountResponseDto response)
@@ -168,8 +187,8 @@ public sealed partial class StreetDiceGreyboxController
         accountWinsUntilNextLevel = response.winsUntilNextLevel;
         accountMaxBet = response.maxBetAtLevel;
         accountPrestigeUnlocked = response.prestigeBillsUnlocked;
-        // Login responses carry a fresh session token; a plain profile refresh (GET, no
-        // body) doesn't, so don't stomp the one already saved with an empty string.
+        // Login responses carry a fresh session token; a session refresh doesn't, so don't
+        // stomp the one already saved with an empty string.
         if (!string.IsNullOrEmpty(response.accountSessionToken)) accountSessionToken = response.accountSessionToken;
     }
 }

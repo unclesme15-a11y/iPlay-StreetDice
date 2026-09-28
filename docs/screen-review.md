@@ -797,3 +797,25 @@ one lets you do something a non-holder at the same table can't. Added a
 test (`HoldingAHustledNote_DoesNotByItselfGrantAnythingAHostAlreadyUnlocksForEveryone`)
 that makes that consequence explicit rather than leaving it implicit.
 133/133 tests pass.
+
+## Round 7 -- 2026-09-28
+
+### Review findings #1 and #4
+
+- **#4 fixed: logins now survive a server restart.** Account session tokens
+  are persisted with the account (`PersistedAccount.SessionToken`, optional so
+  older save files still load). On launch the app checks its saved token via
+  new `POST /api/accounts/{id}/session`. `join-real` now returns
+  `accountLinked`. Either path signs the player out with a visible "your
+  sign-in expired" message instead of silently seating them at Level 1.
+  Live-verified: signed in, restarted the server, same token still accepted;
+  a stale token got 401 on `/session` and `accountLinked: false` on
+  `join-real`. 135/135 tests (+2: tokens survive snapshot/restore; older
+  snapshots without tokens still load).
+- **#1 partially verified.** No Unity install exists in this environment, so
+  a real compile is still Codex's first job. Ran Roslyn's C# parser (C# 9,
+  Unity's language version) over all 28 scripts under the default,
+  UNITY_ANDROID, UNITY_IOS and UNITY_EDITOR configurations: 0 syntax errors.
+  This catches structural mistakes, not wrong Unity API names or types.
+- #2 (stakes can't reach the cap) and #3 (host leaving) wait on owner
+  answers -- see docs/decisions/2026-09-27-rank-host-and-rewards.md.

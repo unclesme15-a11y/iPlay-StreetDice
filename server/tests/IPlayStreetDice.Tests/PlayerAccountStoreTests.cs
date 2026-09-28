@@ -48,6 +48,33 @@ public class PlayerAccountStoreTests
     }
 
     [Fact]
+    public void SessionTokens_SurviveASnapshotRestoreCycle()
+    {
+        var original = new PlayerAccountStore();
+        original.Register("Bell", "hustle123");
+        var (account, token) = original.Login("Bell", "hustle123");
+
+        var restarted = new PlayerAccountStore();
+        restarted.Restore(original.Snapshot());
+
+        Assert.True(restarted.ValidateSession(account.Id, token));
+    }
+
+    [Fact]
+    public void Restore_AcceptsOlderSnapshotsWrittenBeforeTokensWereSaved()
+    {
+        var original = new PlayerAccountStore();
+        var account = original.Register("Bell", "hustle123");
+        var legacy = original.Snapshot().Select(a => a with { SessionToken = null });
+
+        var restarted = new PlayerAccountStore();
+        restarted.Restore(legacy);
+
+        Assert.True(restarted.TryGet(account.Id, out _));
+        Assert.NotNull(restarted.Login("Bell", "hustle123").Token);
+    }
+
+    [Fact]
     public void ValidateSession_RejectsATokenFromADifferentAccount()
     {
         var accounts = new PlayerAccountStore();

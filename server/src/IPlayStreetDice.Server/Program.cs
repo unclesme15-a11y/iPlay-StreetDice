@@ -154,6 +154,20 @@ app.MapPost("/api/accounts/login", (LoginAccountRequest request, PlayerAccountSt
     }
 });
 
+// Same profile as GET /api/accounts/{id}, but only for a still-valid session token -- the
+// client calls this on launch so a login that expired (or was replaced by signing in on
+// another phone) is caught right away instead of at the next table join.
+app.MapPost("/api/accounts/{accountId}/session", (string accountId, AccountSessionRequest request, PlayerAccountStore accounts) =>
+{
+    if (!accounts.ValidateSession(accountId, request.AccountSessionToken) || !accounts.TryGet(accountId, out var account))
+        return Results.Json(new { error = "Your sign-in expired. Sign in again to keep your rank." },
+            statusCode: StatusCodes.Status401Unauthorized);
+    return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
+        wins = account.Wins, winsUntilNextLevel = RankLadder.WinsUntilNextLevel(account.Wins) ?? -1,
+        maxBetAtLevel = RankLadder.MaxBetForLevel(account.Level),
+        prestigeBillsUnlocked = RankLadder.PrestigeBillsUnlockedAtLevel(account.Level) });
+});
+
 app.MapGet("/api/accounts/{accountId}", (string accountId, PlayerAccountStore accounts) =>
 {
     if (!accounts.TryGet(accountId, out var account)) return Results.NotFound();
@@ -187,14 +201,14 @@ app.MapPost("/api/street-dice/{gameId}/join-real", (string gameId, JoinRequest r
     if (!store.TryGet(gameId, out _)) return Results.NotFound(new { error = "Game not found." });
     var joined = store.JoinRealPlayer(gameId, request.PlayerName);
     // Linking is optional -- a guest with no account still gets a seat, they just play (and,
-    // if they end up hosting, the whole table plays) at Level 1 defaults.
-    if (!string.IsNullOrEmpty(request.AccountId) && !string.IsNullOrEmpty(request.AccountSessionToken)
-        && accounts.ValidateSession(request.AccountId, request.AccountSessionToken))
-    {
-        store.LinkAccount(gameId, joined.Player.Id, request.AccountId);
-    }
+    // if they end up hosting, the whole table plays) at Level 1 defaults. accountLinked tells a
+    // client that sent credentials whether they were accepted, so an expired login is surfaced
+    // instead of silently seating the player at Level 1.
+    var accountLinked = !string.IsNullOrEmpty(request.AccountId) && !string.IsNullOrEmpty(request.AccountSessionToken)
+        && accounts.ValidateSession(request.AccountId, request.AccountSessionToken);
+    if (accountLinked) store.LinkAccount(gameId, joined.Player.Id, request.AccountId!);
     return Results.Ok(new { playerId = joined.Player.Id, playerSessionToken = joined.Token, state = joined.State,
-        betCap = store.EffectiveBetCap(gameId), prestigeBillsUnlocked = store.PrestigeBillsUnlocked(gameId) });
+        accountLinked, betCap = store.EffectiveBetCap(gameId), prestigeBillsUnlocked = store.PrestigeBillsUnlocked(gameId) });
 });
 
 app.MapPost("/api/street-dice/{gameId}/dice-color", (string gameId, DiceColorRequest request, StreetDiceTableStore store) =>
@@ -698,6 +712,7 @@ public sealed class PlayerAccountPersistenceService : IHostedService, IDisposabl
 public sealed record JoinRequest(string PlayerName, string? PlayerId = null, string? AccountId = null, string? AccountSessionToken = null);
 public sealed record RegisterAccountRequest(string Username, string Password);
 public sealed record LoginAccountRequest(string Username, string Password);
+public sealed record AccountSessionRequest(string AccountSessionToken);
 public sealed record PlayerActionRequest(string PlayerId, string PlayerSessionToken);
 public sealed record MusicControlRequest(string PlayerId, string PlayerSessionToken, string? TrackUri,
     double PositionMilliseconds, bool IsPlaying);

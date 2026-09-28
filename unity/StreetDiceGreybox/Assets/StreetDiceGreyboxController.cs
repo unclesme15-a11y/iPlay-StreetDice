@@ -1481,6 +1481,9 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
         voiceClient.SetMuted(micMuted);
         voiceClient.Join(baseUrl, gameId, localPlayerId, response.playerSessionToken);
         result = "Joined table as " + localPlayerId + ".";
+        // Sent a saved login but the server refused it: say so, rather than silently seating
+        // this player at Level 1 while the app still shows them signed in.
+        if (accountLoggedIn && !response.accountLinked) ExpireAccountLogin();
     }
 
     private IEnumerator JoinPlayers()
@@ -3098,7 +3101,7 @@ public sealed partial class StreetDiceGreyboxController : MonoBehaviour
     }
 
     [Serializable] private sealed class CreateResponse { public string gameId = ""; public StateDto state = null!; }
-    [Serializable] private sealed class JoinResponse { public string playerId = ""; public string playerSessionToken = ""; public StateDto state = null!; }
+    [Serializable] private sealed class JoinResponse { public string playerId = ""; public string playerSessionToken = ""; public bool accountLinked; public StateDto state = null!; }
     [Serializable] private sealed class JoinRealRequest { public string playerName = ""; public string accountId = ""; public string accountSessionToken = ""; }
     [Serializable] private sealed class ActionResponse { public StateDto state = null!; }
     [Serializable] private sealed class OpenShotDto
