@@ -59,8 +59,13 @@ unlocks are approved but **not built** (see below).
 - **Stakes stack like cash:** tapping a bill adds it to the pile, up to the
   party's cap, with a Clear button. $50/$100 join the picker once the host is
   Level 3+ *and* the note art exists in `Resources/Money` (not generated yet).
-  **Owner has a close-up screenshot of stacked bills that shows exactly how
-  the pile should look -- match it once it's uploaded.**
+  **Target look: `docs/reference/stacked-bills-target.png`** (owner-approved,
+  captured from the game's own main-menu bill pile). Notes lie in a loose
+  overlapping fan, each shifted a little sideways and back, slightly turned,
+  with a small paper curl -- the layout `RefreshGroundMoney` already builds.
+  Keep it that way as stakes grow: cap the fan at about 5 notes wide and pile
+  any further notes on top, so a $500 stake reads as a thick fanned stack, not
+  a 25-note line across the ground.
 - **Trophy notes:** a player below Level 3 who wins a shot of $50 or more
   against a Level 3+ opponent keeps one note as a trophy (the $100 if the shot
   was $100+, otherwise the $50). Both must be signed in. Shown on Game Stats.
