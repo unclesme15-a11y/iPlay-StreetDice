@@ -245,6 +245,20 @@ follows. The search bar also gets the phone keyboard's dictation mic for free.
 Don't build an always-listening in-game command -- the mic already streams the
 party's voice chat, so it would be listening to every word.
 
+## Free vs Premium guests (important)
+
+Spotify only lets **Premium** accounts play a specific track on demand. Before
+calling `Play(trackUri)` on a guest's phone, check the App Remote user
+capability `canPlayOnDemand`:
+
+- **true:** play the host's exact track (the existing sync).
+- **false (free account):** play the closest thing Spotify allows -- the host's
+  current album or artist, which free accounts hear on shuffle -- and offer a
+  one-tap switch to the iPlay soundtrack instead.
+
+Free accounts also hear Spotify's own ads at their own moments; the game can't
+sync or control those.
+
 ## The 3 questions this was built to answer
 
 **Does Spotify need to be open on the phone?** Not visibly -- it doesn't

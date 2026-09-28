@@ -112,11 +112,25 @@ in The Jungle -- it plays the iPlay soundtrack.
 - **Dice calls, Tutorial Mode only:** in real play the voice chat IS the dice
   calling. Remove the separate Dice Calling switch; Tutorial Mode controls it.
   Recordings come from the owner.
-- **Music:** menus play the owner's cousin's instrumentals; The Jungle plays the
-  iPlay soundtrack; private parties use host Spotify plus a search bar in the
-  Options drawer (Spotify Web API search -> `HostPlayTrack`). No always-listening
-  voice command -- "Hey Siri/Google, play ___ on Spotify" already syncs the party.
-  Audio files come from the owner.
+- **Music** (full spec in launch-features #5):
+  - Menus: the owner's cousin's instrumentals.
+  - The Jungle: the iPlay soundtrack, nobody controls it, synced so every phone
+    plays the same song at the same moment.
+  - The soundtrack plays from an in-game Bluetooth speaker prop at the spot:
+    3D-positioned, filtered to sound like a portable speaker, pulsing to the
+    music. (Spotify audio can't get this effect -- it doesn't run through the
+    game.)
+  - Private parties: host Spotify plus a search bar in the Options drawer
+    (Spotify Web API search -> `HostPlayTrack`). Only the host's choices count
+    (already enforced server-side). No always-listening voice command --
+    "Hey Siri/Google, play ___ on Spotify" already syncs the party.
+  - Free Spotify guests can't play a specific song (Premium only): check
+    `canPlayOnDemand`; if false, play the closest thing Spotify allows (host's
+    album/artist on shuffle) and offer a one-tap switch to the iPlay soundtrack.
+  - Every player's own sound controls: music volume slider, "Mute party music"
+    switch, and music that dips automatically while anyone talks on voice chat.
+  - Audio files and signed permissions (a parent/guardian for each minor
+    artist) come from the owner.
 - **Share-a-clip:** one tap exports a short vertical replay (hot streak, big win,
   level-up) with the iPlay logo via the share sheet; re-render from the recorded
   roll frames.

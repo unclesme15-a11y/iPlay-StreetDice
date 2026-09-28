@@ -66,22 +66,46 @@ Spoken dice calls exist in code but are silent: they need recordings at
 ## 5. Music
 
 - **Menus:** the owner's cousin's instrumentals.
-- **The Jungle:** the iPlay soundtrack (owner's songs), playing on each
-  player's phone; volume in settings.
+- **The Jungle:** the iPlay soundtrack (the owner's son and local young artists).
+  No one controls it. **Synced for the whole party** -- the server picks the
+  track and start time and every phone plays the same song at the same moment,
+  the way the Spotify sync already works -- so it feels like one speaker
+  everybody's standing around.
+- **The soundtrack plays from an in-game Bluetooth speaker.** A small speaker
+  prop sits at the spot in the alley. The soundtrack is positioned there in
+  3D and filtered to sound like a portable speaker (less deep bass, a bit of
+  alley echo). The speaker can pulse to the music. This only works for the
+  soundtrack and menu music: Spotify's audio plays through the Spotify app,
+  not the game, so the game can't reshape or position it.
 - **Private parties:** the host's Spotify, as already designed
   (`docs/spotify-integration-setup.md`), plus a **search bar** in the Options
   drawer's Music section so the host can pick songs without leaving the game.
   Search uses Spotify's Web API (App Remote alone can't search), then plays the
   chosen track for the whole party through the existing sync.
-- **Voice requests:** "Hey Siri / Hey Google, play ___ on Spotify" already
-  works with no extra code -- the host's Spotify changes and the game's
-  existing player-state listener syncs the party. The search bar also gets
-  the phone keyboard's built-in dictation mic for free. Do **not** build an
-  always-listening "Spotify, play..." command: the mic already streams the
-  group chat, so the game would be listening to every word of the party.
-- **Rights:** the owner needs written permission from the cousin for the
-  instrumentals, and must own or license every soundtrack song. Audio files
-  come from the owner.
+- **Free Spotify guests:** Spotify only lets **Premium** accounts play a
+  specific song on demand. A guest on free Spotify gets the closest thing
+  Spotify allows (check the App Remote `canPlayOnDemand` capability; if false,
+  play the host's current album/artist, which free accounts hear on shuffle).
+  **Every free guest can switch to the iPlay soundtrack instead** with one tap.
+  Free Spotify also inserts its own ads, at different moments per listener --
+  the game can't sync or control them and earns nothing from them.
+- **Only the host's choices count.** The server already rejects music changes
+  from anyone but the host (403). "Hey Siri / Hey Google, play ___ on Spotify"
+  runs on each person's own phone, so a guest's voice can only change their own
+  Spotify, never the party's; on the host's phone, Siri/Google voice match
+  mostly ignores other voices coming through the speaker (headphones make it
+  airtight). The search bar also gets the phone keyboard's dictation mic for
+  free. Do **not** build an always-listening "Spotify, play..." command: the
+  mic already streams the group chat, so the game would hear every word.
+- **Every player's own sound controls** (Voice & Sound), affecting only them:
+  a music volume slider (soundtrack and menus), a "Mute party music" switch
+  (their phone stops following the host's Spotify; switching it back rejoins
+  the host's current song), and music that automatically dips while anyone
+  is talking on voice chat -- the talk is the heart of the game.
+- **Rights:** written permission from the cousin for the instrumentals, and
+  for every soundtrack song. **The soundtrack artists are young, so each minor
+  needs permission signed by a parent or guardian.** Audio files come from the
+  owner.
 
 ## 6. Share-a-clip
 
