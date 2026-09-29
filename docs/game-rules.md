@@ -74,12 +74,12 @@ Example:
 
 Side betting replaces the earlier "Call Out" language.
 
-Possible side bets:
+Possible side bets (owner rule, confirmed 2026-09-29):
 
-- Come-out win/loss.
-- Shooter hits point.
-- Shooter misses point.
-- Point group hit/miss.
+- **Come-out: CRAP 2/3/12 only.** That's the only come-out bet. Nobody can bet that the shooter *won't* crap -- there is no come-out HIT.
+- **Point: CRAP** the point or its paired number (`CRAP 10` / `CRAP 4` on a point of 10), offered to the shooter or to another player.
+- **Point: HIT** the point or its paired number (`HIT 10` / `HIT 4`), offered to **anyone but the shooter** -- you're betting a bystander that the shooter hits.
+- The shooter can't bet CRAP on their own roll.
 
 Side bets do not resolve on faded rolls.
 

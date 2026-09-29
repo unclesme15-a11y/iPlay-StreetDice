@@ -245,6 +245,28 @@ public sealed class StreetDicePeerWagerTests
         Assert.Equal(WagerStatus.Accepted, late.Status);
     }
 
+    [Fact]
+    public void ComeOutIsCrapOnly_PointAddsHitAgainstAnyoneButTheShooter()
+    {
+        var game = NewShot();                                          // shooter p1, catcher p2
+        // Come-out: only CRAP 2/3/12. No betting that the shooter won't crap.
+        Assert.NotNull(game.OfferPeerWager("p3", "p1", WagerOutcome.Crap, 0, 5, Start.AddSeconds(1)));
+        Assert.Throws<InvalidOperationException>(() =>
+            game.OfferPeerWager("p4", "p3", WagerOutcome.Hit, 0, 5, Start.AddSeconds(1)));
+        Assert.Throws<InvalidOperationException>(() =>
+            game.OfferPeerWager("p4", "p3", WagerOutcome.Hit, 10, 5, Start.AddSeconds(1)));
+
+        game.Roll(new DiceRoll(4, 6), Start.AddSeconds(20));           // point 10
+        // HIT 10 or HIT 4 against anyone but the shooter.
+        Assert.NotNull(game.OfferPeerWager("p3", "p4", WagerOutcome.Hit, 10, 5, Start.AddSeconds(21)));
+        Assert.NotNull(game.OfferPeerWager("p4", "p3", WagerOutcome.Hit, 4, 5, Start.AddSeconds(21)));
+        Assert.Throws<InvalidOperationException>(() =>
+            game.OfferPeerWager("p3", "p1", WagerOutcome.Hit, 10, 5, Start.AddSeconds(21)));
+        // Only the point or its pair.
+        Assert.Throws<InvalidOperationException>(() =>
+            game.OfferPeerWager("p4", "p3", WagerOutcome.Hit, 6, 5, Start.AddSeconds(21)));
+    }
+
     private static StreetDiceGameEngine NewShot()
     {
         var game = new StreetDiceGameEngine("peer-test");

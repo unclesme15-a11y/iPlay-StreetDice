@@ -53,7 +53,7 @@ the spec, and they win over anything you'd otherwise assume:
 
 ## What already exists (don't rebuild)
 
-Server (166 passing tests): craps engine with server-rolled physical dice, peer
+Server (167 passing tests): craps engine with server-rolled physical dice, peer
 wagers, persistence across restarts, accounts (sign up / sign in, logins survive
 restarts), rank ladder (Level 1-5 caps $100/$250/$500/$750/$1,000), XP (everyone
 seated earns per finished shot; shooter/catcher and winner earn more; first 15
@@ -231,7 +231,7 @@ seasons / leaderboards, cosmetic shop or any in-app purchase, store trailer,
 crowd footage itself (Claude is sourcing it).
 
 ## Before every push
-- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (166/166 now,
+- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (167/167 now,
   plus whatever you add).
 - Unity compiles clean; the readiness run passes; screenshots of any UI change.
 - Add a new round to `docs/screen-review.md` for each change: what, why, how

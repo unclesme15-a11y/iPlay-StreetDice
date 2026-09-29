@@ -1040,3 +1040,14 @@ would, with the money sound right before each bill hits the hand.
   `payout-in-hand.png`). Not compiled here -- the pose, bill scale (0.8) and
   timings are first guesses for Codex to tune on screen. Online play has no
   money animation yet; noted in the Codex prompt.
+
+## Round 16 -- 2026-09-29
+
+### Which bets exist, confirmed
+
+Owner: the only come-out bet is CRAP (2/3/12) -- nobody can bet that the
+shooter won't crap. During the point a player can bet anyone but the shooter
+that the shooter HITs the point or its pair (HIT 10 / HIT 4). The engine
+already enforced exactly this (`WagerBook.Propose`); `docs/game-rules.md`
+wrongly listed "come-out win/loss" as a side bet, now corrected. New test
+`ComeOutIsCrapOnly_PointAddsHitAgainstAnyoneButTheShooter` pins it. 167/167.
