@@ -130,7 +130,8 @@ in The Jungle -- it plays the iPlay soundtrack.
   - Point set: the bet menu pops open by itself for non-shooters
     (`UpdateBetMenuAutoOpen`) -- the only automatic pop-up. It closes when the
     propose time ends; only locks stay. BET opens/closes it any time betting
-    is allowed. Betting against a point of 10 is the CRAP 10 lock.
+    is allowed. Betting against the point is a CRAP bet -- the lock reads CRAP
+    plus the current point (CRAP 6, CRAP 10, ...) or its paired number.
   - Ends early when everyone's done: proposing, NO BET, or closing the menu at
     the point marks a player done (`WagerBook.MarkDone`, server `POST /wager/done`); when all
     non-shooters are done the countdown ends and the shooter keeps up to 5
