@@ -115,6 +115,9 @@ After an eligible bet against the Shooter is accepted during a point, its bettor
 - **Double Up** requests one additional wager equal to that accepted bet on the same number.
 - **Paired Number** requests one additional wager of the same amount on the point's grouped mate.
 - Each request is separate. The Shooter may accept one, both, or neither.
+- **A Double Up is its own proposal, and it can't be split** (owner rule 2026-09-29). Whoever accepts it owes the whole doubled amount: on a $100 bet, accepting the Double Up means owing $200 on that bet. Nobody else can cover part of it. Another player who wants to double has to have their own bet and double that.
+
+**Side-bet amounts:** side bets stack bills like the main shot. Tap bills to build the amount -- $1, $5, $10, $20, plus $50 and $100 once the host has unlocked them -- then tap the lock to propose it. **Clear** starts over. The most any single side bet can be is the host's bet cap ($100 / $250 / $500 / $750 / $1,000 by host level), and never more than you can cover. (Owner 2026-09-29; before this, side bets were a single $1-$20 bill.)
 - An unaccepted add-on expires when the next roll begins.
 
 ## Cee-lo Street / Banker Rules
@@ -185,6 +188,7 @@ Recommended interpretation:
 
 - Previous win is locked.
 - Double Up affects the next shot only.
+- One catcher covers the whole doubled shot. It can't be split between players.
 - If Shooter loses the next shot, Shooter loses the new doubled shot amount, not the previous already-paid win.
 
 Example:
@@ -242,5 +246,5 @@ Reserved streak color:
 ## Open Rule Questions
 
 - Payouts: every bet pays even money (1:1) for now, including point bets like `CRAP 10`. Even money favors the CRAP bettor (a 7 comes twice as often as a 10), and the owner knows that. **Street odds are a later addition:** the CRAP bettor puts up more to win less -- $20 to win $10 on 4/10, $15 to win $10 on 5/9, $12 to win $10 on 6/8.
-- Exact number of fades before momentum starts: MVP prototype uses after 3 fades.
-- Whether Double Up requires one Catcher to cover full amount or can be split.
+- Fades before momentum starts: **3** (owner confirmed 2026-09-29).
+- Double Up: one person covers the full doubled amount, never split (owner confirmed 2026-09-29).

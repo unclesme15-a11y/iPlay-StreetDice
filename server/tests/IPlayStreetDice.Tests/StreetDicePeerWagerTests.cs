@@ -267,6 +267,17 @@ public sealed class StreetDicePeerWagerTests
             game.OfferPeerWager("p4", "p3", WagerOutcome.Hit, 6, 5, Start.AddSeconds(21)));
     }
 
+    [Fact]
+    public void SideBetsStackBillsUpToTheHostsCap()
+    {
+        var game = NewShot();
+        game.PeerWagerCap = 250;                                        // Level 2 host
+        Assert.Equal(35, game.OfferPeerWager("p3", "p1", WagerOutcome.Crap, 0, 35, Start.AddSeconds(1)).Amount);
+        Assert.Equal(250, game.OfferPeerWager("p4", "p1", WagerOutcome.Crap, 0, 250, Start.AddSeconds(1)).Amount);
+        Assert.Throws<ArgumentException>(() =>
+            game.OfferPeerWager("p2", "p1", WagerOutcome.Crap, 0, 251, Start.AddSeconds(1)));
+    }
+
     private static StreetDiceGameEngine NewShot()
     {
         var game = new StreetDiceGameEngine("peer-test");

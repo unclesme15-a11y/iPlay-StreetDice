@@ -25,6 +25,7 @@ public sealed partial class StreetDiceGreyboxController
     private RenderTexture wagerOpenIcon, wagerClosedIcon;
     private bool bettingWindowWasOpen;
     private bool comeOutNoBet, comeOutBillsOpen;
+    private int comeOutDraft;
 
     private void ResetWagerDraft()
     {
@@ -53,7 +54,7 @@ public sealed partial class StreetDiceGreyboxController
     private void UpdateBetMenuAutoOpen()
     {
         bool open = BettingWindowOpen && !mainOptions;
-        if (open && !bettingWindowWasOpen) comeOutNoBet = comeOutBillsOpen = false;
+        if (open && !bettingWindowWasOpen) { comeOutNoBet = comeOutBillsOpen = false; comeOutDraft = 0; }
         if (open && !bettingWindowWasOpen && phase == "Point" && shooterId != SelfId && !drawerOpen && !confirmLeave)
         {
             string target = CanComposeWagerAgainst(shooterId) ? shooterId : FirstWagerTarget();
@@ -86,8 +87,8 @@ public sealed partial class StreetDiceGreyboxController
 
     // The come-out overlay: a lock twice the standard size (standard is 85x99) center
     // screen, with a NO BET tab beside it and a glowing line running down around it for
-    // the 10 seconds. Press the lock -> the bills come up -> pick the amount and the lock
-    // drops to the ground as a proposed bet. Press NO BET to sit this come-out out. It
+    // the 10 seconds. Press the lock -> the bills come up -> stack the amount -> press the
+    // lock again and it drops to the ground as a proposed bet. Press NO BET to sit this come-out out. It
     // stays up whether the bet menu is open or not; BET never hides it (owner 2026-09-28).
     private Rect ComeOutLockRect => new Rect(UiWidth * 0.5f - 85f, UiHeight * 0.2f, 170f, 198f);
 
@@ -99,10 +100,21 @@ public sealed partial class StreetDiceGreyboxController
         DrawCountdownLine(new Rect(rect.x - 12f, rect.y - 12f, rect.width + 24f, rect.height + 24f), remaining);
         bool ready = interact && !onlineWagerRequestInFlight;
         GUI.enabled = ready;
-        if (DrawAmountLock(rect, 0, false, -1f, WagerOutcome.Crap, 0))
+        if (DrawAmountLock(rect, comeOutDraft, false, -1f, WagerOutcome.Crap, 0))
         {
-            comeOutBillsOpen = !comeOutBillsOpen;
-            PlayAudio(rollClip, 0.16f);
+            if (comeOutBillsOpen && comeOutDraft > 0)
+            {
+                OfferWager(SelfId, shooterId, WagerOutcome.Crap, 0, comeOutDraft);
+                comeOutBillsOpen = false;
+                comeOutDraft = 0;
+                PlayAudio(lockClip, 0.65f);
+            }
+            else
+            {
+                comeOutBillsOpen = !comeOutBillsOpen;
+                comeOutDraft = 0;
+                PlayAudio(rollClip, 0.16f);
+            }
         }
         GUI.enabled = ready;
         if (DrawMetalButton(new Rect(rect.xMax + 28f, rect.center.y - 32f, 132f, 64f), "NO BET"))
@@ -111,22 +123,7 @@ public sealed partial class StreetDiceGreyboxController
             comeOutBillsOpen = false;
             MarkBettorDone(SelfId);
         }
-        if (comeOutBillsOpen)
-        {
-            float billWidth = 124f, gap = 29f;
-            float left = UiWidth * 0.5f - (billWidth * WagerAmounts.Length + gap * (WagerAmounts.Length - 1)) * 0.5f;
-            for (int i = 0; i < WagerAmounts.Length; i++)
-            {
-                int amount = WagerAmounts[i];
-                GUI.enabled = ready && WagerFunds(SelfId) - ActiveWagerExposure(SelfId) >= amount;
-                if (DrawBetBill(new Rect(left + i * (billWidth + gap), rect.yMax + 26f, billWidth, 82f), amount))
-                {
-                    OfferWager(SelfId, shooterId, WagerOutcome.Crap, 0, amount);
-                    comeOutBillsOpen = false;
-                    PlayAudio(lockClip, 0.65f);
-                }
-            }
-        }
+        if (comeOutBillsOpen) comeOutDraft = DrawSideBetBillRow(rect.yMax + 52f, comeOutDraft, ready);
         GUI.enabled = interact;
     }
 
@@ -245,13 +242,13 @@ public sealed partial class StreetDiceGreyboxController
             GUI.enabled = interact && (BettingWindowOpen || late);
             if (DrawDigitalBetDie(new Rect(x + gap, y, size, size),
                 pointNumber == 0 ? "2/3/12" : pointNumber.ToString()))
-            { draftNumber = pointNumber; SetWagerStage(3); }
+            { draftNumber = pointNumber; draftAmount = 0; SetWagerStage(3); }
             int paired = WagerBook.GroupMate(pointNumber);
             GUI.enabled = interact && paired != 0 &&
                 (BettingWindowOpen || late || EligiblePairedSource(paired) != null);
             if (DrawDigitalBetDie(new Rect(x + 2 * gap, y, size, size),
                 paired == 0 ? "--" : paired.ToString()))
-            { draftNumber = paired; SetWagerStage(3); }
+            { draftNumber = paired; draftAmount = 0; SetWagerStage(3); }
         }
         GUI.enabled = interact;
     }
@@ -270,32 +267,52 @@ public sealed partial class StreetDiceGreyboxController
     {
         float center = UiWidth * 0.5f;
         float lockY = UiHeight * 0.38f;
-        GUI.enabled = false;
+        // Tap bills to stack the amount (up to the host's cap), then tap the lock to propose it.
         // Enlarged ~30% (84x99 -> 110x130) -- too small to read comfortably before.
-        DrawAmountLock(new Rect(center - 55f, lockY, 110f, 130f), 0, false, -1f,
-            draftOutcome, draftNumber);
-        float billWidth = 124f, gap = 29f;
-        float left = center - (billWidth * WagerAmounts.Length + gap * (WagerAmounts.Length - 1)) * 0.5f;
-        for (int i = 0; i < WagerAmounts.Length; i++)
+        GUI.enabled = interact && draftAmount > 0;
+        if (DrawAmountLock(new Rect(center - 55f, lockY, 110f, 130f), draftAmount, false, -1f,
+            draftOutcome, draftNumber))
         {
-            int amount = WagerAmounts[i];
-            GUI.enabled = interact && WagerFunds(SelfId) - ActiveWagerExposure(SelfId) >= amount;
-            // Pushed down from +128 to +159 to clear the enlarged lock above (now
-            // 130 tall instead of 99), keeping the same ~29px gap.
-            if (DrawBetBill(new Rect(left + i * (billWidth + gap), lockY + 159f, billWidth, 82f), amount))
+            if (BettingWindowOpen || CanLateBet)
+                OfferWager(SelfId, wagerTarget, draftOutcome, draftNumber, draftAmount);
+            else
             {
-                if (BettingWindowOpen || CanLateBet)
-                    OfferWager(SelfId, wagerTarget, draftOutcome, draftNumber, amount);
-                else
-                {
-                    var source = EligiblePairedSource(draftNumber);
-                    if (source != null) OfferPointAddOnWithAmount(source, WagerAddOnKind.PairedNumber, amount);
-                }
-                draftAmount = draftNumber = 0;
-                SetWagerStage(1);
+                var source = EligiblePairedSource(draftNumber);
+                if (source != null) OfferPointAddOnWithAmount(source, WagerAddOnKind.PairedNumber, draftAmount);
+            }
+            draftAmount = draftNumber = 0;
+            SetWagerStage(1);
+            GUI.enabled = interact;
+            return;
+        }
+        // Pushed down from +128 to +159 to clear the enlarged lock above.
+        draftAmount = DrawSideBetBillRow(lockY + 159f, draftAmount, interact);
+        GUI.enabled = interact;
+    }
+
+    // Side bets stack bills like the main shot (owner 2026-09-29): each tap adds a bill --
+    // $50/$100 once the host has unlocked them -- up to the host's bet cap and what you can
+    // cover. Clear starts over. Returns the new total.
+    private int DrawSideBetBillRow(float top, int total, bool interact)
+    {
+        var bills = StakeDenominations();
+        float billWidth = bills.Count > 4 ? 108f : 124f, gap = bills.Count > 4 ? 18f : 29f;
+        float width = billWidth * bills.Count + gap * (bills.Count - 1);
+        float left = UiWidth * 0.5f - width * 0.5f;
+        int room = Mathf.Min(TableBetCap, WagerFunds(SelfId) - ActiveWagerExposure(SelfId));
+        for (int i = 0; i < bills.Count; i++)
+        {
+            GUI.enabled = interact && total + bills[i] <= room;
+            if (DrawBetBill(new Rect(left + i * (billWidth + gap), top, billWidth, 82f), bills[i]))
+            {
+                total += bills[i];
+                PlayAudio(moneyLandClip, 0.5f);
             }
         }
+        GUI.enabled = interact && total > 0;
+        if (DrawMetalButton(new Rect(left + width - 88f, top - 40f, 88f, 34f), "Clear")) total = 0;
         GUI.enabled = interact;
+        return total;
     }
 
     private bool HasLiveAddOn(int sourceId, WagerAddOnKind kind)

@@ -1145,6 +1145,7 @@ public sealed partial class StreetDiceGreyboxController
         bettingClosesAt = gameMode == GameMode.Craps ? Time.unscaledTime + BettingWindowSeconds : Time.unscaledTime;
         if (gameMode == GameMode.Craps)
             wagerBook.Open(shooterId, int.TryParse(point, out int target) ? target : 0, Time.unscaledTimeAsDouble);
+        wagerBook.MaxWagerAmount = TableBetCap;
         botDoneAt.Clear();
         foreach (string id in DemoShooterOrder)
             if (id != "p1" && id != shooterId) botDoneAt[id] = Time.unscaledTime + 2f + (float)random.NextDouble() * 4f;

@@ -54,7 +54,7 @@ generates the randomness and simulates the physics, a peer-to-peer wager
 system, a 20-second reconnect-grace window for dropped connections, real
 Vivox voice token signing, and state that survives a server restart or
 container redeploy (snapshotted to disk periodically and on shutdown).
-167 tests currently pass (`dotnet test IPlayStreetDice.sln`).
+168 tests currently pass (`dotnet test IPlayStreetDice.sln`).
 
 Unity greybox:
 

@@ -2146,7 +2146,9 @@ public static class PlayReadinessVerification
         float uiHeight = (float)typeof(StreetDiceGreyboxController).GetProperty("UiHeight", Flags).GetValue(c);
         float firstBill = uiWidth * 0.5f - (124f * 4 + 29f * 3) * 0.5f + 62f;
         Vector2 bill20 = new Vector2(firstBill + 3f * 153f, uiHeight * 0.38f + 169f);
-        foreach (var position in new[] { bet, crap, bill20 })
+        // Side bets stack: tap the bill, then tap the lock to propose.
+        Vector2 draftLock = new Vector2(uiWidth * 0.5f, uiHeight * 0.38f + 65f);
+        foreach (var position in new[] { bet, crap, bill20, draftLock })
         {
             var click = PointerClick(c, position);
             while (click.MoveNext()) yield return null;
@@ -2167,6 +2169,8 @@ public static class PlayReadinessVerification
             && (int)Get(c, "draftNumber") == 4, "Point-10 CRAP 4 choice lost its number");
         var crapAmount = PointerClick(c, bill20);
         while (crapAmount.MoveNext()) yield return null;
+        var crapLock = PointerClick(c, draftLock);
+        while (crapLock.MoveNext()) yield return null;
         Check(book.Offers.Count == 2 && book.Offers[1].Outcome == IPlay.Demo.WagerOutcome.Crap
             && book.Offers[1].Number == 4, "Point-10 CRAP 4 offer lost its number");
         for (int i = 0; i < 3; i++) yield return null;

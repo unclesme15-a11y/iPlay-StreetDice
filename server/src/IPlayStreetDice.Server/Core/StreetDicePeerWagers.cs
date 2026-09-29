@@ -10,6 +10,13 @@ public sealed partial class StreetDiceGameEngine
 
     public IReadOnlyList<WagerOffer> PeerWagers => _peerWagers.Offers;
 
+    // Largest single side bet: the host's bet cap, same as the main shot.
+    public int PeerWagerCap
+    {
+        get => _peerWagers.MaxWagerAmount;
+        set => _peerWagers.MaxWagerAmount = value;
+    }
+
     public PublicBettingWindow? CurrentBettingWindow(DateTimeOffset now)
     {
         if (!_peerWagers.Started || State.Phase is not (GamePhase.ComeOut or GamePhase.Point)) return null;

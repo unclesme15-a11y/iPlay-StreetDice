@@ -191,8 +191,10 @@ public class WagerBookTests
         var book = PointTen();
         var source = book.Propose("a", "shooter", WagerOutcome.Crap, 10, 5, 1, Funds);
         book.Accept(source.Id, "shooter", 2, Funds);
+        // Stacked bills are fine; only the table cap limits the amount.
+        book.MaxWagerAmount = 100;
         Assert.Throws<ArgumentException>(() =>
-            book.ProposeAddOn(source.Id, "a", WagerAddOnKind.PairedNumber, 16, Funds, 3));
+            book.ProposeAddOn(source.Id, "a", WagerAddOnKind.PairedNumber, 16, Funds, 101));
         var paired = book.ProposeAddOn(source.Id, "a", WagerAddOnKind.PairedNumber, 16, Funds, 20);
         Assert.Equal(4, paired.Number);
         Assert.Equal(20, paired.Amount);

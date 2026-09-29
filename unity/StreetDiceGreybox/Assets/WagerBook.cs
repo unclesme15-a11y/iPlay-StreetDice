@@ -36,6 +36,9 @@ namespace IPlay.Demo
         public double ShooterDeadline { get; private set; }
         public bool Started { get; private set; }
         public bool Rolling { get; private set; }
+        // Side bets stack bills like the main shot, up to the host's bet cap (owner 2026-09-29).
+        // The server and the offline game set this from the table's cap.
+        public int MaxWagerAmount { get; set; } = int.MaxValue;
 
         public void Open(string shooter, int point, double now)
         {
@@ -112,7 +115,7 @@ namespace IPlay.Demo
                 throw new InvalidOperationException("Betting is closed.");
             if (string.IsNullOrEmpty(from) || string.IsNullOrEmpty(to) || from == to)
                 throw new InvalidOperationException("Invalid wager participants.");
-            if (amount != 1 && amount != 5 && amount != 10 && amount != 20) throw new ArgumentException("Invalid wager amount.");
+            if (amount < 1 || amount > MaxWagerAmount) throw new ArgumentException("Invalid wager amount.");
             if (outcome != WagerOutcome.Hit && outcome != WagerOutcome.Crap) throw new ArgumentException("Invalid outcome.");
             if (from == Shooter && outcome == WagerOutcome.Crap)
                 throw new InvalidOperationException("The shooter cannot bet against their own roll.");
@@ -149,7 +152,7 @@ namespace IPlay.Demo
             if (number == 0 || (number != Point && number != GroupMate(Point)))
                 throw new InvalidOperationException("This bet has no eligible paired number.");
             int amount = kind == WagerAddOnKind.PairedNumber && requestedAmount != 0 ? requestedAmount : source.Amount;
-            if (amount != 1 && amount != 5 && amount != 10 && amount != 20)
+            if (amount < 1 || amount > MaxWagerAmount)
                 throw new ArgumentException("Invalid wager amount.");
             if (available(bettor) - Exposure(bettor) < amount)
                 throw new InvalidOperationException("Insufficient funds for the add-on.");

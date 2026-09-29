@@ -1051,3 +1051,23 @@ that the shooter HITs the point or its pair (HIT 10 / HIT 4). The engine
 already enforced exactly this (`WagerBook.Propose`); `docs/game-rules.md`
 wrongly listed "come-out win/loss" as a side bet, now corrected. New test
 `ComeOutIsCrapOnly_PointAddsHitAgainstAnyoneButTheShooter` pins it. 167/167.
+
+## Round 17 -- 2026-09-29
+
+### Side bets stack bills; Double Up is never split
+
+- Owner picked stacking for side bets. Side bets were limited to one $1/$5/$10/
+  $20 bill while the main shot went up to $1,000 with $50/$100 notes. Now
+  `WagerBook` takes any amount from $1 up to `MaxWagerAmount`, which the server
+  sets to the host's bet cap on every offer/add-on (`PeerWagerCap`) and the
+  offline game sets from `TableBetCap`. Client: `DrawSideBetBillRow` -- tap
+  bills to stack (including $50/$100 when unlocked), tap the lock to propose,
+  Clear to start over -- used by the point bet menu and the come-out overlay.
+  New test `SideBetsStackBillsUpToTheHostsCap`; the old paired-number test that
+  rejected $3 now rejects over-cap instead ($3 is three $1 bills). Readiness
+  check updated to tap the lock after the bill. 168/168.
+- Owner: Double Up is its own proposal; whoever accepts owes the full doubled
+  amount, no splitting; others double only their own bets. The engine already
+  worked this way (add-ons need your own locked bet; the main-shot catcher
+  must cover the full doubled amount alone). Fade momentum stays at 3 fades.
+  Both open rule questions closed in `docs/game-rules.md`.

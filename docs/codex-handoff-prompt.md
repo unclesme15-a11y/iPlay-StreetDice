@@ -24,7 +24,7 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/spotify-integration-setup.md` -- host-controlled Spotify + search bar
 - `docs/decisions/2026-09-27-fifty-hundred-dollar-notes.md` -- $50/$100 art prompts
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
-- `docs/screen-review.md` -- rounds 1-15: every change so far and why
+- `docs/screen-review.md` -- rounds 1-17: every change so far and why
 
 ## Rules that never change
 
@@ -53,7 +53,7 @@ the spec, and they win over anything you'd otherwise assume:
 
 ## What already exists (don't rebuild)
 
-Server (167 passing tests): craps engine with server-rolled physical dice, peer
+Server (168 passing tests): craps engine with server-rolled physical dice, peer
 wagers, persistence across restarts, accounts (sign up / sign in, logins survive
 restarts), rank ladder (Level 1-5 caps $100/$250/$500/$750/$1,000), XP (everyone
 seated earns per finished shot; shooter/catcher and winner earn more; first 15
@@ -142,6 +142,13 @@ in The Jungle -- it plays the iPlay soundtrack.
     (`WagerBook.CanProposeLate`); it expires at the next throw if not taken.
   - A come-out 2/3/12 keeps the dice and starts a fresh come-out (already how
     the engine works).
+- **Side bets stack bills (built 2026-09-29 -- compile, verify):** tap bills
+  to build the amount ($50/$100 once unlocked), tap the lock to propose, Clear
+  starts over; capped at the host's bet cap (`DrawSideBetBillRow`; server
+  `PeerWagerCap` / `WagerBook.MaxWagerAmount`). Same on the come-out overlay.
+- **Double Up is never split:** whoever accepts a Double Up owes the whole
+  doubled amount; only the owner of a bet can double it (already enforced).
+  The fade-momentum rule stays at 3 fades.
 - **Teller payout (built 2026-09-29, offline -- tune on phones):** when YOU win,
   the bills leave the loser's spot, gather above where your hand comes out,
   your hand rises palm up and the bills are laid in one at a time; the money
@@ -231,7 +238,7 @@ seasons / leaderboards, cosmetic shop or any in-app purchase, store trailer,
 crowd footage itself (Claude is sourcing it).
 
 ## Before every push
-- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (167/167 now,
+- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (168/168 now,
   plus whatever you add).
 - Unity compiles clean; the readiness run passes; screenshots of any UI change.
 - Add a new round to `docs/screen-review.md` for each change: what, why, how

@@ -262,6 +262,7 @@ app.MapPost("/api/street-dice/{gameId}/wager/offer", (string gameId, PeerWagerOf
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.FromId, request.PlayerSessionToken)) return Results.Unauthorized();
     var now = DateTimeOffset.UtcNow;
+    engine.PeerWagerCap = store.EffectiveBetCap(gameId);
     var offer = engine.OfferPeerWager(request.FromId, request.ToId, request.Outcome, request.Number, request.Amount, now);
     return Results.Ok(new { offer, wagers = engine.PeerWagers, bettingWindow = engine.CurrentBettingWindow(now), state = engine.State });
 });
@@ -280,6 +281,7 @@ app.MapPost("/api/street-dice/{gameId}/wager/add-on", (string gameId, PeerWagerA
     if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
     if (!store.ValidatePlayerSession(gameId, request.BettorId, request.PlayerSessionToken)) return Results.Unauthorized();
     var now = DateTimeOffset.UtcNow;
+    engine.PeerWagerCap = store.EffectiveBetCap(gameId);
     var offer = engine.OfferPeerAddOn(request.BettorId, request.SourceOfferId, request.Kind, now, request.Amount);
     return Results.Ok(new { offer, wagers = engine.PeerWagers, bettingWindow = engine.CurrentBettingWindow(now), state = engine.State });
 });
