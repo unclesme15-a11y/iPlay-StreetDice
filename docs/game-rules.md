@@ -85,7 +85,7 @@ Side bets do not resolve on faded rolls.
 
 - A public 10-second betting window opens at two moments only: the come-out (after the main shot is committed) and when the point is set. Street dice is quick -- there is no countdown before the other rolls.
 - **Come-out overlay:** the only come-out bet is `CRAP 2/3/12`, so instead of the menu every non-shooter gets the come-out overlay: a `CRAP 2/3/12` lock about twice the standard lock size, center screen, with a **NO BET** tab beside it and a glowing line around it that runs down over the 10 seconds (green -> yellow -> red). Press the lock, pick the bills, and the lock drops to the ground as a proposed bet. Press **NO BET** to sit the come-out out (that player is done). The overlay stays whether the bet menu is open or not -- the **BET** button never hides it.
-- **Point set:** the bet menu pops open by itself for everyone but the shooter. This is the only time the menu opens by itself. Betting against the point ("he don't hit 10") is the `CRAP 10` lock.
+- **Point set:** the bet menu pops open by itself for everyone but the shooter. This is the only time the menu opens by itself. Betting against the point is the `CRAP 10` lock (for a point of 10).
 - When the propose time ends, the menu closes and only the locks (fully proposed bets) stay on screen. The **BET** button in the top left opens or closes the menu any time betting is allowed.
 - **Ends early when everyone's done.** A player is done once they propose a bet, press **NO BET** on the come-out overlay, or (at the point) close the bet menu. When every non-shooter is done, the propose time ends right away. If a lock is still waiting on the shooter they keep up to 5 more seconds to take it; once nothing is waiting on them they can throw immediately. Example: 4 opponents have bet and you close the menu by accident -- the countdown skips and the shooter can roll. (Owner rule 2026-09-28.)
 - **Late bet after the point window:** a player with no live bet against the shooter (for example, they closed the menu by accident) can bring the menu back with BET and propose one bet against the point or its paired number (`CRAP 10` or `CRAP 4` for point 10) between rolls. Like an add-on, the shooter takes it before throwing or it expires when the next roll starts.
@@ -215,6 +215,10 @@ At full streak:
 - Red/orange is reserved for streak and cannot be selected as a normal dice color.
 - The in-game UI shows only a fire-filled hot meter, not the individual point awards.
 
+## Money on the Ground
+
+Bills on the ground only ever show money that is riding: the shooter's and catcher's shot, proposed bets and locked bets. When a bet settles, its bills fly to the winner and are gone. No loose or decorative bills lying around -- with bets everywhere, stray money would make it unclear what is being bet. (Owner rule 2026-09-29.)
+
 ## Fair Play
 
 Your bankroll is private. Other players see the bets you place, not your remaining balance. The server decides counted dice results and settles each wager once; no player's phone can choose an outcome.
@@ -234,6 +238,6 @@ Reserved streak color:
 
 ## Open Rule Questions
 
-- Exact payout multipliers.
+- Payouts: every bet pays even money (1:1) for now, including point bets like `CRAP 10`. Even money favors the CRAP bettor (a 7 comes twice as often as a 10), and the owner knows that. **Street odds are a later addition:** the CRAP bettor puts up more to win less -- $20 to win $10 on 4/10, $15 to win $10 on 5/9, $12 to win $10 on 6/8.
 - Exact number of fades before momentum starts: MVP prototype uses after 3 fades.
 - Whether Double Up requires one Catcher to cover full amount or can be split.

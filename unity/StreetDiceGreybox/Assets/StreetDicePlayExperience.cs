@@ -1455,7 +1455,9 @@ public sealed partial class StreetDiceGreyboxController
 
     private int GroundWager(string player)
     {
-        if (mainOptions) return 36;
+        // Bills on the ground only ever show money that is riding: the shot, proposed bets
+        // and locked bets. No decorative piles, not even behind the menus (owner rule).
+        if (mainOptions) return 0;
         int amount = AcceptedWagerStake(player) + OfferedWagerStake(player);
         if (gameMode == GameMode.CeeLo && shotCommitted)
         {
@@ -1481,7 +1483,9 @@ public sealed partial class StreetDiceGreyboxController
             root.SetActive(amount > 0);
             var bills = BillGroupsForAmount(amount);
             // Child zero is the contact shadow; grow the reusable paper pool only when needed.
-            for (int note = root.transform.childCount - 1; note < bills.Count; note++)
+            // Always keep at least one (hidden) note: the settle animation copies it, and there
+            // is no decorative menu pile any more to create one.
+            for (int note = root.transform.childCount - 1; note < Mathf.Max(1, bills.Count); note++)
             {
                 var paper = new GameObject("Worn folded prop note");
                 paper.transform.SetParent(root.transform, false);

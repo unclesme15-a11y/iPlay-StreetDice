@@ -24,7 +24,7 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/spotify-integration-setup.md` -- host-controlled Spotify + search bar
 - `docs/decisions/2026-09-27-fifty-hundred-dollar-notes.md` -- $50/$100 art prompts
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
-- `docs/screen-review.md` -- rounds 1-13: every change so far and why
+- `docs/screen-review.md` -- rounds 1-14: every change so far and why
 
 ## Rules that never change
 
@@ -44,6 +44,12 @@ the spec, and they win over anything you'd otherwise assume:
    Game Stats is its own page reached from Options.
 7. **XP numbers live only in server `RankLadder.cs`.** Don't scatter them.
 8. **Play money only.** Never sell play money or let it be cashed out.
+9. **No loose bills on the ground.** Bills on the ground only show money that is
+   riding (the shot, proposed and locked bets); settled money flies to the
+   winner and disappears. No decorative piles anywhere.
+10. **Every bet pays even money for now.** Street odds (the CRAP bettor lays
+   $20-to-$10 on 4/10, $15-to-$10 on 5/9, $12-to-$10 on 6/8) are a later
+   addition -- don't build them yet.
 
 ## What already exists (don't rebuild)
 
@@ -124,7 +130,7 @@ in The Jungle -- it plays the iPlay soundtrack.
   - Point set: the bet menu pops open by itself for non-shooters
     (`UpdateBetMenuAutoOpen`) -- the only automatic pop-up. It closes when the
     propose time ends; only locks stay. BET opens/closes it any time betting
-    is allowed. "He don't hit 10" is the CRAP 10 lock.
+    is allowed. Betting against a point of 10 is the CRAP 10 lock.
   - Ends early when everyone's done: proposing, NO BET, or closing the menu at
     the point marks a player done (`WagerBook.MarkDone`, server `POST /wager/done`); when all
     non-shooters are done the countdown ends and the shooter keeps up to 5
@@ -209,7 +215,8 @@ Move menus, HUD and drawer off IMGUI (`OnGUI`) to uGUI or UI Toolkit, keeping th
 exact iPlay look. Only after gameplay is verified on phones.
 
 ## Do NOT build (saved for later or owned by someone else)
-Daily challenges (saved for after launch), player cards / rank titles,
+Daily challenges (saved for after launch), street odds on point bets (later),
+player cards / rank titles,
 seasons / leaderboards, cosmetic shop or any in-app purchase, store trailer,
 crowd footage itself (Claude is sourcing it).
 

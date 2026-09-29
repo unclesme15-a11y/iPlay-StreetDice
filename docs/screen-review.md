@@ -994,3 +994,22 @@ after the lock is pressed. It has its own state (`comeOutNoBet`,
 `comeOutBillsOpen`) so the regular bet menu can be open at the same time. The
 BET button now only opens/closes the bet menu; closing it counts as "done"
 only at the point. Scripts parse clean; server unchanged (166/166).
+
+## Round 14 -- 2026-09-29
+
+### Wording, payouts, no loose bills
+
+- Owner: say "CRAP 10", not "he don't hit 10". Docs and the Codex prompt now
+  use the lock names only.
+- Payouts stay even money for now; street odds (CRAP bettor lays $20-to-$10 on
+  4/10, $15-to-$10 on 5/9, $12-to-$10 on 6/8) are recorded as a later addition
+  in `docs/game-rules.md` and the Codex prompt's do-not-build list.
+- Owner rule: no loose bills on the ground that aren't a bet. Checked: in a
+  game, ground piles (`GroundWager`) only count the shot stake, proposed and
+  locked bets and Cee-lo stakes, and settling bills are destroyed when they
+  land. The one exception was a decorative $36 pile at every seat behind the
+  menus (`GroundWager` returned 36 when `mainOptions`); it now returns 0.
+  That pile was also what the settle animation copied its bill from, so each
+  pile now always keeps one hidden note in its pool.
+  Rule written into `docs/game-rules.md` ("Money on the Ground") and the
+  Codex prompt's never-change rules.
