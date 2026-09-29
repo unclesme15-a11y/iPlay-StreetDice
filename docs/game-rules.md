@@ -182,6 +182,10 @@ Example:
 
 ## Double Up
 
+**During the point (main bet, owner rule 2026-09-29):** once a point is set, the shooter or the catcher can propose a Double Up on the main bet to the other, between rolls. The other side accepts before the next throw, or the offer is gone. Whoever accepts owes the full doubled amount -- it is never split with anyone. One per shot, and never over the host's bet cap. Example: the shooter bets the catcher $100 and the point is 6. The catcher proposes a Double Up and the shooter accepts. Now $200 rides: a seven-out pays the catcher $200, a 6 pays the shooter $200.
+
+**After a win (next shot):** the shooter can also choose Double Up for the next shot, as below.
+
 Shooter increases the next shot amount to double the previous shot.
 
 Recommended interpretation:

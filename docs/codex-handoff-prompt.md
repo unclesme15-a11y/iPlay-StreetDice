@@ -16,7 +16,7 @@ never base work on `main`, never push to `main`. Read these first -- they are
 the spec, and they win over anything you'd otherwise assume:
 
 - `docs/decisions/2026-09-27-rank-host-and-rewards.md` -- host rule, rank ladder,
-  XP, bet caps, dice-color unlocks, trophy notes
+  SP, bet caps, dice-color unlocks, trophy notes
 - `docs/decisions/2026-09-28-ads-bankroll-and-seat-hold.md` -- ads, one bankroll
   per account, seat hold, sign-in
 - `docs/decisions/2026-09-28-launch-features.md` -- online Cee-lo, The Jungle,
@@ -24,7 +24,7 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/spotify-integration-setup.md` -- host-controlled Spotify + search bar
 - `docs/decisions/2026-09-27-fifty-hundred-dollar-notes.md` -- $50/$100 art prompts
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
-- `docs/screen-review.md` -- rounds 1-17: every change so far and why
+- `docs/screen-review.md` -- rounds 1-18: every change so far and why
 
 ## Rules that never change
 
@@ -42,7 +42,12 @@ the spec, and they win over anything you'd otherwise assume:
    lock art) -- never default Unity look.
 6. **Music controls sit directly on the Options drawer**, never behind a sub-tab.
    Game Stats is its own page reached from Options.
-7. **XP numbers live only in server `RankLadder.cs`.** Don't scatter them.
+7. **SP numbers live only in server `RankLadder.cs`.** Don't scatter them. SP =
+   "shooter points" (formerly XP): every player-facing word says SP; code
+   identifiers can keep the old Xp names.
+   Rank names: Unranked, Shooter, Skilled Shooter, Pro Shooter, DICE G🎲D (the O
+   is a turning die). Use the names everywhere a level shows (Game Stats, level-up
+   moment, lobby, The Jungle list).
 8. **Play money only.** Never sell play money or let it be cashed out.
 9. **No loose bills on the ground.** Bills on the ground only show money that is
    riding (the shot, proposed and locked bets); settled money flies to the
@@ -53,15 +58,15 @@ the spec, and they win over anything you'd otherwise assume:
 
 ## What already exists (don't rebuild)
 
-Server (168 passing tests): craps engine with server-rolled physical dice, peer
+Server (173 passing tests): craps engine with server-rolled physical dice, peer
 wagers, persistence across restarts, accounts (sign up / sign in, logins survive
-restarts), rank ladder (Level 1-5 caps $100/$250/$500/$750/$1,000), XP (everyone
+restarts), rank ladder (Level 1-5 caps $100/$250/$500/$750/$1,000), SP (everyone
 seated earns per finished shot; shooter/catcher and winner earn more; first 15
 shots a day earn 5x; no daily cap; five steps per level), host hand-off, trophy
 notes, host-only music sync endpoint.
 
 Client (never compiled -- see step 1): bill-stacking stake picker with a Clear
-button, Game Stats page (sign in, level + 5-step progress bar, XP, trophy
+button, Game Stats page (sign in, level + 5-step progress bar, SP, trophy
 notes), inline music controls, Spotify bridges (Android/iOS), hot dice.
 
 ## Priority order
@@ -102,7 +107,7 @@ Test on a real Android phone and a real iPhone before building features.
 Cee-lo is offline only today. Build a server-authoritative Cee-lo engine next to
 the craps one (3 server-rolled physical dice, same roll lifecycle, seats,
 sessions, persistence), enable Online for Cee-lo, and apply every rule above
-(host rule, sign-in, bankroll, seat hold, trophy notes, voice, host music). XP:
+(host rule, sign-in, bankroll, seat hold, trophy notes, voice, host music). SP:
 each banker-vs-player result counts as one finished shot.
 
 ### 5. The Jungle
@@ -142,6 +147,18 @@ in The Jungle -- it plays the iPlay soundtrack.
     (`WagerBook.CanProposeLate`); it expires at the next throw if not taken.
   - A come-out 2/3/12 keeps the dice and starts a fresh come-out (already how
     the engine works).
+- **Main-bet Double Up during the point (server built 2026-09-29, client to
+  build):** once a point is set, the shooter OR the catcher can propose a Double
+  Up on the main bet to the other, between rolls. The other side taps to accept
+  before the next throw, or it's gone. Accepting means owing the full doubled
+  amount -- never split; one per shot; can't go over the host's cap. Example:
+  shooter bets catcher $100, point 6, catcher proposes, shooter accepts -> $200
+  rides. Server: `ProposeMainDoubleUp` / `AcceptMainDoubleUp`, endpoints
+  `POST /main/double-up/propose` and `/accept`, state fields
+  `mainDoubleUpProposedBy` / `mainDoubleUpTaken`. Client: a DOUBLE UP control for
+  the shooter and catcher between point rolls, and an incoming Double Up lock the
+  other side taps to accept (same lock style), offline and online. The after-win
+  Run Same / Double Up choice for the next shot stays as it is.
 - **Side bets stack bills (built 2026-09-29 -- compile, verify):** tap bills
   to build the amount ($50/$100 once unlocked), tap the lock to propose, Clear
   starts over; capped at the host's bet cap (`DrawSideBetBillRow`; server
@@ -238,7 +255,7 @@ seasons / leaderboards, cosmetic shop or any in-app purchase, store trailer,
 crowd footage itself (Claude is sourcing it).
 
 ## Before every push
-- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (168/168 now,
+- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (173/173 now,
   plus whatever you add).
 - Unity compiles clean; the readiness run passes; screenshots of any UI change.
 - Add a new round to `docs/screen-review.md` for each change: what, why, how

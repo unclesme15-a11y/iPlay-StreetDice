@@ -35,6 +35,10 @@ public sealed class StreetDiceGameState
     public bool HotDiceActive => Streak >= HotDiceThreshold;
     public bool LastResolvedShotWasWin { get; set; }
     public bool LastShotWasDoubleUp { get; set; }
+    // Main-bet Double Up during the point: who proposed it (waiting on the other side), and
+    // whether this shot already doubled.
+    public string? MainDoubleUpProposedBy { get; set; }
+    public bool MainDoubleUpTaken { get; set; }
     public RollResolution LastResolution { get; set; } = new(RollResultType.None, null, null, "No rolls yet.");
     public List<string> EventLog { get; } = new();
 

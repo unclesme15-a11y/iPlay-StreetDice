@@ -133,7 +133,7 @@ app.MapPost("/api/accounts/register", (RegisterAccountRequest request, PlayerAcc
     try
     {
         var account = accounts.Register(request.Username, request.Password);
-        return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level, wins = account.Wins });
+        return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level, levelName = RankLadder.LevelName(account.Level), wins = account.Wins });
     }
     catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
     {
@@ -147,7 +147,7 @@ app.MapPost("/api/accounts/login", (LoginAccountRequest request, PlayerAccountSt
     {
         var (account, token) = accounts.Login(request.Username, request.Password);
         return Results.Ok(new { accountId = account.Id, accountSessionToken = token, username = account.Username,
-            level = account.Level, wins = account.Wins,
+            level = account.Level, levelName = RankLadder.LevelName(account.Level), wins = account.Wins,
             xp = account.Xp, shotsPlayed = account.ShotsPlayed,
             xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
             levelStep = RankLadder.LevelStep(account.Xp), levelProgress = RankLadder.LevelProgress(account.Xp),
@@ -169,7 +169,7 @@ app.MapPost("/api/accounts/{accountId}/session", (string accountId, AccountSessi
     if (!accounts.ValidateSession(accountId, request.AccountSessionToken) || !accounts.TryGet(accountId, out var account))
         return Results.Json(new { error = "Your sign-in expired. Sign in again to keep your rank." },
             statusCode: StatusCodes.Status401Unauthorized);
-    return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
+    return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level, levelName = RankLadder.LevelName(account.Level),
         wins = account.Wins, xp = account.Xp, shotsPlayed = account.ShotsPlayed,
         xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
             levelStep = RankLadder.LevelStep(account.Xp), levelProgress = RankLadder.LevelProgress(account.Xp),
@@ -184,7 +184,7 @@ app.MapGet("/api/accounts/{accountId}", (string accountId, PlayerAccountStore ac
     // xpUntilNextLevel is -1 at MaxLevel rather than a JSON null -- Unity's JsonUtility (the
     // client's deserializer) doesn't reliably handle a null literal landing on a non-nullable
     // int field, and this response has no need for a true null here anyway.
-    return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level,
+    return Results.Ok(new { accountId = account.Id, username = account.Username, level = account.Level, levelName = RankLadder.LevelName(account.Level),
         wins = account.Wins, xp = account.Xp, shotsPlayed = account.ShotsPlayed,
         xpUntilNextLevel = RankLadder.XpUntilNextLevel(account.Xp) ?? -1,
             levelStep = RankLadder.LevelStep(account.Xp), levelProgress = RankLadder.LevelProgress(account.Xp),
@@ -293,6 +293,23 @@ app.MapPost("/api/street-dice/{gameId}/wager/done", (string gameId, PeerWagerDon
     var now = DateTimeOffset.UtcNow;
     engine.MarkPeerBettorDone(request.PlayerId, now);
     return Results.Ok(new { wagers = engine.PeerWagers, bettingWindow = engine.CurrentBettingWindow(now), state = engine.State });
+});
+
+// Main-bet Double Up during the point: shooter or catcher proposes, the other accepts.
+app.MapPost("/api/street-dice/{gameId}/main/double-up/propose", (string gameId, MainDoubleUpRequest request, StreetDiceTableStore store) =>
+{
+    if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
+    if (!store.ValidatePlayerSession(gameId, request.PlayerId, request.PlayerSessionToken)) return Results.Unauthorized();
+    lock (engine) { engine.ProposeMainDoubleUp(request.PlayerId, store.EffectiveBetCap(gameId)); }
+    return Results.Ok(new { state = engine.State });
+});
+
+app.MapPost("/api/street-dice/{gameId}/main/double-up/accept", (string gameId, MainDoubleUpRequest request, StreetDiceTableStore store) =>
+{
+    if (!store.TryGet(gameId, out var engine)) return Results.NotFound(new { error = "Game not found." });
+    if (!store.ValidatePlayerSession(gameId, request.PlayerId, request.PlayerSessionToken)) return Results.Unauthorized();
+    lock (engine) { engine.AcceptMainDoubleUp(request.PlayerId); }
+    return Results.Ok(new { state = engine.State });
 });
 
 app.MapPost("/api/cee-lo/evaluate", (CeeLoRollRequest request) =>
@@ -821,6 +838,7 @@ public sealed record PhysicalRollPrepareRequest(string ShooterId, string PlayerS
 public sealed record PhysicalRollFadeRequest(string CatcherId, string PlayerSessionToken, string RollId);
 public sealed record PhysicalRollCommitRequest(string ShooterId, string PlayerSessionToken, string RollId);
 public sealed record CeeLoRollRequest(int Die1, int Die2, int Die3);
+public sealed record MainDoubleUpRequest(string PlayerId, string PlayerSessionToken);
 public sealed record ShooterDecisionRequest(string ShooterId, string PlayerSessionToken);
 public sealed record BotFillRequest(int TargetPlayers = 5);
 public sealed record VoiceAccessRequest(string PlayerId, string PlayerSessionToken, string Action = "join",

@@ -22,7 +22,15 @@ means one game session of up to 5 players -- the same thing the owner calls a
 
 ## Built (server-enforced, tested)
 
-| Level | Max bet | Total XP to reach | Grinder (~3 h/day) | Casual (~30 min/day) | Unlocks |
+**SP = shooter points** (renamed from XP by the owner 2026-09-29; code identifiers still say
+Xp internally, every player-facing word says SP).
+
+**Rank names (owner 2026-09-29):** Level 1 **Unranked** (start), Level 2 **Shooter**,
+Level 3 **Skilled Shooter**, Level 4 **Pro Shooter**, Level 5 **DICE G🎲D** -- written
+"DICE G", a turning die as the O, then "D" (`RankLadder.LevelName`, client
+`DrawDiceGodRank`). The API returns `levelName` with every account response.
+
+| Level | Max bet | Total SP to reach | Grinder (~3 h/day) | Casual (~30 min/day) | Unlocks |
 | --- | --- | --- | --- | --- | --- |
 | 1 (start) | $100 | 0 | -- | -- | White dice |
 | 2 | $250 (placeholder) | 12,000 | ~5 days | ~10 days | Green dice |
@@ -35,10 +43,10 @@ in about 5 days for an extreme grinder and 10 for a daily casual, getting
 harder every level, with a longer climb to the top. Dice-color and color-wheel
 unlocks are approved but **not built** (see below).
 
-### XP formula (numbers tunable in `RankLadder.cs`)
+### SP formula (numbers tunable in `RankLadder.cs`)
 
 - **No daily cap.** Grinders are never stopped.
-- **Every signed-in player seated at the party** earns 8 XP per finished shot,
+- **Every signed-in player seated at the party** earns 8 SP per finished shot,
   so a full 5-player party levels as fast as a 1-on-1.
 - **Shooter or catcher:** +8 more.
 - **Winning the shot:** +12, but only the first 3 wins against the same
@@ -84,7 +92,7 @@ unlocks are approved but **not built** (see below).
 
 ## Still open
 
-Nothing on rank. Tune the XP numbers after beta measures real shots per hour.
+Nothing on rank. Tune the SP numbers after beta measures real shots per hour.
 
 ## Other locked decisions
 

@@ -26,6 +26,8 @@ public sealed class GameSnapshot
     public int HotDiceThreshold { get; set; } = 10;
     public bool LastResolvedShotWasWin { get; set; }
     public bool LastShotWasDoubleUp { get; set; }
+    public string? MainDoubleUpProposedBy { get; set; }
+    public bool MainDoubleUpTaken { get; set; }
     public RollResolution LastResolution { get; set; } = new(RollResultType.None, null, null, "No rolls yet.");
     public List<string> EventLog { get; set; } = new();
 }

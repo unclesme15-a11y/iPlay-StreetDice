@@ -1071,3 +1071,26 @@ wrongly listed "come-out win/loss" as a side bet, now corrected. New test
   worked this way (add-ons need your own locked bet; the main-shot catcher
   must cover the full doubled amount alone). Fade momentum stays at 3 fades.
   Both open rule questions closed in `docs/game-rules.md`.
+
+## Round 18 -- 2026-09-29
+
+### Main-bet Double Up, SP, rank names
+
+- **Main-bet Double Up during the point** (owner: "Shooter bets catcher $100.
+  Either the shooter or the catcher bets the other on a double up. If the
+  shooter craps, the catcher wins the $200, and vice versa"). Owner chose: only
+  after the point is set; the after-win Double Up stays. Server:
+  `StreetDiceMainDoubleUp.cs` (`ProposeMainDoubleUp` / `AcceptMainDoubleUp`),
+  state `MainDoubleUpProposedBy` / `MainDoubleUpTaken` (persisted), expires when
+  the throw starts (`PreparePhysicalRoll` and `Roll`), resets with every new
+  shot, both sides must cover the doubled amount alone, capped at the host's
+  cap. Endpoints `/main/double-up/propose` and `/accept`. 5 new tests (both
+  directions pay $200, only after the point / only the two main players / only
+  the other side accepts / once per shot, unaccepted offer expires at the throw,
+  cap). Client UI is spec'd in the Codex prompt (not built here). 173/173.
+- **XP is now SP ("shooter points")** in every player-facing string and in the
+  docs; code identifiers keep Xp.
+- **Rank names:** Unranked, Shooter, Skilled Shooter, Pro Shooter, DICE G🎲D.
+  Server `RankLadder.LevelName` + `levelName` on account responses; Game Stats
+  shows the name, and Level 5 draws "DICE G", a turning die (the BET die art,
+  `UI/impact-dice-bet-v1` -- swap for a plain die face if it reads wrong), "D".

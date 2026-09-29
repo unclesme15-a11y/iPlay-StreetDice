@@ -75,6 +75,7 @@ public sealed partial class StreetDiceGameEngine
         State.FadeCount = 0;
         State.ShooterMomentum = 0;
         State.LastResolvedShotWasWin = false;
+        ResetMainDoubleUp();
         State.LastShotWasDoubleUp = false;
         State.Phase = GamePhase.ComeOut;
         State.LastResolution = new RollResolution(RollResultType.None, null, null, "Shot opened.");
@@ -98,6 +99,7 @@ public sealed partial class StreetDiceGameEngine
 
     private void OfferNextPlayer(string previousId)
     {
+        ResetMainDoubleUp();
         var start = State.Players.FindIndex(p => p.Id == previousId);
         var next = Enumerable.Range(1, State.Players.Count)
             .Select(offset => State.Players[(start + offset) % State.Players.Count])
@@ -219,6 +221,7 @@ public sealed partial class StreetDiceGameEngine
             _peerWagers.Offers.Any(offer => offer.Status == WagerStatus.Accepted))
             _peerWagers.BeginRoll(BettingSeconds(now ?? DateTimeOffset.UtcNow));
 
+        ExpireMainDoubleUpOffer();
         _shooterSideWinsThisRoll = 0;
         var resolution = State.Phase == GamePhase.ComeOut
             ? ResolveComeOut(roll)
@@ -243,6 +246,7 @@ public sealed partial class StreetDiceGameEngine
         State.Point = null;
         State.FadeCount = 0;
         State.ShooterMomentum = 0;
+        ResetMainDoubleUp();
         State.LastShotWasDoubleUp = false;
         State.LastResolvedShotWasWin = false;
         State.Phase = GamePhase.ComeOut;
@@ -262,6 +266,7 @@ public sealed partial class StreetDiceGameEngine
         State.Point = null;
         State.FadeCount = 0;
         State.ShooterMomentum = 0;
+        ResetMainDoubleUp();
         State.LastShotWasDoubleUp = true;
         State.LastResolvedShotWasWin = false;
         State.Phase = GamePhase.ComeOut;

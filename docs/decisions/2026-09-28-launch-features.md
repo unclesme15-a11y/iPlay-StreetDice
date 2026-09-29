@@ -21,8 +21,8 @@ engine.
 - Everything cross-cutting applies unchanged: host rule (host's level sets the
   max bet and unlocks), host hand-off, sign-in for online, one bankroll per
   account, seat hold, trophy notes, $50/$100 unlock, voice chat, host music.
-- XP: each banker-vs-player result counts as one finished shot (the banker and
-  that player are the two "in the shot"; everyone seated earns seated XP).
+- SP: each banker-vs-player result counts as one finished shot (the banker and
+  that player are the two "in the shot"; everyone seated earns seated SP).
   Keep the pacing targets in `RankLadder.cs`.
 - Cee-lo gets its own public parties in The Jungle (#2).
 

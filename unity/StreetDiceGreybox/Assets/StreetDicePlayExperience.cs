@@ -986,15 +986,45 @@ public sealed partial class StreetDiceGreyboxController
         }
 
         GUI.Label(new Rect(4, 4, 284, 30), accountUsername);
-        GUI.Label(new Rect(4, 40, 284, 40), accountLevel >= 5 ? "Level 5" : $"Level {accountLevel}  -  Step {accountLevelStep}/5");
+        if (accountLevel >= 5) DrawDiceGodRank(new Rect(4, 40, 284, 34));
+        else GUI.Label(new Rect(4, 40, 284, 40), $"{RankName(accountLevel)}  -  Step {accountLevelStep}/5");
         DrawLevelProgressBar(new Rect(4, 74, 284, 8), accountLevelProgress);
-        GUI.Label(new Rect(4, 84, 284, 26), $"XP: {accountXp}   Shots: {accountShotsPlayed}   Wins: {accountWins}");
-        GUI.Label(new Rect(4, 114, 284, 26), accountLevel >= 5 ? "Max level reached." : $"XP to next level: {accountXpUntilNextLevel}");
+        GUI.Label(new Rect(4, 84, 284, 26), $"SP: {accountXp}   Shots: {accountShotsPlayed}   Wins: {accountWins}");
+        GUI.Label(new Rect(4, 114, 284, 26), accountLevel >= 5 ? "Max rank reached." : $"SP to next rank: {accountXpUntilNextLevel}");
         GUI.Label(new Rect(4, 144, 284, 26), $"Max bet at this level: {accountMaxBet}");
         GUI.Label(new Rect(4, 174, 284, 26), accountPrestigeUnlocked ? "$50/$100 notes unlocked." : "$50/$100 notes locked until Level 3.");
         if (accountTrophyNotes.Length > 0)
             GUI.Label(new Rect(4, 202, 284, 26), "Trophy notes: $" + string.Join(", $", accountTrophyNotes));
         if (DrawMetalButton(new Rect(4, 236, 284, 42), "Log Out")) LogOutAccount();
+    }
+
+    // Rank names (owner 2026-09-29), same list as the server's RankLadder.LevelName.
+    // Progress points are "SP" (shooter points) everywhere a player can see them.
+    private static readonly string[] RankNames = { "Unranked", "Shooter", "Skilled Shooter", "Pro Shooter", "Dice God" };
+
+    private static string RankName(int level) => RankNames[Mathf.Clamp(level, 1, RankNames.Length) - 1];
+
+    // Level 5 reads "DICE G[die]D": the O is a die that keeps turning.
+    private void DrawDiceGodRank(Rect rect)
+    {
+        if (impactBetIcon == null) impactBetIcon = Resources.Load<Texture2D>("UI/impact-dice-bet-v1");
+        var style = new GUIStyle(GUI.skin.label) { fontSize = 24, fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleLeft, wordWrap = false };
+        style.normal.textColor = new Color(1f, 0.84f, 0.28f);
+        var left = new GUIContent("DICE G");
+        float leftWidth = style.CalcSize(left).x;
+        GUI.Label(new Rect(rect.x, rect.y, leftWidth, rect.height), left, style);
+        float size = rect.height * 0.8f;
+        var die = new Rect(rect.x + leftWidth + 1f, rect.y + (rect.height - size) * 0.5f, size, size);
+        if (impactBetIcon != null)
+        {
+            Matrix4x4 previous = GUI.matrix;
+            GUIUtility.RotateAroundPivot(Time.unscaledTime * 120f % 360f, die.center);
+            GUI.DrawTexture(die, impactBetIcon, ScaleMode.ScaleToFit, true);
+            GUI.matrix = previous;
+        }
+        else GUI.Label(die, "O", style);
+        GUI.Label(new Rect(die.xMax + 1f, rect.y, 40f, rect.height), "D", style);
     }
 
     // 2K-style rep bar: the fill shows progress through the whole level, with four tick

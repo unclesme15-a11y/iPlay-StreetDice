@@ -35,6 +35,13 @@ public static class RankLadder
     // ~3 months, L5 ~3 months vs ~7 months.
     private static readonly int[] XpToReachLevel = { 0, 12_000, 42_000, 112_000, 272_000 };
 
+    // Rank names (owner 2026-09-29). Level 5 shows as "DICE G[die]D" with a turning die as the
+    // O -- the client draws that; this is the plain-text name. Players see progress as SP
+    // ("shooter points"); the code keeps the older Xp names internally.
+    private static readonly string[] LevelNames = { "Unranked", "Shooter", "Skilled Shooter", "Pro Shooter", "Dice God" };
+
+    public static string LevelName(int level) => LevelNames[ClampLevel(level) - 1];
+
     public static int MaxBetForLevel(int level) => MaxBetByLevel[ClampLevel(level) - 1];
 
     public static bool PrestigeBillsUnlockedAtLevel(int level) => ClampLevel(level) >= PrestigeBillUnlockLevel;

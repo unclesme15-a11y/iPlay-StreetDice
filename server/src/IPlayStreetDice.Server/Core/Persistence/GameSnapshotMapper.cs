@@ -37,6 +37,8 @@ public static class GameSnapshotMapper
             HotDiceThreshold = state.HotDiceThreshold,
             LastResolvedShotWasWin = state.LastResolvedShotWasWin,
             LastShotWasDoubleUp = state.LastShotWasDoubleUp,
+            MainDoubleUpProposedBy = state.MainDoubleUpProposedBy,
+            MainDoubleUpTaken = state.MainDoubleUpTaken,
             LastResolution = state.LastResolution,
             EventLog = new List<string>(state.EventLog)
         };
@@ -60,6 +62,8 @@ public static class GameSnapshotMapper
             Streak = snapshot.Streak,
             LastResolvedShotWasWin = snapshot.LastResolvedShotWasWin,
             LastShotWasDoubleUp = snapshot.LastShotWasDoubleUp,
+            MainDoubleUpProposedBy = snapshot.MainDoubleUpProposedBy,
+            MainDoubleUpTaken = snapshot.MainDoubleUpTaken,
             LastResolution = snapshot.LastResolution
         };
 

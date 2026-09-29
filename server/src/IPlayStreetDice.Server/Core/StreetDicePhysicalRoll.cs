@@ -33,6 +33,7 @@ public sealed partial class StreetDiceGameEngine
         }
 
         _peerWagers.BeginRoll(BettingSeconds(now));
+        ExpireMainDoubleUpOffer();
         PhysicalDiceThrow throwResult;
         try
         {
