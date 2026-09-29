@@ -92,6 +92,36 @@ public sealed class FirstPersonDiceHand
             root.position += camera.ViewportToWorldPoint(new Vector3(wristViewport.x, -0.10f, wristViewport.z)) - Wrist.position;
     }
 
+    // Palm-up "bank teller" pose for receiving winnings: the same framing as the throw so it
+    // reads as the same hand. entrance 0->1 rises into view, close 0->1 folds the fingers over
+    // the bills, exit 0->1 drops back out of frame.
+    public void SampleReceive(float entrance, float close, float exit)
+    {
+        root.gameObject.SetActive(IsRigged && exit < 1f);
+        if (!root.gameObject.activeSelf) return;
+        foreach (var pair in rest) if (pair.Key != root) pair.Key.localRotation = pair.Value;
+        float handedness = LeftHanded ? -1f : 1f;
+        var forward = (camera.transform.up * 0.35f + camera.transform.forward * 0.94f
+            - camera.transform.right * (0.16f * handedness)).normalized;
+        var normal = Vector3.Cross(forward, camera.transform.right).normalized;
+        root.rotation = Quaternion.LookRotation(forward, normal) * Quaternion.Inverse(palmFrame);
+        var anchor = camera.ViewportToWorldPoint(new Vector3(LeftHanded ? 0.42f : 0.58f,
+            -0.10f - (1f - entrance) * 0.34f - exit * 0.4f, 1.6f));
+        root.position += anchor - Wrist.position;
+        var fingers = new[] { "Index", "Middle", "Ring", "Pinky" };
+        for (int i = 0; i < fingers.Length; i++)
+            Curl(fingers[i], 4f + i * 2f + close * (42f + i * 4f), 5f + i * 2f + close * (52f + i * 4f));
+        var wristViewport = camera.WorldToViewportPoint(Wrist.position);
+        if (wristViewport.y > -0.10f)
+            root.position += camera.ViewportToWorldPoint(new Vector3(wristViewport.x, -0.10f, wristViewport.z)) - Wrist.position;
+    }
+
+    // Where the index-th bill rests in the open palm (bills stack slightly as they're counted in).
+    public Vector3 BillRestPosition(int index) =>
+        PalmCenter + PalmNormal * (0.012f + index * 0.005f) + PalmForward * (0.02f - index * 0.008f);
+
+    public Quaternion BillRotation => Quaternion.LookRotation(PalmForward, PalmNormal);
+
     public void SampleShake(float elapsed)
     {
         Sample(0.22f + Mathf.Sin(elapsed * 22f) * 0.035f);

@@ -24,7 +24,7 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/spotify-integration-setup.md` -- host-controlled Spotify + search bar
 - `docs/decisions/2026-09-27-fifty-hundred-dollar-notes.md` -- $50/$100 art prompts
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
-- `docs/screen-review.md` -- rounds 1-14: every change so far and why
+- `docs/screen-review.md` -- rounds 1-15: every change so far and why
 
 ## Rules that never change
 
@@ -142,6 +142,15 @@ in The Jungle -- it plays the iPlay soundtrack.
     (`WagerBook.CanProposeLate`); it expires at the next throw if not taken.
   - A come-out 2/3/12 keeps the dice and starts a fresh come-out (already how
     the engine works).
+- **Teller payout (built 2026-09-29, offline -- tune on phones):** when YOU win,
+  the bills leave the loser's spot, gather above where your hand comes out,
+  your hand rises palm up and the bills are laid in one at a time; the money
+  sound plays right before each touches the palm; your balance goes up as each
+  lands (`AnimateTellerPayout`, `FirstPersonDiceHand.SampleReceive`). Money you
+  lose or money between others still flies loser -> winner and vanishes. Tune
+  the palm pose, bill size and timing on screen (it was written without Unity).
+  Online has no money animation yet: drive the same animations from the
+  server's settled wagers/shots so online matches offline.
 - **Level-up moment:** flash, crowd reaction, new level + unlocks revealed;
   smaller version per step; everyone at the party sees it; never mid-roll.
 - **Dice calls, Tutorial Mode only:** in real play the voice chat IS the dice

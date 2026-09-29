@@ -1013,3 +1013,30 @@ only at the point. Scripts parse clean; server unchanged (166/166).
   pile now always keeps one hidden note in its pool.
   Rule written into `docs/game-rules.md` ("Money on the Ground") and the
   Codex prompt's never-change rules.
+
+## Round 15 -- 2026-09-29
+
+### Teller payout into your hand
+
+Owner: flying money is only for when money actually changes hands. When you
+win, the bills should leave the loser, appear right above where your hand comes
+out, and the hand comes out and the bills are placed in it like a bank teller
+would, with the money sound right before each bill hits the hand.
+
+- `AnimateTellerPayout` (`StreetDicePlayExperience.cs`): (1) bills lift off
+  the loser's pile and gather just above the hand's entry point, (2) the hand
+  rises palm up (`FirstPersonDiceHand.SampleReceive`, same framing as the
+  throw), (3) each bill (up to six notes; extra value rides with the last) is
+  laid into the palm over 0.2 s with `moneyLandClip` at 80% of the way down,
+  (4) the fingers close and the hand drops out. Throws are blocked while the
+  hand is busy (`handReceiving` in `CanGesture`).
+- Your displayed balance holds back winnings until each bill lands
+  (`displayIncomingPending`). Losses need no hold: the stake was already out of
+  your available balance.
+- Money you lose, and money between other players, keeps the fly-and-vanish
+  animation. Without the paid hand pack the payout falls back to that too.
+- Readiness check added (payout starts, balance only rises on landing, full
+  amount credited at the end; screenshots `payout-gather.png`,
+  `payout-in-hand.png`). Not compiled here -- the pose, bill scale (0.8) and
+  timings are first guesses for Codex to tune on screen. Online play has no
+  money animation yet; noted in the Codex prompt.

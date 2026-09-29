@@ -217,7 +217,10 @@ At full streak:
 
 ## Money on the Ground
 
-Bills on the ground only ever show money that is riding: the shooter's and catcher's shot, proposed bets and locked bets. When a bet settles, its bills fly to the winner and are gone. No loose or decorative bills lying around -- with bets everywhere, stray money would make it unclear what is being bet. (Owner rule 2026-09-29.)
+Bills on the ground only ever show money that is riding: the shooter's and catcher's shot, proposed bets and locked bets. Money only moves on screen when it actually changes hands:
+
+- **You win:** the bills lift off the loser's spot and gather right above where your hand comes out. Your hand rises palm up and the bills are laid into it one at a time, like a bank teller counting them out. The money sound plays right before each bill touches your palm, and your balance goes up as each one lands. Then your hand closes and drops out.
+- **You lose, or money moves between other players:** the bills fly from the loser's spot to the winner's and disappear. (Your balance doesn't jump when you lose -- that money already left your available balance when the bet was made.) No loose or decorative bills lying around -- with bets everywhere, stray money would make it unclear what is being bet. (Owner rule 2026-09-29.)
 
 ## Fair Play
 

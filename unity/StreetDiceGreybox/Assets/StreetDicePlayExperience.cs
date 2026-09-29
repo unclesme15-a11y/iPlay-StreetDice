@@ -56,7 +56,10 @@ public sealed partial class StreetDiceGreyboxController
     private readonly Queue<MoneyTransfer> moneyTransfers = new();
     private readonly HashSet<GameObject> activeMoneyBills = new();
     private Coroutine moneyTransferRoutine;
-    private bool moneyTransferRunning, moneyAnimationEnabled = true;
+    private bool moneyTransferRunning, moneyAnimationEnabled = true, handReceiving;
+    // Winnings still "in the air": your balance goes up only as the bills land. (A loss needs
+    // no hold -- that money already left your available balance when the bet was made.)
+    private int displayIncomingPending, currentIncomingLeft;
     private float moneyTransferDuration = 1.05f;
     private float lastBrickHapticAt = -10f;
     private Texture2D voiceFaceIcon;
@@ -83,7 +86,7 @@ public sealed partial class StreetDiceGreyboxController
     private float nextOnlineHeartbeatAt;
     private bool SkyDisplayActive => skyCamVisible && (rolling || fadeInProgress);
     private bool CanGesture => !applicationPaused && !mainOptions && !drawerOpen && !confirmLeave && !awaitingShootChoice
-        && shooterId == SelfId && !rolling && shotCommitted && !AwaitingWagerAcceptance
+        && shooterId == SelfId && !rolling && shotCommitted && !AwaitingWagerAcceptance && !handReceiving
         && (phase == "ComeOut" || phase == "Point" || phase == "CeeLo");
     private bool BettingWindowOpen => gameMode == GameMode.Craps && shotCommitted && !rolling &&
         (localDemo ? Time.unscaledTime < bettingClosesAt : onlineWagerWindowKnown &&
@@ -1031,7 +1034,8 @@ public sealed partial class StreetDiceGreyboxController
     {
         if (!localDemo) return onlineAvailableBalance;
         int mainStake = shotCommitted && (SelfId == shooterId || SelfId == catcherId) ? shotAmount : 0;
-        return Mathf.Max(0, Balance(SelfId) - mainStake - wagerBook.Exposure(SelfId));
+        return Mathf.Max(0, Balance(SelfId) - mainStake - wagerBook.Exposure(SelfId)
+            - displayIncomingPending);
     }
 
     private void DrawOpaquePanel(Rect rect)
@@ -1535,6 +1539,7 @@ public sealed partial class StreetDiceGreyboxController
     {
         if (!moneyAnimationEnabled || mainOptions || confirmLeave || moneyPiles.Count != DemoShooterOrder.Length) return;
         if (Array.IndexOf(DemoShooterOrder, from) < 0 || Array.IndexOf(DemoShooterOrder, to) < 0) return;
+        if (to == SelfId) displayIncomingPending += amount;
         moneyTransfers.Enqueue(new MoneyTransfer(from, to, amount));
         if (!moneyTransferRunning) moneyTransferRoutine = StartCoroutine(PlayMoneyTransfers());
     }
@@ -1543,7 +1548,9 @@ public sealed partial class StreetDiceGreyboxController
     {
         if (moneyTransferRoutine != null) StopCoroutine(moneyTransferRoutine);
         moneyTransferRoutine = null;
-        moneyTransferRunning = false;
+        moneyTransferRunning = handReceiving = false;
+        displayIncomingPending = currentIncomingLeft = 0;
+        if (handRig != null && !shakeHeld && !rolling) handRig.SetActive(false);
         moneyTransfers.Clear();
         foreach (var bill in activeMoneyBills)
             if (bill != null) { bill.SetActive(false); Destroy(bill); }
@@ -1553,7 +1560,13 @@ public sealed partial class StreetDiceGreyboxController
     private IEnumerator PlayMoneyTransfers()
     {
         moneyTransferRunning = true;
-        while (moneyTransfers.Count > 0) yield return AnimateMoneyTransfer(moneyTransfers.Dequeue());
+        while (moneyTransfers.Count > 0)
+        {
+            var transfer = moneyTransfers.Dequeue();
+            currentIncomingLeft = transfer.To == SelfId ? transfer.Amount : 0;
+            yield return AnimateMoneyTransfer(transfer);
+            CreditLanded(currentIncomingLeft);
+        }
         moneyTransferRunning = false;
         moneyTransferRoutine = null;
     }
@@ -1563,6 +1576,14 @@ public sealed partial class StreetDiceGreyboxController
         int fromIndex = Array.IndexOf(DemoShooterOrder, transfer.From);
         int toIndex = Array.IndexOf(DemoShooterOrder, transfer.To);
         if (fromIndex < 0 || toIndex < 0) yield break;
+        // Your own winnings go into your hand, teller-style. Money between other players,
+        // or money you lose, flies from the loser's pile to the winner's and is gone.
+        if (transfer.To == SelfId && throwHand != null && throwHand.IsRigged && Camera.main != null &&
+            !shakeHeld && !rolling)
+        {
+            yield return AnimateTellerPayout(transfer, fromIndex);
+            yield break;
+        }
         var groups = BillGroupsForAmount(transfer.Amount);
         var flying = new List<GameObject>();
         var starts = new List<Vector3>();
@@ -1608,12 +1629,134 @@ public sealed partial class StreetDiceGreyboxController
             yield return null;
         }
         PlayAudio(moneyLandClip, 0.72f);
+        CreditLanded(currentIncomingLeft);
         yield return new WaitForSecondsRealtime(0.16f);
         foreach (var bill in flying)
         {
             activeMoneyBills.Remove(bill);
             Destroy(bill);
         }
+    }
+
+    private void CreditLanded(int amount)
+    {
+        amount = Mathf.Min(amount, currentIncomingLeft);
+        if (amount <= 0) return;
+        currentIncomingLeft -= amount;
+        displayIncomingPending = Mathf.Max(0, displayIncomingPending - amount);
+    }
+
+    // Owner 2026-09-29: the bills leave the loser (their balance goes down), appear right
+    // above where your hand comes out, your hand rises palm up, and the bills are laid into
+    // it one at a time like a bank teller counting them out. The money sound plays right
+    // before each bill touches the palm, and your balance goes up as each one lands.
+    private IEnumerator AnimateTellerPayout(MoneyTransfer transfer, int fromIndex)
+    {
+        var template = moneyPiles[0].transform.childCount > 1 ? moneyPiles[0].transform.GetChild(1).gameObject : null;
+        if (template == null) yield break;
+        handReceiving = true;
+        var groups = BillGroupsForAmount(transfer.Amount);
+        int count = Mathf.Min(groups.Count, 6); // count out up to six notes; any extra ride with the last
+        var bills = new List<GameObject>();
+        var values = new List<int>();
+        for (int i = 0; i < groups.Count; i++)
+        {
+            int value = groups[i].Denomination * groups[i].Count;
+            if (i >= count) { values[count - 1] += value; continue; }
+            var bill = Instantiate(template);
+            activeMoneyBills.Add(bill);
+            bill.name = "Payout $" + groups[i].Denomination;
+            bill.transform.SetParent(null, true);
+            bill.SetActive(true);
+            bill.transform.localScale = Vector3.one * 0.8f;
+            bill.GetComponent<MeshRenderer>().sharedMaterial = billMaterials[groups[i].Denomination];
+            bills.Add(bill);
+            values.Add(value);
+        }
+        var camera = Camera.main;
+        var hand = throwHand;
+        float handX = hand.LeftHanded ? 0.42f : 0.58f;
+        Vector3 Hover(int i) => camera.ViewportToWorldPoint(new Vector3(handX + (i - (count - 1) * 0.5f) * 0.012f,
+            0.34f + i * 0.006f, 1.45f));
+        Quaternion Facing(Vector3 at) => Quaternion.FromToRotation(Vector3.up, (camera.transform.position - at).normalized);
+
+        // 1. Bills lift off the loser's pile and gather right above where the hand comes out.
+        Vector3 origin = moneyPiles[fromIndex].transform.position + Vector3.up * 0.035f;
+        PlayAudio(moneyPullClip, 0.85f);
+        float started = Time.unscaledTime;
+        const float gather = 0.55f;
+        while (Time.unscaledTime - started < gather)
+        {
+            float t = Mathf.SmoothStep(0f, 1f, (Time.unscaledTime - started) / gather);
+            for (int i = 0; i < bills.Count; i++)
+            {
+                Vector3 position = Vector3.Lerp(origin, Hover(i), t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * 0.25f;
+                bills[i].transform.SetPositionAndRotation(position, Facing(position));
+            }
+            yield return null;
+        }
+
+        // 2. The hand comes up, palm open, under the bills.
+        handRig.SetActive(true);
+        started = Time.unscaledTime;
+        const float enter = 0.28f;
+        while (Time.unscaledTime - started < enter)
+        {
+            hand.SampleReceive(Mathf.SmoothStep(0f, 1f, (Time.unscaledTime - started) / enter), 0f, 0f);
+            for (int i = 0; i < bills.Count; i++)
+                bills[i].transform.SetPositionAndRotation(Hover(i), Facing(Hover(i)));
+            yield return null;
+        }
+
+        // 3. Teller: each bill is laid into the palm; the sound plays just before it touches.
+        const float place = 0.2f;
+        for (int n = 0; n < bills.Count; n++)
+        {
+            started = Time.unscaledTime;
+            bool sounded = false;
+            while (true)
+            {
+                float t = Mathf.Clamp01((Time.unscaledTime - started) / place);
+                hand.SampleReceive(1f, 0f, 0f);
+                if (!sounded && t >= 0.8f) { PlayAudio(moneyLandClip, 0.72f); sounded = true; }
+                for (int i = 0; i < bills.Count; i++)
+                {
+                    if (i < n) bills[i].transform.SetPositionAndRotation(hand.BillRestPosition(i), hand.BillRotation);
+                    else if (i > n) bills[i].transform.SetPositionAndRotation(Hover(i), Facing(Hover(i)));
+                    else
+                    {
+                        float ease = Mathf.SmoothStep(0f, 1f, t);
+                        bills[i].transform.SetPositionAndRotation(
+                            Vector3.Lerp(Hover(i), hand.BillRestPosition(i), ease),
+                            Quaternion.Slerp(Facing(Hover(i)), hand.BillRotation, ease));
+                    }
+                }
+                if (t >= 1f) break;
+                yield return null;
+            }
+            CreditLanded(values[n]);
+        }
+
+        // 4. Fingers close over the money and the hand drops back out.
+        started = Time.unscaledTime;
+        const float hold = 0.22f, close = 0.2f, exit = 0.3f;
+        while (Time.unscaledTime - started < hold + close + exit)
+        {
+            float elapsed = Time.unscaledTime - started;
+            float closing = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(hold, hold + close, elapsed));
+            float leaving = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(hold + close, hold + close + exit, elapsed));
+            hand.SampleReceive(1f, closing, Mathf.Min(leaving, 0.999f));
+            for (int i = 0; i < bills.Count; i++)
+                bills[i].transform.SetPositionAndRotation(hand.BillRestPosition(i), hand.BillRotation);
+            yield return null;
+        }
+        foreach (var bill in bills)
+        {
+            activeMoneyBills.Remove(bill);
+            Destroy(bill);
+        }
+        if (!shakeHeld && !rolling) handRig.SetActive(false);
+        handReceiving = false;
     }
 
     private static AudioClip CreateMoneyClip(string name, float duration, bool landing)

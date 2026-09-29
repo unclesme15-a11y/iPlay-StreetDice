@@ -1396,6 +1396,25 @@ public static class PlayReadinessVerification
         Check(!(bool)Get(c, "moneyTransferRunning"), "Money transfer animation did not finish");
         for (int i = 0; i < 5; i++) yield return null;
         CaptureGameView(Path.Combine(output, "in-game.png"));
+        // Winnings to you: bills gather above the hand, the hand rises palm up and they're
+        // laid in teller-style; the balance only goes up as they land.
+        // Needs the paid RRFreelance hand pack; without it the bills fly to your pile instead.
+        bool rigged = ((FirstPersonDiceHand)Get(c, "throwHand"))?.IsRigged == true;
+        int balanceBefore = (int)Call(c, "DisplayAvailableBalance");
+        Call(c, "TransferCash", "p2", "p1", 40);
+        for (int i = 0; i < 20; i++) yield return null;
+        Check(!rigged || ((bool)Get(c, "handReceiving") && GameObject.Find("Payout $20") != null),
+            "Teller payout did not start for the local winner");
+        Check((int)Call(c, "DisplayAvailableBalance") < balanceBefore + 40,
+            "Balance went up before the bills landed in the hand");
+        CaptureGameView(Path.Combine(output, "payout-gather.png"));
+        for (int i = 0; i < 30; i++) yield return null;
+        CaptureGameView(Path.Combine(output, "payout-in-hand.png"));
+        float payoutDeadline = Time.unscaledTime + 4f;
+        while (((bool)Get(c, "handReceiving") || (bool)Get(c, "moneyTransferRunning")) &&
+            Time.unscaledTime < payoutDeadline) yield return null;
+        Check(!(bool)Get(c, "handReceiving") && (int)Call(c, "DisplayAvailableBalance") == balanceBefore + 40,
+            "Teller payout did not finish with the full amount credited");
         Call(c, "StartLocalDemo");
         float originalStreak = (float)Get(c, "streak");
         Set(c, "streak", 5f);
