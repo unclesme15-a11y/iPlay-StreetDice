@@ -26,6 +26,56 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
 - `docs/screen-review.md` -- rounds 1-19: every change so far and why
 
+## Step 0 -- make sure you have the right code (do this first, every session)
+
+`main` is 55+ commits behind and has NONE of the screen work. In the project folder:
+
+```powershell
+git fetch origin
+git checkout claude/amazing-hopper-k9u8qv
+git pull origin claude/amazing-hopper-k9u8qv
+git log -1 --oneline
+```
+
+The last line must show the newest commit on GitHub for that branch (as of this prompt,
+a `docs(...)` commit from 2026-09-30 or later). If it doesn't, stop and tell the owner.
+
+Then open Unity and check the **Console**. If there are ANY red compile errors, Unity
+keeps running the last version that compiled -- the old screens -- so everything will
+look like the screen work is missing. Fix every compile error before judging anything
+on screen.
+
+## Screen checklist -- the visual work already done (verify, never redo or skip)
+
+All of this is in the code on this branch (history in `docs/screen-review.md`) but has
+never been compiled or seen in Unity. After step 1 compiles, screenshot each item and
+confirm it matches. If one doesn't show up, find out why -- don't rebuild it a different
+way.
+
+- **Menus (every non-game screen): Style A metal plates** -- brushed metal, cyan glow
+  edge, marker font (`DrawMetalPlate`, `DrawMetalButton`, `DrawFlowChoice`). Never raw
+  grey Unity buttons. iPlay logo on most screens (`DrawBrandLogo`), including the 18+
+  gate, under-18, Global Settings and Credits.
+- **In-game text is painted on the scene** (Style B): the countdown numbers and "COME OUT"
+  on the roll-up door.
+- **Top bar:** BET die top-left (`UI/impact-dice-bet-v1`, red "BET"); blue-steel
+  settings gear top-right.
+- **Options drawer:** music controls right on the drawer (not a sub-tab); Game Stats is
+  its own page; Leave Game is last and asks to confirm.
+- **Bet menu at the point:** digital-display bet dice by each seat, HIT / CRAP, number,
+  then the bill photos -- tap to stack ($50/$100 once unlocked), Clear, tap the lock.
+- **Come-out overlay:** big CRAP 2/3/12 lock (170x198, twice a normal lock), metal
+  NO BET tab beside it, glowing countdown line around it (green -> yellow -> red).
+- **Locks:** keyed lock art (`UI/wager-locks-keyed`), incoming locks tap once to arm and
+  twice to accept, accepted locks drop and bounce, paging arrows when a player has
+  several.
+- **Money on the ground:** only bets that are riding; winnings to you use the teller
+  payout into your hand; other money flies loser -> winner and vanishes.
+- **Hot meter:** fire-filled meter next to the gear for the shooter.
+- **Game Stats page:** sign-in, rank name (Unranked / Shooter / Skilled Shooter /
+  Pro Shooter / DICE G[spinning die]D), 5-step progress bar, SP, trophy notes.
+- **Stake picker:** bill-stacking with Clear for the main shot.
+
 ## Rules that never change
 
 1. **Everything rank-related at a party is the HOST's level, full stop** -- bet

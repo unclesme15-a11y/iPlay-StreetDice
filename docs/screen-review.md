@@ -1114,3 +1114,17 @@ flipbooks are git-ignored like the hand pack (`*.mp4` already was).
 Correction (owner): Codex can log into the owner's Google Drive directly. The
 Codex prompt and the crowd plan now tell Codex to pull the clips from Drive
 itself -- no Google Drive for desktop, no folder path to fill in.
+
+## Round 20 -- 2026-09-30
+
+### Codex didn't see the screen work -- step 0 and a screen checklist
+
+Owner: Codex seemed to skip the screen changes. Checked GitHub: every screen
+round and the UI art are on `claude/amazing-hopper-k9u8qv`; Codex has pushed
+nothing to any branch, and `main` is 55 commits behind with none of the screen
+work. Two likely causes: Codex worked from `main` or an old local copy, or Unity
+hit compile errors in the never-compiled scripts and kept running the last
+version that compiled (the old screens). The Codex prompt now opens with
+"Step 0" (fetch/checkout/pull the branch, confirm the latest commit, clear every
+red Console error first) and a screen checklist Codex must screenshot and
+confirm, never redo.
