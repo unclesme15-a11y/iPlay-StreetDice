@@ -1110,3 +1110,7 @@ folder -> inventory -> ffmpeg bake to alpha flipbooks -> 12 sockets -> event
 reactions -> one-character approval gate). The Codex prompt's crowd bullet now
 points at it, with a placeholder for the owner's Drive folder path. Baked
 flipbooks are git-ignored like the hand pack (`*.mp4` already was).
+
+Correction (owner): Codex can log into the owner's Google Drive directly. The
+Codex prompt and the crowd plan now tell Codex to pull the clips from Drive
+itself -- no Google Drive for desktop, no folder path to fill in.

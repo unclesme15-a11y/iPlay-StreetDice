@@ -114,10 +114,11 @@ camera movement, zoom, pan, cut, shaky camera, extra people, text, watermark, lo
 clothing, shadows on background, cropped feet, cropped head, blurry
 ```
 
-## Google Drive folder layout
+## Google Drive layout (for new clips)
 
-Put everything under one folder in the owner's Google Drive, one subfolder per character,
-files named by reaction:
+Codex pulls the footage straight from the owner's Google Drive. Existing clips can stay
+where they are. For new ones, this layout makes them easy to find -- one folder per
+character, files named by reaction:
 
 ```text
 iPlay Crowd/
@@ -137,10 +138,9 @@ there and reports which character is missing which reaction.
 
 ## What Codex builds (see the Codex prompt, "Crowd")
 
-1. **Get the footage.** Codex runs on the owner's Windows PC. With Google Drive for desktop
-   installed, the Drive folder is a normal folder (e.g. `G:\My Drive\iPlay Crowd`). Copy it
-   -- never move or edit the originals -- into `artifacts/reference-private/crowd-raw/`
-   (git-ignored).
+1. **Get the footage.** Codex logs into the owner's Google Drive, finds the green-screen
+   character clips, and downloads copies -- never moving, renaming or deleting anything in
+   the Drive -- into `artifacts/reference-private/crowd-raw/` (git-ignored).
 2. **Inventory.** Write `docs/crowd-inventory.md`: one row per character, which reactions
    exist, length, resolution, and a flag for anything breaking the shooting rules (camera
    moves, cropped feet, green clothing, eye-level angle). The owner fills the gaps with the

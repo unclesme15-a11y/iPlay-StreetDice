@@ -206,11 +206,12 @@ in The Jungle -- it plays the iPlay soundtrack.
   roll frames.
 - **Reactive crowd -- green-screen characters in crowd sockets (full plan in
   `docs/crowd-footage-plan.md`; follow it step by step):**
-  1. Copy (never move or edit) the owner's green-screen character clips from their
-     Google Drive folder -- synced on this PC by Google Drive for desktop at
-     `<OWNER: PASTE THE DRIVE FOLDER PATH HERE, e.g. G:\My Drive\iPlay Crowd>` -- into
-     `artifacts/reference-private/crowd-raw/` (git-ignored). If the folder isn't
-     there, stop and ask the owner.
+  1. Use your Google Drive access to find the owner's green-screen character clips
+     (made with Kling through fal.ai) in their Google Drive. Download copies --
+     never move, rename or delete anything in the Drive -- into
+     `artifacts/reference-private/crowd-raw/` (git-ignored), one folder per
+     character. If you can't tell which files are the crowd characters, list what
+     you found and ask the owner.
   2. Write `docs/crowd-inventory.md`: which character has which reactions (idle,
      watch, cheer, groan, hype), plus anything breaking the shooting rules. Commit it
      so the owner can fill the gaps.
