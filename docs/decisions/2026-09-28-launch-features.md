@@ -125,9 +125,9 @@ Spoken dice calls exist in code but are silent: they need recordings at
 - Crowd reacts to what happens: cheers on hot dice and big wins, groans on a
   seven-out (or a 1-2-3 in Cee-lo), anticipation while the dice are in the air.
 - Crowd size scales with the host's level (already approved).
-- Footage is being sourced by Claude (Kling / Veo / Runway) and lands in
-  `docs/` for owner approval. Build the event hooks; drop footage in once
-  approved.
+- Footage: the owner's green-screen characters (Kling via fal.ai, in Google
+  Drive), keyed into fixed crowd sockets around the bodega door. Full plan,
+  shooting rules and Kling prompts: `docs/crowd-footage-plan.md` (2026-09-30).
 
 ## 8. Modern UI switch (last, before launch)
 

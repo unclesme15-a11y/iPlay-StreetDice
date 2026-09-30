@@ -1094,3 +1094,19 @@ wrongly listed "come-out win/loss" as a side bet, now corrected. New test
   Server `RankLadder.LevelName` + `levelName` on account responses; Game Stats
   shows the name, and Level 5 draws "DICE G", a turning die (the BET die art,
   `UI/impact-dice-bet-v1` -- swap for a plain die face if it reads wrong), "D".
+
+## Round 19 -- 2026-09-30
+
+### Crowd: green-screen characters in crowd sockets
+
+Owner has green-screen character footage (Kling via fal.ai) in Google Drive and
+wants it used for the crowd with a crowd-socket setup, retrieved by Codex. New
+`docs/crowd-footage-plan.md`: how sockets work, crowd size by host rank
+(3/5/7/9/12), the per-character reaction set (idle, watch, cheer, groan, hype),
+shooting rules for clean keying (including a low, knee-height camera to match
+the game camera near the pavement), copy-paste Kling image-to-video prompts,
+the Drive folder layout, and the Codex pipeline (copy from the Drive-for-desktop
+folder -> inventory -> ffmpeg bake to alpha flipbooks -> 12 sockets -> event
+reactions -> one-character approval gate). The Codex prompt's crowd bullet now
+points at it, with a placeholder for the owner's Drive folder path. Baked
+flipbooks are git-ignored like the hand pack (`*.mp4` already was).

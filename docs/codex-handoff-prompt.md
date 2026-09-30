@@ -24,7 +24,7 @@ the spec, and they win over anything you'd otherwise assume:
 - `docs/spotify-integration-setup.md` -- host-controlled Spotify + search bar
 - `docs/decisions/2026-09-27-fifty-hundred-dollar-notes.md` -- $50/$100 art prompts
 - `docs/reference/stacked-bills-target.png` -- the approved bill-pile look
-- `docs/screen-review.md` -- rounds 1-18: every change so far and why
+- `docs/screen-review.md` -- rounds 1-19: every change so far and why
 
 ## Rules that never change
 
@@ -204,9 +204,27 @@ in The Jungle -- it plays the iPlay soundtrack.
 - **Share-a-clip:** one tap exports a short vertical replay (hot streak, big win,
   level-up) with the iPlay logo via the share sheet; re-render from the recorded
   roll frames.
-- **Reactive crowd:** build the event hooks (hot dice, big wins, seven-out /
-  1-2-3, dice in the air), crowd size by host level. Claude is sourcing the
-  footage; drop it in once the owner approves.
+- **Reactive crowd -- green-screen characters in crowd sockets (full plan in
+  `docs/crowd-footage-plan.md`; follow it step by step):**
+  1. Copy (never move or edit) the owner's green-screen character clips from their
+     Google Drive folder -- synced on this PC by Google Drive for desktop at
+     `<OWNER: PASTE THE DRIVE FOLDER PATH HERE, e.g. G:\My Drive\iPlay Crowd>` -- into
+     `artifacts/reference-private/crowd-raw/` (git-ignored). If the folder isn't
+     there, stop and ask the owner.
+  2. Write `docs/crowd-inventory.md`: which character has which reactions (idle,
+     watch, cheer, groan, hype), plus anything breaking the shooting rules. Commit it
+     so the owner can fill the gaps.
+  3. `tools/bake-crowd.ps1` (ffmpeg): key the green, bake each clip to a small alpha
+     flipbook (~256-320 px tall, 12-15 fps) into
+     `unity/StreetDiceGreybox/Assets/Crowd/Baked/` (git-ignored). Commit the script
+     and `crowd-manifest.json`, never the videos or baked atlases.
+  4. 12 crowd sockets around the bodega door scene (door, brick pillars; never over
+     the roll lane, seat HUDs or opponents), filled by host rank: 3 / 5 / 7 / 9 / 12.
+  5. Reactions from the event hooks (dice in the air, hot dice, big win, point hit,
+     seven-out / crap / 1-2-3, level-up), with random 0-0.4 s delays and about a third
+     of the crowd not reacting, always back to idle.
+  6. Approval gate: bake ONE character first, screenshot it near and far, and wait for
+     the owner's OK before the rest.
 
 ### 7. Assets
 - **$50/$100 notes:** generate from the exact prompts in the fifty-hundred doc
@@ -252,7 +270,8 @@ exact iPlay look. Only after gameplay is verified on phones.
 Daily challenges (saved for after launch), street odds on point bets (later),
 player cards / rank titles,
 seasons / leaderboards, cosmetic shop or any in-app purchase, store trailer,
-crowd footage itself (Claude is sourcing it).
+generating new crowd footage (the owner makes it with the prompts in
+`docs/crowd-footage-plan.md`).
 
 ## Before every push
 - `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (173/173 now,

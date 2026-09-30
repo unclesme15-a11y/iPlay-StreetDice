@@ -22,6 +22,9 @@ artifacts/reference-private/
 artifacts/unitypackage-inspect/
 unity/StreetDiceGreybox/Assets/RRFreelance.meta
 unity/StreetDiceGreybox/Assets/RRFreelance/
+# Crowd flipbooks are baked from the owner's Google Drive footage (tools/bake-crowd.ps1)
+unity/StreetDiceGreybox/Assets/Crowd/Baked/
+unity/StreetDiceGreybox/Assets/Crowd/Baked.meta
 *.mp4
 *.mov
 *.avi
