@@ -52,6 +52,16 @@ never been compiled or seen in Unity. After step 1 compiles, screenshot each ite
 confirm it matches. If one doesn't show up, find out why -- don't rebuild it a different
 way.
 
+- **Main menu = the 3D die (built 2026-10-23, `StreetDiceMenuDie.cs`):** a real
+  rounded ivory die drawn by its own camera into the menu. Faces: PROFILE on top,
+  CRAPS / CEE-LO / TUTORIAL (shows ON or OFF) / SETTINGS around the sides, the blue
+  i-play logo underneath (the only face that does nothing). Drag sideways to spin
+  (snaps a quarter turn; a flick is enough), drag up to tip it and see the logo
+  (springs back), tap any face you can see to use it. PROFILE turns to stay readable
+  as it spins. EXIT is the only button off the die. Face art in
+  `Resources/Branding/MenuDie/`, look check in `docs/reference/menu-die-preview.png`.
+  Verify on a phone: spin feel, tap accuracy near edges, and that it matches the
+  preview; tune camera/lights in `EnsureMenuDie` if Unity's lighting differs.
 - **Menus (every non-game screen): Style A metal plates** -- brushed metal, cyan glow
   edge, marker font (`DrawMetalPlate`, `DrawMetalButton`, `DrawFlowChoice`). Never raw
   grey Unity buttons. iPlay logo on most screens (`DrawBrandLogo`), including the 18+

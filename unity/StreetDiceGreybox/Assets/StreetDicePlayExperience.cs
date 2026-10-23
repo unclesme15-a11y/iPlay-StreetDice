@@ -229,6 +229,7 @@ public sealed partial class StreetDiceGreyboxController
         drawerAmount = Mathf.MoveTowards(drawerAmount, drawerOpen ? 1f : 0f, Time.unscaledDeltaTime * 5f);
         audioSource.volume = effectsVolume;
         UpdateStartupExperience();
+        UpdateMenuDie();
         UpdateWagerOffers();
         UpdateBetMenuAutoOpen();
         RefreshGroundMoney();

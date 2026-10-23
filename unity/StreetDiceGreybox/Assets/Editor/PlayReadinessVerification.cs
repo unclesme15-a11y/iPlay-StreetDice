@@ -243,7 +243,21 @@ public static class PlayReadinessVerification
         screen("DieMenu");
         Check(Get(c, "staticMenuDie") is Texture2D, "Reference die image not loaded");
         Check(Get(c, "settingsGear") is Texture2D, "Settings gear not loaded");
-        Check(GameObject.Find("iPlay Die Menu Camera") == null, "Stationary menu still created a 3D camera");
+        // The menu is a real 3D die now (owner 2026-10-23): built in code, spun and tapped.
+        for (int i = 0; i < 3; i++) yield return null;
+        Check((bool)Get(c, "menuDieReady"), "3D menu die did not build (missing face art or Standard shader)");
+        CaptureGameView(Path.Combine(output, "03g-menu-die-home.png"));
+        Set(c, "menuDieYaw", 135f); Set(c, "menuDieYawFrom", 135f); Set(c, "menuDieYawTo", 135f);
+        for (int i = 0; i < 2; i++) yield return null;
+        CaptureGameView(Path.Combine(output, "03h-menu-die-turned.png"));
+        Set(c, "menuDieYaw", 225f); Set(c, "menuDieYawFrom", 225f); Set(c, "menuDieYawTo", 225f);
+        for (int i = 0; i < 2; i++) yield return null;
+        CaptureGameView(Path.Combine(output, "03i-menu-die-settings-tutorial.png"));
+        Set(c, "menuDieYaw", 45f); Set(c, "menuDieYawFrom", 45f); Set(c, "menuDieYawTo", 45f);
+        Set(c, "menuDiePitchFrom", 80f); Set(c, "menuDieReleaseAt", Time.unscaledTime + 60f);
+        for (int i = 0; i < 2; i++) yield return null;
+        CaptureGameView(Path.Combine(output, "03j-menu-die-logo-underneath.png"));
+        Set(c, "menuDieReleaseAt", -10f);
         var phone = CaptureStartupPhoneLayouts(c, output, screen);
         while (phone.MoveNext()) yield return null;
         Call(c, "OpenGlobalSettings");

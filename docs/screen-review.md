@@ -222,7 +222,7 @@ roughly 52%-92% / 42%-90%; its rect is `0.54 / 0.43 / 0.37 / 0.47`.
 Since the texture is stretched to fill a square rect, image fractions map
 1:1 to rect fractions, so this holds at every resolution.
 
-Decision on record: the static die stays. `DieMenu.cs` and the three
+Decision on record (superseded 2026-10-23, see Round 21): the static die stays. `DieMenu.cs` and the three
 menu shaders are dead code kept for reference only — if the 3D die is
 ever revived it needs a scene-authored die GameObject with a collider,
 which this project's runtime-bootstrap architecture does not currently
@@ -1128,3 +1128,46 @@ version that compiled (the old screens). The Codex prompt now opens with
 "Step 0" (fetch/checkout/pull the branch, confirm the latest commit, clear every
 red Console error first) and a screen checklist Codex must screenshot and
 confirm, never redo.
+
+## Round 21 -- 2026-10-23
+
+### The main menu is a real, touchable 3D die
+
+Owner (with a screenshot of the current menu): make the 3D die look exactly like
+the one in the picture, fully interactive to the touch. PROFILE replaces the
+iPlay logo on top; SETTINGS and TUTORIAL go on the other sides; the iPlay logo
+goes on the bottom and is the only face that isn't clickable; EXIT is the only
+button off the die.
+
+Why it can work now: the old `DieMenu.cs` needed a die placed by hand in a
+Unity scene, and this project builds everything in code (S4, 2026-09-22). The
+new `StreetDiceMenuDie.cs` builds the whole thing at runtime -- a rounded-cube
+mesh with one material per face, its own camera, three lights on layer 25
+(kept off the game camera and the game's lights), rendered into a texture that
+`DrawDieStartMenu` draws where the flat picture was. Touch: drag sideways spins
+it (follows the finger, snaps to the next quarter turn with a little overshoot,
+flicks count), drag up tips it to show the logo underneath (springs back), a
+tap hits the face under the finger (ray against the die box in its own space)
+-- CRAPS / CEE-LO start a mode, PROFILE opens the profile, SETTINGS opens Global
+Settings, TUTORIAL toggles tutorial mode (face reads ON/OFF), the logo does
+nothing. Idle bob and sway; a small press dip on tap. PROFILE (and the logo)
+turn as the die spins so they always read straight, like the logo on the
+render. The old PROFILE / SETTINGS plates and the tutorial switch are gone
+from this screen; EXIT keeps its spot. If the face art or the Standard shader
+is missing it falls back to the flat picture.
+
+Face art: CRAPS and CEE-LO lettering and the blue logo lifted straight from
+`menu-die-static.png` (perspective-corrected), on a generated worn-ivory
+surface; PROFILE / SETTINGS / TUTORIAL in matching rough brush lettering
+(Barlow Condensed, stretched, sheared, ragged dry-brush edges). Scripts in
+`tools/menu-die/`. Checked with a software render using the same shape,
+camera, lights and label rule (`docs/reference/menu-die-preview.png`: home,
+one turn, the back, tipped to the logo). That caught three problems before
+Unity ever saw them, all fixed: the die was framed too big, lettering ran onto
+the rounded edges, and the turning top word sampled mirrored letter scraps at
+its ends.
+
+Readiness check: the old "stationary menu has no 3D camera" check is replaced
+by one that the 3D die builds, plus screenshots at home / turned / back /
+tipped. Not compiled here (no Unity) -- syntax clean on all 29 scripts; server
+173/173.

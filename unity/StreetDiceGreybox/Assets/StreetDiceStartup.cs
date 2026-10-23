@@ -141,40 +141,32 @@ public sealed partial class StreetDiceGreyboxController
         DrawBrandLogo();
         float size = Mathf.Min(UiHeight * 0.92f, UiWidth * 0.57f);
         var rect = new Rect((UiWidth - size) / 2f, (UiHeight - size) / 2f + 11f, size, size);
-        GUI.DrawTexture(rect, staticMenuDie, ScaleMode.StretchToFill, true);
+        // The menu is the die (owner 2026-10-23): a real 3D die you spin and tap -- PROFILE on
+        // top, CRAPS / CEE-LO / TUTORIAL / SETTINGS around the sides, the iPlay logo underneath
+        // (StreetDiceMenuDie.cs). The flat picture is only a fallback if the 3D die can't load.
+        if (!DrawMenuDie(rect))
+        {
+            GUI.DrawTexture(rect, staticMenuDie, ScaleMode.StretchToFill, true);
+            if (!exitConfirmation)
+            {
+                if (GUI.Button(new Rect(rect.x + size * 0.09f, rect.y + size * 0.43f,
+                    size * 0.37f, size * 0.47f), GUIContent.none, GUIStyle.none)) SelectMenuFace(0);
+                if (GUI.Button(new Rect(rect.x + size * 0.54f, rect.y + size * 0.43f,
+                    size * 0.37f, size * 0.47f), GUIContent.none, GUIStyle.none)) SelectMenuFace(1);
+            }
+        }
         if (!exitConfirmation)
         {
-            if (GUI.Button(new Rect(rect.x + size * 0.09f, rect.y + size * 0.43f,
-                size * 0.37f, size * 0.47f), GUIContent.none, GUIStyle.none)) SelectMenuFace(0);
-            if (GUI.Button(new Rect(rect.x + size * 0.54f, rect.y + size * 0.43f,
-                size * 0.37f, size * 0.47f), GUIContent.none, GUIStyle.none)) SelectMenuFace(1);
-
-            float controlX = rect.xMax + 28f;
-            float controlY = UiHeight * 0.46f;
-            // Right-hand column, top to bottom: PROFILE, SETTINGS, EXIT. Three equal
-            // plates instead of two icon plates + a text plate on the other side of
-            // the die, so the die's right margin now reads as one clear stack.
+            // EXIT is the only menu button that isn't on the die. Same spot as before, in the
+            // right-hand column.
             const float stackW = 150f, plateH = 54f, gap = 14f;
-            float stackX = controlX - 5f, stackY = controlY - 45f;
-            if (DrawFlowChoice(new Rect(stackX, stackY, stackW, plateH), "PROFILE"))
-                OpenProfile(StartupScreen.DieMenu);
-            // Settings used to be a bare gear icon -- text reads faster and matches
-            // every other plate on this screen.
-            if (DrawFlowChoice(new Rect(stackX, stackY + (plateH + gap), stackW, plateH), "SETTINGS"))
-                OpenGlobalSettings();
+            float stackX = rect.xMax + 23f, stackY = UiHeight * 0.46f - 45f;
             var exitPlate = new Rect(stackX, stackY + (plateH + gap) * 2f, stackW, plateH);
             DrawMetalPlate(exitPlate);
-            // Scaled up to fill the plate -- was inset 35/11px per side (roughly a
-            // third of the plate's area); now inset 6px on every side, so it reads
-            // as a sign filling its frame instead of an icon floating inside one.
             var exitIcon = new Rect(exitPlate.x + 6f, exitPlate.y + 6f, stackW - 12f, plateH - 12f);
             GUI.DrawTexture(exitIcon, exitSign, ScaleMode.ScaleToFit, true);
             if (GUI.Button(exitPlate, new GUIContent("", "Exit iPlay"), GUIStyle.none))
                 exitConfirmation = true;
-            // Tutorial keeps its original spot in the left margin -- PROFILE moved
-            // out from here to the right column above, nothing else changed on this
-            // side. 44px tall for an easy phone tap.
-            SetTutorialMode(DrawPregameTutorial(new Rect(8f, controlY + 142f, 240f, 44f), tutorialMode));
         }
         if (!exitConfirmation) return;
         DrawOpaquePanel(new Rect(UiWidth / 2f - 205, UiHeight / 2f - 92, 410, 184));
