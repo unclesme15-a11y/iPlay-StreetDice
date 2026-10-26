@@ -1171,3 +1171,8 @@ Readiness check: the old "stationary menu has no 3D camera" check is replaced
 by one that the 3D die builds, plus screenshots at home / turned / back /
 tipped. Not compiled here (no Unity) -- syntax clean on all 29 scripts; server
 173/173.
+
+Owner follow-up (2026-10-26): EXIT stays where it is. Codex will refine the
+PROFILE / SETTINGS / TUTORIAL lettering to match CRAPS -- task and rules for
+it added to the Codex prompt's screen checklist. Full-screen preview saved as
+`docs/reference/menu-die-home-preview.png`.

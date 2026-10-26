@@ -62,6 +62,27 @@ way.
   `Resources/Branding/MenuDie/`, look check in `docs/reference/menu-die-preview.png`.
   Verify on a phone: spin feel, tap accuracy near edges, and that it matches the
   preview; tune camera/lights in `EnsureMenuDie` if Unity's lighting differs.
+  **Task -- refine the die lettering (owner request 2026-10-26):** PROFILE, SETTINGS
+  and TUTORIAL ON / TUTORIAL OFF were made by Claude in a brush style close to CRAPS
+  but not identical. Remake those four face images so the lettering matches the
+  hand-brushed CRAPS / CEE-LO lettering on the approved die
+  (`Resources/Branding/menu-die-static.png`) as closely as possible -- same
+  heavy, tall, condensed brush strokes, same dry-brush ragged edges and grain,
+  same black ink on the same worn ivory. Keep the rest exactly as is:
+  - Files: `Resources/Branding/MenuDie/menu-die-profile.jpg`, `-settings.jpg`,
+    `-tutorial-on.jpg`, `-tutorial-off.jpg` (1024x1024, same names). Don't touch
+    craps / ceelo / logo.
+  - Side faces (SETTINGS, TUTORIAL): lettering stays inside the middle ~80% of
+    the image -- the outer edge wraps around the rounded corner.
+  - Top face (PROFILE): lettering stays inside the middle ~58% both ways, because
+    it turns as the die spins and anything outside that shows mirrored scraps.
+  - TUTORIAL ON and OFF must be identical except the ON/OFF word.
+  - `tools/menu-die/build_faces.py` is how the current ones were made (Barlow
+    Condensed + brush roughening); improve it or replace the art -- either way.
+  - Check with `tools/menu-die/preview_render.py` and in Unity, then send the
+    owner screenshots of all six sides before committing.
+- **EXIT stays exactly where it is** (owner confirmed 2026-10-26): the metal plate
+  with the red EXIT sign in the right-hand column -- the only button off the die.
 - **Menus (every non-game screen): Style A metal plates** -- brushed metal, cyan glow
   edge, marker font (`DrawMetalPlate`, `DrawMetalButton`, `DrawFlowChoice`). Never raw
   grey Unity buttons. iPlay logo on most screens (`DrawBrandLogo`), including the 18+
