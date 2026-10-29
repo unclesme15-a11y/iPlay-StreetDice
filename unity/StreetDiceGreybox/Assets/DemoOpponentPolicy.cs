@@ -34,7 +34,9 @@ namespace IPlay.Demo
         {
             ValidateSample(sample);
             double willingness = Willingness[Profile(seat)];
-            if (amount <= 0 || amount > available || Array.IndexOf(Amounts, amount) < 0) return false;
+            // Side bets stack bills now (any amount up to the host's cap), so take any amount
+            // the bot can cover -- bigger ones just get accepted less often.
+            if (amount <= 0 || amount > available) return false;
             double exposure = amount / (double)Math.Max(1, available);
             double chance = willingness * (1 - 0.75 * exposure);
             return sample < chance;

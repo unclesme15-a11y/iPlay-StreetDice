@@ -33,7 +33,8 @@ public class DemoOpponentPolicyTests
             Assert.True(DemoOpponentPolicy.Accept(seat, 1000, 10, 0));
             Assert.False(DemoOpponentPolicy.Accept(seat, 1000, 10, 0.999));
             Assert.False(DemoOpponentPolicy.Accept(seat, 9, 10, 0));
-            Assert.False(DemoOpponentPolicy.Accept(seat, 1000, 3, 0));
+            // $3 is three stacked $1 bills -- a real bet now, so a bot can take it.
+            Assert.True(DemoOpponentPolicy.Accept(seat, 1000, 3, 0));
         }
     }
 
@@ -83,5 +84,16 @@ public class DemoOpponentPolicyTests
         Assert.Throws<ArgumentOutOfRangeException>(() => DemoOpponentPolicy.Accept(4, 1000, 1, 0.5));
         Assert.Throws<ArgumentOutOfRangeException>(() => DemoOpponentPolicy.OfferAmount(0, 1000, double.NaN));
         Assert.Throws<ArgumentOutOfRangeException>(() => DemoOpponentPolicy.Pass(0, 1000, 1, 1));
+    }
+
+    [Fact]
+    public void BotsCanAcceptStackedSideBets()
+    {
+        // $35 is three bills stacked; a bot that can cover it must be able to say yes.
+        for (int seat = 0; seat < 4; seat++)
+        {
+            Assert.True(DemoOpponentPolicy.Accept(seat, 1000, 35, 0));
+            Assert.False(DemoOpponentPolicy.Accept(seat, 30, 35, 0));
+        }
     }
 }

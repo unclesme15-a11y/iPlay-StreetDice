@@ -1176,3 +1176,24 @@ Owner follow-up (2026-10-26): EXIT stays where it is. Codex will refine the
 PROFILE / SETTINGS / TUTORIAL lettering to match CRAPS -- task and rules for
 it added to the Codex prompt's screen checklist. Full-screen preview saved as
 `docs/reference/menu-die-home-preview.png`.
+
+## Round 22 -- 2026-10-29
+
+### Bug: CPU opponents refused stacked side bets
+
+`DemoOpponentPolicy.Accept` still only accepted single $1/$5/$10/$20 bills, so after
+side bets started stacking (Round 17) an offline bot would refuse any stacked
+amount like $35. It now accepts any amount it can cover (bigger ones still less
+often, by bankroll pressure). The old test that expected $3 to be refused now
+expects it accepted ($1+$1+$1); new test `BotsCanAcceptStackedSideBets`. 174/174.
+
+### Plan: AI video characters (CPU opponents + crowd)
+
+Owner asked how to bring the AI video into the game. `docs/ai-video-characters-plan.md`:
+pre-made Kling clips played live (no live generation), dice never in the video
+(Unity draws them out of the video hand at the clip's release moment, like the
+existing Kling fade hands), three tiers (shooter = real video, table = flipbooks
+with one video at a time, crowd = flipbooks), a character per CPU betting style,
+a clip list per character, low side-on camera angles, packed-alpha MP4 so
+transparency works on iPhone and Android, online players can use the same
+characters as avatars. Codex prompt 6b points at it, step 1 only.

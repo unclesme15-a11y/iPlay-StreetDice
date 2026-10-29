@@ -139,7 +139,7 @@ way.
 
 ## What already exists (don't rebuild)
 
-Server (173 passing tests): craps engine with server-rolled physical dice, peer
+Server (174 passing tests): craps engine with server-rolled physical dice, peer
 wagers, persistence across restarts, accounts (sign up / sign in, logins survive
 restarts), rank ladder (Level 1-5 caps $100/$250/$500/$750/$1,000), SP (everyone
 seated earns per finished shot; shooter/catcher and winner earn more; first 15
@@ -308,6 +308,13 @@ in The Jungle -- it plays the iPlay soundtrack.
   6. Approval gate: bake ONE character first, screenshot it near and far, and wait for
      the owner's OK before the rest.
 
+### 6b. AI video characters -- CPU opponents (plan: `docs/ai-video-characters-plan.md`)
+Pre-made Kling clips played live; dice are never in the video (the server rolls, Unity draws
+them out of the video hand at the clip's release moment). Start ONLY with step 1 of that plan
+-- one opponent character, one seat, `idle` / `shake-throw` / `win` / `lose` -- once the owner
+has the clips in Google Drive, then stop for the owner's approval on a phone before more.
+Game rules never wait on a video; a missing clip just falls back to idle.
+
 ### 7. Assets
 - **$50/$100 notes:** generate from the exact prompts in the fifty-hundred doc
   into `Assets/Resources/Money/iplay-note-50.png` and `iplay-note-100.png`. The
@@ -356,7 +363,7 @@ generating new crowd footage (the owner makes it with the prompts in
 `docs/crowd-footage-plan.md`).
 
 ## Before every push
-- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (173/173 now,
+- `dotnet test` in `server/tests/IPlayStreetDice.Tests` passes (174/174 now,
   plus whatever you add).
 - Unity compiles clean; the readiness run passes; screenshots of any UI change.
 - Add a new round to `docs/screen-review.md` for each change: what, why, how
